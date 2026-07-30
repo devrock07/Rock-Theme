@@ -19,8 +19,13 @@ const Container = styled.div`
         ${tw`px-8`}
     `};
 
+    form {
+        width: 100%;
+    }
+
     .auth-shell {
         display: grid;
+        width: 100%;
         grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
         min-height: 32rem;
         overflow: hidden;
