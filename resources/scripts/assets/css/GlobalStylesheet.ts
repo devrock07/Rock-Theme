@@ -59,6 +59,46 @@ export default createGlobalStyle`
         min-height: 100vh;
     }
 
+    .nook-container::before {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        content: '';
+        pointer-events: none;
+        background:
+            linear-gradient(115deg, transparent 0 38%, rgba(201, 79, 89, 0.018) 50%, transparent 63%),
+            radial-gradient(circle at 50% -18%, rgba(255, 255, 255, 0.035), transparent 34rem);
+    }
+
+    .rock-page {
+        position: relative;
+        min-height: calc(100vh - 10rem);
+        animation: rock-page-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .rock-footer p {
+        display: table;
+        margin: 0 auto;
+        padding: 0.45rem 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.055);
+        border-radius: 999px;
+        background: rgba(8, 8, 9, 0.4);
+        backdrop-filter: blur(14px);
+    }
+
+    @keyframes rock-page-in {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+            filter: blur(3px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+    }
+
     h1, h2, h3, h4, h5, h6 {
         ${tw`font-semibold tracking-normal font-header`};
         color: var(--shell-text);
@@ -114,6 +154,21 @@ export default createGlobalStyle`
         z-index: 1;
     }
 
+    .activity-feed {
+        overflow: hidden;
+        border-radius: 11px;
+    }
+
+    .activity-feed .rb-fluid-content > div {
+        border-color: rgba(255, 255, 255, 0.065);
+        transition: background 160ms ease, border-color 160ms ease;
+    }
+
+    .activity-feed .rb-fluid-content > div:hover {
+        border-color: rgba(240, 138, 144, 0.12);
+        background: linear-gradient(90deg, rgba(201, 79, 89, 0.055), rgba(255, 255, 255, 0.015));
+    }
+
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button {
         -webkit-appearance: none !important;
@@ -153,5 +208,22 @@ export default createGlobalStyle`
 
     ::-webkit-scrollbar-corner {
         background: transparent;
+    }
+
+    @media (max-width: 640px) {
+        .rock-page {
+            min-height: calc(100vh - 8rem);
+        }
+
+        .rock-footer p {
+            padding: 0.35rem 0.65rem;
+            backdrop-filter: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .rock-page {
+            animation: none;
+        }
     }
 `;

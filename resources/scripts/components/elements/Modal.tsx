@@ -22,7 +22,8 @@ export interface ModalProps extends RequiredModalProps {
 
 export const ModalMask = styled.div`
     ${tw`fixed z-50 overflow-auto flex w-full inset-0`};
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(3, 3, 4, 0.78);
+    backdrop-filter: blur(12px) saturate(0.9);
 `;
 
 const ModalContainer = styled.div<{ alignTop?: boolean }>`
@@ -40,6 +41,32 @@ const ModalContainer = styled.div<{ alignTop?: boolean }>`
         `};
 
     margin-bottom: auto;
+
+    & > .modal-surface {
+        position: relative;
+        overflow-x: hidden;
+        color: var(--shell-text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(13, 12, 14, 0.97) 45%,
+            rgba(68, 13, 21, 0.16)
+        );
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 32px 90px rgba(0, 0, 0, 0.55);
+    }
+
+    & > .modal-surface::before {
+        position: absolute;
+        top: 0;
+        right: 12%;
+        left: 12%;
+        height: 1px;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.72), transparent);
+    }
 
     & > .close-icon {
         ${tw`absolute right-0 p-2 text-white cursor-pointer opacity-50 transition-all duration-150 ease-linear hover:opacity-100`};
@@ -130,6 +157,7 @@ const Modal: React.FC<ModalProps> = ({
                         </Fade>
                     )}
                     <div
+                        className={'modal-surface'}
                         css={tw`bg-neutral-800 p-3 sm:p-4 md:p-6 rounded shadow-md overflow-y-scroll transition-all duration-150`}
                     >
                         {children}

@@ -8,9 +8,32 @@
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
     var motionEnabled = !reducedMotion && !coarsePointer;
+    var cursorAura;
+    var cursorFrame = 0;
+    var latestCursorEvent;
     var spotlightTargets = document.querySelectorAll(
         '.box, .admin-resource-link, .admin-status-strip, .nav-tabs-custom'
     );
+
+    if (motionEnabled) {
+        cursorAura = document.createElement('div');
+        cursorAura.className = 'rb-admin-cursor-aura';
+        cursorAura.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(cursorAura);
+        window.addEventListener(
+            'pointermove',
+            function (event) {
+                latestCursorEvent = event;
+                if (cursorFrame) return;
+                cursorFrame = window.requestAnimationFrame(function () {
+                    cursorAura.style.setProperty('--admin-cursor-x', latestCursorEvent.clientX + 'px');
+                    cursorAura.style.setProperty('--admin-cursor-y', latestCursorEvent.clientY + 'px');
+                    cursorFrame = 0;
+                });
+            },
+            { passive: true }
+        );
+    }
 
     function clamp(value, minimum, maximum) {
         return Math.min(maximum, Math.max(minimum, value));
@@ -197,6 +220,8 @@
 
     window.addEventListener('pagehide', function () {
         if (frame) window.cancelAnimationFrame(frame);
+        if (cursorFrame) window.cancelAnimationFrame(cursorFrame);
+        if (cursorAura) cursorAura.remove();
         document.querySelectorAll('.rb-magic-particle').forEach(function (particle) {
             particle.remove();
         });

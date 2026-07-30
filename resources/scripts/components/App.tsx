@@ -14,7 +14,7 @@ import AuthenticatedRoute from '@/components/elements/AuthenticatedRoute';
 import { ServerContext } from '@/state/server';
 import '@/assets/tailwind.css';
 import Spinner from '@/components/elements/Spinner';
-import { ClickSpark } from '@/components/elements/ReactBitsEffects';
+import { AmbientCursor, ClickSpark } from '@/components/elements/ReactBitsEffects';
 import SoftAurora from '@/components/elements/reactbits/SoftAurora';
 
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
@@ -62,6 +62,7 @@ const App = () => {
         <ClickSpark>
             <GlobalStylesheet />
             <SoftAurora />
+            <AmbientCursor />
             <StoreProvider store={store}>
                 <ProgressBar />
                 <div css={tw`mx-auto w-auto`} className='nook-container'>

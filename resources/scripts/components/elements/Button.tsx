@@ -11,12 +11,47 @@ interface Props {
 }
 
 const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
-    ${tw`relative inline-block rounded p-2 uppercase tracking-wide text-sm transition-all duration-150 border`};
+    ${tw`relative inline-block p-2 uppercase tracking-wide text-sm transition-all duration-150 border overflow-hidden`};
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transform: translateZ(0);
+
+    &::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -75%;
+        width: 42%;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: skewX(-20deg);
+        transition: left 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    &:hover:not(:disabled) {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 10px 28px rgba(0, 0, 0, 0.16);
+        transform: translateY(-1px);
+    }
+
+    &:hover:not(:disabled)::before {
+        left: 135%;
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    & > span {
+        position: relative;
+        z-index: 1;
+    }
 
     ${(props) =>
         ((!props.isSecondary && !props.color) || props.color === 'primary') &&
         css<Props>`
             ${(props) => !props.isSecondary && tw`bg-primary-500 border-primary-600 border text-primary-50`};
+            background-image: linear-gradient(135deg, rgba(240, 138, 144, 0.18), transparent 48%);
 
             &:hover:not(:disabled) {
                 ${tw`bg-primary-600 border-primary-700`};
@@ -90,6 +125,7 @@ const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
     &:disabled {
         opacity: 0.55;
         cursor: default;
+        transform: none;
     }
 `;
 

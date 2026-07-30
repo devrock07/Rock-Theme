@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import useLocationHash from '@/plugins/useLocationHash';
+import FluidGlass from '@/components/elements/reactbits/FluidGlass';
 
 export default () => {
     const { hash } = useLocationHash();
@@ -47,7 +48,7 @@ export default () => {
             {!data && isValidating ? (
                 <Spinner centered />
             ) : (
-                <div className={'bg-gray-700'}>
+                <FluidGlass className={'activity-feed'}>
                     {data?.items.map((activity) => (
                         <ActivityLogEntry key={activity.id} activity={activity}>
                             {typeof activity.properties.useragent === 'string' && (
@@ -59,7 +60,7 @@ export default () => {
                             )}
                         </ActivityLogEntry>
                     ))}
-                </div>
+                </FluidGlass>
             )}
             {data && (
                 <PaginationFooter

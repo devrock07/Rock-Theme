@@ -6,7 +6,9 @@ interface Props {
 }
 
 const Select = styled.select<Props>`
-    ${tw`shadow-none block p-3 pr-8 rounded border w-full text-sm transition-colors duration-150 ease-linear`};
+    ${tw`shadow-none block p-3 pr-8 border w-full text-sm transition-all duration-150 ease-linear`};
+    border-radius: 8px;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.025), transparent 58%);
 
     &,
     &:hover:not(:disabled),
@@ -33,7 +35,8 @@ const Select = styled.select<Props>`
 
             &:hover:not(:disabled),
             &:focus {
-                ${tw`border-neutral-400`};
+                ${tw`border-primary-400`};
+                box-shadow: 0 0 0 3px rgba(201, 79, 89, 0.1);
             }
         `};
 `;

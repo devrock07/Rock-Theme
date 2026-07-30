@@ -24,11 +24,14 @@ const PageContentBlock: React.FC<PageContentBlockProps> = ({ title, showFlashKey
     return (
         <CSSTransition timeout={150} classNames={'fade'} appear in>
             <>
-                <ContentContainer css={tw`my-4 sm:my-10`} className={className}>
+                <ContentContainer
+                    css={tw`my-4 sm:my-10`}
+                    className={['content-container', 'rock-page', className].filter(Boolean).join(' ')}
+                >
                     {showFlashKey && <FlashMessageRender byKey={showFlashKey} css={tw`mb-4`} />}
                     {children}
                 </ContentContainer>
-                <ContentContainer css={tw`mb-4`}>
+                <ContentContainer css={tw`mb-4`} className={'content-container rock-footer'}>
                     <p css={tw`text-center text-neutral-500 text-xs`}>
                         {branding.url ? (
                             <a

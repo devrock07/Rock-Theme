@@ -29,6 +29,7 @@ const DashboardHero = styled.section`
     overflow: hidden;
     border-bottom: 1px solid var(--shell-border);
     background: linear-gradient(105deg, rgba(9, 9, 10, 0.86), rgba(38, 12, 17, 0.62), rgba(8, 8, 9, 0.48));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), inset 0 -30px 90px rgba(0, 0, 0, 0.12);
 
     .hero-art {
         position: absolute;
@@ -48,6 +49,16 @@ const DashboardHero = styled.section`
         position: relative;
         z-index: 2;
         max-width: 48rem;
+    }
+
+    .hero-content::before {
+        position: absolute;
+        top: -0.4rem;
+        bottom: -0.4rem;
+        left: -1.15rem;
+        width: 1px;
+        content: '';
+        background: linear-gradient(180deg, transparent, rgba(240, 138, 144, 0.48), transparent);
     }
 
     &::before {
@@ -103,6 +114,11 @@ const DashboardHero = styled.section`
         color: #9c99a3;
         font-size: 0.64rem;
         letter-spacing: 0.05em;
+        padding: 0.38rem 0.58rem;
+        border: 1px solid rgba(255, 255, 255, 0.065);
+        border-radius: 999px;
+        background: rgba(8, 8, 9, 0.34);
+        backdrop-filter: blur(12px);
     }
 
     .hero-dot {
@@ -126,6 +142,9 @@ const DashboardHero = styled.section`
         .hero-art {
             left: 18%;
             opacity: 0.24;
+        }
+        .hero-content::before {
+            display: none;
         }
         .hero-stats {
             flex-wrap: wrap;
@@ -168,6 +187,17 @@ const ToolbarGlass = styled(FluidGlass)`
 
     .rb-fluid-content {
         padding: 0.85rem 1rem;
+    }
+
+    &::after {
+        position: absolute;
+        right: 0.8rem;
+        bottom: 0;
+        left: 0.8rem;
+        height: 1px;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(201, 79, 89, 0.2), transparent);
     }
 
     ${DashboardToolbar} {

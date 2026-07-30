@@ -33,6 +33,21 @@
     animation: rb-shine 5.5s linear infinite;
 }
 
+.rb-ambient-cursor {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    --ambient-x: 72vw;
+    --ambient-y: 28vh;
+    background:
+        radial-gradient(360px circle at var(--ambient-x) var(--ambient-y), rgba(240, 138, 144, 0.075), transparent 72%),
+        radial-gradient(760px circle at var(--ambient-x) var(--ambient-y), rgba(111, 18, 31, 0.045), transparent 74%);
+    mix-blend-mode: screen;
+    opacity: 0.72;
+}
+
 @keyframes rb-shine {
     from {
         background-position: 145% center;
@@ -207,6 +222,10 @@
 }
 
 @media (hover: none), (pointer: coarse) {
+    .rb-ambient-cursor {
+        display: none;
+    }
+
     .rb-depth-card,
     .rb-depth-card:hover,
     .rb-depth-card:focus-within {
@@ -220,6 +239,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .rb-ambient-cursor {
+        display: none;
+    }
+
     .rb-split-word,
     .rb-shiny-text,
     .rb-border-glow::before {

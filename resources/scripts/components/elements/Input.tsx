@@ -32,7 +32,7 @@ const checkboxStyle = css<Props>`
 
     &:focus {
         ${tw`outline-none border-primary-300`};
-        box-shadow: 0 0 0 1px rgba(9, 103, 210, 0.25);
+        box-shadow: 0 0 0 3px rgba(201, 79, 89, 0.14);
     }
 `;
 
@@ -40,8 +40,11 @@ const inputStyle = css<Props>`
     // Reset to normal styling.
     resize: none;
     ${tw`appearance-none outline-none w-full min-w-0`};
-    ${tw`p-3 border-2 rounded text-sm transition-all duration-150`};
-    ${tw`bg-neutral-600 border-neutral-500 hover:border-neutral-400 text-neutral-200 shadow-none focus:ring-0`};
+    ${tw`p-3 rounded text-sm transition-all duration-150`};
+    ${tw`bg-neutral-600 hover:border-neutral-400 text-neutral-200 shadow-none focus:ring-0`};
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 8px;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.025), transparent 58%);
 
     & + .input-help {
         ${tw`mt-1 text-xs`};
@@ -54,7 +57,8 @@ const inputStyle = css<Props>`
     }
 
     &:not(:disabled):not(:read-only):focus {
-        ${tw`shadow-md border-primary-300 ring-2 ring-primary-400 ring-opacity-50`};
+        ${tw`border-primary-300 ring-2 ring-primary-400 ring-opacity-30`};
+        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
         ${(props) => props.hasError && tw`border-red-300 ring-red-200`};
     }
 

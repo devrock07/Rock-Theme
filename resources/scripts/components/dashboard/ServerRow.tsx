@@ -12,13 +12,15 @@ import { MagicBentoCard } from '@/components/elements/reactbits/MagicBento';
 const Card = styled(MagicBentoCard)`
     min-height: 14rem;
     border: 1px solid rgba(255, 255, 255, 0.085);
-    border-radius: 11px;
-    background: rgba(14, 14, 16, 0.92);
+    border-radius: 12px;
+    background: radial-gradient(circle at 92% 8%, rgba(201, 79, 89, 0.065), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.025), rgba(14, 14, 16, 0.94) 48%, rgba(32, 9, 13, 0.3));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 18px 48px rgba(0, 0, 0, 0.12);
     transition: border-color 220ms ease, background 220ms ease, box-shadow 320ms ease;
 
     &:hover {
-        border-color: rgba(255, 255, 255, 0.13);
-        background: rgba(16, 16, 19, 0.96);
+        border-color: rgba(240, 138, 144, 0.22);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065), 0 24px 58px rgba(0, 0, 0, 0.18);
     }
 
     .card-link {
@@ -43,11 +45,16 @@ const Card = styled(MagicBentoCard)`
         align-items: center;
         gap: 0.4rem;
         color: var(--status-color);
+        padding: 0.35rem 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.065);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.025);
     }
 
     .status svg {
         width: 0.38rem;
         height: 0.38rem;
+        filter: drop-shadow(0 0 5px var(--status-color));
     }
     .allocation {
         display: flex;
@@ -64,6 +71,18 @@ const Card = styled(MagicBentoCard)`
         margin-top: auto;
         padding-top: 1.4rem;
     }
+    .metrics > div {
+        min-width: 0;
+        padding: 0.65rem 0.7rem 0.7rem;
+        border: 1px solid rgba(255, 255, 255, 0.055);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.018);
+        transition: border-color 180ms ease, background 180ms ease;
+    }
+    &:hover .metrics > div {
+        border-color: rgba(240, 138, 144, 0.09);
+        background: rgba(201, 79, 89, 0.025);
+    }
     .metric-value {
         margin-top: 0.35rem;
         color: #d8d6dd;
@@ -72,12 +91,16 @@ const Card = styled(MagicBentoCard)`
     .rail {
         height: 2px;
         margin-top: 0.6rem;
+        overflow: hidden;
+        border-radius: 999px;
         background: rgba(255, 255, 255, 0.06);
     }
     .rail > span {
         display: block;
         height: 100%;
+        border-radius: inherit;
         background: #c94f59;
+        box-shadow: 0 0 8px rgba(240, 138, 144, 0.42);
     }
     .footer {
         display: flex;

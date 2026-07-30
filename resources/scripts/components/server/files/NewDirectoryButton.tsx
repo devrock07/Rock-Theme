@@ -85,7 +85,7 @@ const NewDirectoryDialog = asDialog({
                             <span css={tw`text-neutral-200`}>This directory will be created as&nbsp;</span>
                             <Code>
                                 /home/container/
-                                <span css={tw`text-cyan-200`}>
+                                <span css={tw`text-primary-200`}>
                                     {join(directory, values.directoryName).replace(/^(\.\.\/|\/)+/, '')}
                                 </span>
                             </Code>

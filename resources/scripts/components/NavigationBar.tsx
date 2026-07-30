@@ -34,7 +34,9 @@ const RightNavigation = styled.div`
         &:hover {
             color: white;
             border-color: var(--shell-border-strong);
-            background: rgba(255, 255, 255, 0.04);
+            background: linear-gradient(135deg, rgba(201, 79, 89, 0.11), rgba(255, 255, 255, 0.035));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.16);
+            transform: translateY(-1px);
         }
     }
 
@@ -97,10 +99,22 @@ const RightNavigation = styled.div`
 `;
 
 const Topbar = styled.div`
+    position: relative;
     border-bottom: 1px solid var(--shell-border);
     background: linear-gradient(105deg, rgba(8, 8, 9, 0.9), rgba(28, 12, 15, 0.76), rgba(8, 8, 9, 0.88));
     box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.025);
     backdrop-filter: blur(22px) saturate(1.35);
+
+    &::after {
+        position: absolute;
+        right: 12%;
+        bottom: -1px;
+        left: 12%;
+        height: 1px;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.42), transparent);
+    }
 
     .brand-mark {
         display: inline-flex;

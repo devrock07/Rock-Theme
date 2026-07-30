@@ -18,6 +18,8 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.14.1`.
 -   Configurable panel name, footer, mark or logo, dashboard copy, and artwork
 -   Soft Aurora, Magic Bento, Fluid Glass, Profile Card, spotlight, and motion
     treatments adapted for the panel
+-   Seamless pointer ambience, polished page transitions, magnetic controls,
+    responsive navigation scrims, and card-local lighting without clipped glow
 -   Reduced-motion and coarse-pointer fallbacks for accessible mobile use
 -   Production release archives with compiled frontend assets
 

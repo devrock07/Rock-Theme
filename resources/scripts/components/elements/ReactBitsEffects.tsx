@@ -27,6 +27,40 @@ export const ShinyText: React.FC<{ children: React.ReactNode; className?: string
     className = '',
 }) => <span className={`rb-shiny-text ${className}`}>{children}</span>;
 
+export const AmbientCursor: React.FC = () => {
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const element = ref.current;
+        const motion = window.matchMedia(
+            '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)'
+        );
+        if (!element || !motion.matches) return;
+
+        let frame = 0;
+        let x = window.innerWidth * 0.72;
+        let y = window.innerHeight * 0.28;
+        const render = () => {
+            element.style.setProperty('--ambient-x', `${x}px`);
+            element.style.setProperty('--ambient-y', `${y}px`);
+            frame = 0;
+        };
+        const handlePointerMove = (event: PointerEvent) => {
+            x = event.clientX;
+            y = event.clientY;
+            if (!frame) frame = window.requestAnimationFrame(render);
+        };
+
+        window.addEventListener('pointermove', handlePointerMove, { passive: true });
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            if (frame) window.cancelAnimationFrame(frame);
+        };
+    }, []);
+
+    return <div ref={ref} className={'rb-ambient-cursor'} aria-hidden={'true'} />;
+};
+
 export const TiltSpotlight: React.FC<React.HTMLAttributes<HTMLDivElement> & { spotlightColor?: string }> = ({
     children,
     className = '',
