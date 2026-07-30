@@ -18,6 +18,9 @@ ChartJS.register(LineElement, PointElement, Filler, LinearScale);
 
 const options: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
+    devicePixelRatio: 1.5,
+    events: [],
     animation: false,
     plugins: {
         legend: { display: false },
@@ -45,7 +48,7 @@ const options: ChartOptions<'line'> = {
             type: 'linear',
             grid: {
                 display: true,
-                color: theme('colors.gray.700'),
+                color: hexToRgba(theme('colors.primary.400'), 0.11),
                 drawBorder: false,
             },
             ticks: {
@@ -65,7 +68,8 @@ const options: ChartOptions<'line'> = {
             radius: 0,
         },
         line: {
-            tension: 0.15,
+            tension: 0.28,
+            borderWidth: 2,
         },
     },
 };
@@ -91,8 +95,8 @@ function getEmptyData(label: string, sets = 1, callback?: ChartDatasetCallback |
                         fill: true,
                         label,
                         data: Array(20).fill(-5),
-                        borderColor: theme('colors.cyan.400'),
-                        backgroundColor: hexToRgba(theme('colors.cyan.700'), 0.5),
+                        borderColor: theme('colors.primary.400'),
+                        backgroundColor: hexToRgba(theme('colors.primary.700'), 0.34),
                     },
                     index
                 )

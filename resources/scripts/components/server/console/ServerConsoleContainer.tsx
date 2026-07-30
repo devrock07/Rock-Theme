@@ -10,6 +10,7 @@ import StatGraphs from '@/components/server/console/StatGraphs';
 import PowerButtons from '@/components/server/console/PowerButtons';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import { Alert } from '@/components/elements/alert';
+import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
 import styles from './style.module.css';
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
@@ -55,11 +56,11 @@ const ServerConsoleContainer = () => {
                 </div>
                 <ServerDetailsBlock className={'col-span-4 lg:col-span-1 order-last lg:order-none'} />
             </div>
-            <div className={'grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4'}>
+            <MagicBentoGrid className={`${styles.chart_deck} grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4`}>
                 <Spinner.Suspense>
                     <StatGraphs />
                 </Spinner.Suspense>
-            </div>
+            </MagicBentoGrid>
             <Features enabled={eggFeatures} />
         </ServerContentBlock>
     );

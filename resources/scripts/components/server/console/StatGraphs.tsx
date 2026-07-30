@@ -10,6 +10,7 @@ import { CloudDownloadIcon, CloudUploadIcon } from '@heroicons/react/solid';
 import { theme } from 'twin.macro';
 import ChartBlock from '@/components/server/console/ChartBlock';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
+import { unstable_batchedUpdates } from 'react-dom';
 
 export default () => {
     const status = ServerContext.useStoreState((state) => state.status.value);
@@ -35,8 +36,11 @@ export default () => {
             return {
                 ...opts,
                 label: !index ? 'Network In' : 'Network Out',
-                borderColor: !index ? theme('colors.orange.400') : theme('colors.red.400'),
-                backgroundColor: hexToRgba(!index ? theme('colors.orange.700') : theme('colors.red.700'), 0.5),
+                borderColor: !index ? theme('colors.primary.300') : theme('colors.primary.500'),
+                backgroundColor: hexToRgba(
+                    !index ? theme('colors.primary.700') : theme('colors.primary.800'),
+                    !index ? 0.38 : 0.28
+                ),
             };
         },
     });
@@ -46,6 +50,7 @@ export default () => {
             cpu.clear();
             memory.clear();
             network.clear();
+            previous.current = { tx: -1, rx: -1 };
         }
     }, [status]);
 
@@ -56,33 +61,36 @@ export default () => {
         } catch (e) {
             return;
         }
-        cpu.push(values.cpu_absolute);
-        memory.push(Math.floor(values.memory_bytes / 1024 / 1024));
-        network.push([
-            previous.current.tx < 0 ? 0 : Math.max(0, values.network.tx_bytes - previous.current.tx),
-            previous.current.rx < 0 ? 0 : Math.max(0, values.network.rx_bytes - previous.current.rx),
-        ]);
+        unstable_batchedUpdates(() => {
+            cpu.push(values.cpu_absolute);
+            memory.push(Math.floor(values.memory_bytes / 1024 / 1024));
+            network.push([
+                previous.current.tx < 0 ? 0 : Math.max(0, values.network.tx_bytes - previous.current.tx),
+                previous.current.rx < 0 ? 0 : Math.max(0, values.network.rx_bytes - previous.current.rx),
+            ]);
+        });
 
         previous.current = { tx: values.network.tx_bytes, rx: values.network.rx_bytes };
     });
 
     return (
         <>
-            <ChartBlock title={'CPU Load'}>
+            <ChartBlock title={'CPU Load'} tone={'rose'}>
                 <Line {...cpu.props} />
             </ChartBlock>
-            <ChartBlock title={'Memory'}>
+            <ChartBlock title={'Memory'} tone={'crimson'}>
                 <Line {...memory.props} />
             </ChartBlock>
             <ChartBlock
                 title={'Network'}
+                tone={'ember'}
                 legend={
                     <>
                         <Tooltip arrow content={'Inbound'}>
-                            <CloudDownloadIcon className={'mr-2 w-4 h-4 text-orange-400'} />
+                            <CloudDownloadIcon className={'mr-2 w-4 h-4 text-primary-300'} />
                         </Tooltip>
                         <Tooltip arrow content={'Outbound'}>
-                            <CloudUploadIcon className={'w-4 h-4 text-red-400'} />
+                            <CloudUploadIcon className={'w-4 h-4 text-primary-500'} />
                         </Tooltip>
                     </>
                 }
