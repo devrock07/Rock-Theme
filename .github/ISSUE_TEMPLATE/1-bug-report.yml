@@ -1,0 +1,88 @@
+name: Bug report
+description: Report a reproducible Rock Theme interface problem.
+title: '[Bug]: '
+labels:
+    - bug
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thank you for reporting a Rock Theme issue. For Pterodactyl core, Wings, node, or game-server support, use the upstream Pterodactyl support channels.
+
+    - type: input
+      id: theme-version
+      attributes:
+          label: Rock Theme version
+          description: Use the release tag or commit identifier.
+          placeholder: v1.0.0
+      validations:
+          required: true
+
+    - type: input
+      id: panel-version
+      attributes:
+          label: Pterodactyl Panel version
+          placeholder: 1.14.1
+      validations:
+          required: true
+
+    - type: input
+      id: browser-device
+      attributes:
+          label: Browser and device
+          placeholder: Chrome 128 on Android 15, or Firefox 130 on Windows 11
+      validations:
+          required: true
+
+    - type: dropdown
+      id: view
+      attributes:
+          label: Affected view
+          options:
+              - Client dashboard
+              - Server management
+              - Login or account
+              - Admin panel
+              - Other
+      validations:
+          required: true
+
+    - type: textarea
+      id: current-behavior
+      attributes:
+          label: Current behavior
+          description: Explain what is wrong and include screenshots when the issue is visual.
+      validations:
+          required: true
+
+    - type: textarea
+      id: expected-behavior
+      attributes:
+          label: Expected behavior
+      validations:
+          required: true
+
+    - type: textarea
+      id: reproduction
+      attributes:
+          label: Steps to reproduce
+          description: Include the route, viewport size, and the smallest reliable reproduction.
+      validations:
+          required: true
+
+    - type: textarea
+      id: logs
+      attributes:
+          label: Relevant logs
+          description: Remove credentials, API keys, tokens, server addresses, and personal data.
+          render: shell
+
+    - type: checkboxes
+      id: checks
+      attributes:
+          label: Pre-submission checks
+          options:
+              - label: I searched existing Rock Theme issues.
+                required: true
+              - label: This report concerns Rock Theme rather than an upstream Pterodactyl or Wings problem.
+                required: true

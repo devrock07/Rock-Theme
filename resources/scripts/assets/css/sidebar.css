@@ -1,0 +1,268 @@
+/*
+This file is part of NookTheme.
+
+NookTheme is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+NookTheme is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with NookTheme. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+:root {
+    --sidebar-size: 224px;
+}
+
+.nav-bar {
+    display: none;
+}
+
+.sidebar {
+    position: fixed;
+    top: 4.5rem;
+    bottom: 0;
+    left: 0;
+    padding: 1.35rem 0.75rem 2rem;
+    width: var(--sidebar-size);
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 90;
+    background: linear-gradient(165deg, rgba(12, 10, 17, 0.94), rgba(7, 7, 8, 0.92));
+    border-right: 1px solid var(--shell-border);
+    box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(22px) saturate(1.25);
+}
+
+.content-container {
+    margin-left: calc(var(--sidebar-size) + 2rem);
+    margin-right: 2rem;
+    max-width: 1440px;
+}
+
+.content-dashboard {
+    max-width: 1380px;
+}
+
+.navbar-button {
+    display: none;
+}
+
+/* Sidebar links */
+.sidebar a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-height: 2.55rem;
+    margin-bottom: 0.15rem;
+    padding: 0.42rem 0.62rem;
+    color: var(--shell-muted);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 150ms ease, background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.sidebar-section {
+    margin: 1.25rem 0.7rem 0.5rem;
+    color: #66636d;
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.sidebar-section:first-child {
+    margin-top: 0.35rem;
+}
+
+.server-sidebar-card {
+    margin: 0.2rem 0 1.15rem;
+    padding: 0.95rem;
+    border: 1px solid var(--shell-border);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.server-sidebar-topline {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.6rem;
+    color: #777178;
+    font-size: 0.6rem;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.server-state-dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 999px;
+    background: var(--shell-danger);
+}
+
+.server-state-dot.state-running {
+    background: var(--shell-success);
+}
+
+.server-state-dot.state-starting,
+.server-state-dot.state-stopping {
+    background: var(--shell-warning);
+}
+
+.server-sidebar-name {
+    overflow: hidden;
+    color: var(--shell-text);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.server-sidebar-address {
+    overflow: hidden;
+    margin-top: 0.3rem;
+    color: #706970;
+    font-size: 0.66rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar a::before {
+    position: absolute;
+    left: -0.62rem;
+    width: 2px;
+    height: 1rem;
+    content: '';
+    border-radius: 0 999px 999px 0;
+    background: transparent;
+}
+
+.sidebar a.active {
+    color: white;
+    border-color: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.sidebar a.active::before {
+    background: var(--shell-accent);
+}
+
+.icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0;
+    color: #81777d;
+    border-radius: 6px;
+    background: transparent;
+    transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.sidebar a.active .icon {
+    color: #f09a9f;
+    background: rgba(201, 79, 89, 0.11);
+}
+
+.sidebar a:hover {
+    color: #f3f4fb;
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.sidebar a:hover .icon {
+    color: #ded6d8;
+    transform: translateY(-1px);
+}
+
+/* Page content. The value of the margin-left property should match the value of the sidebar's width property */
+div.content {
+    margin-left: var(--sidebar-size);
+    padding: 1px 16px;
+    height: 1000px;
+}
+
+@media screen and (max-width: 1150px) {
+    .sidebar {
+        left: calc((var(--sidebar-size) + 1rem) * -1);
+        width: var(--sidebar-size);
+        box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45);
+        transition: left 220ms ease;
+    }
+
+    .content-container {
+        margin-left: 1.25rem;
+        margin-right: 1.25rem;
+    }
+
+    div.content {
+        margin-left: 0;
+        padding: 1px 16px;
+        height: 1000px;
+    }
+
+    .active-nav {
+        left: 0;
+    }
+
+    .nav-bar {
+        display: flex;
+    }
+
+    .navbar-button {
+        display: inline-flex;
+        font-size: 1.1rem;
+        margin-left: 0.25rem;
+        cursor: pointer;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .content-container {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+}
+
+.avatar {
+    margin: 10px;
+    width: 200px;
+    height: 200px;
+    border-radius: 5%;
+}
+
+.smallAvatar {
+    width: 70px;
+    border-radius: 50%;
+}
+
+.nav-bar > * {
+    margin: 10px;
+}
+
+.left {
+    margin-left: auto;
+}
+
+.openMenu {
+    font-size: 50px;
+}
+
+.openMenu:hover {
+    cursor: pointer;
+}
+
+.topbar {
+    position: sticky;
+    margin-top: 0 !important;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    height: 4.5rem;
+    overflow-y: hidden;
+}

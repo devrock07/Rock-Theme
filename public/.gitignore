@@ -1,0 +1,4 @@
+assets/*
+!assets/.gitignore
+!assets/svgs/
+!assets/svgs/*.svg

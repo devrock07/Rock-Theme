@@ -1,0 +1,388 @@
+.rb-soft-aurora-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 18% 30%, rgba(104, 15, 27, 0.22), transparent 42%),
+        radial-gradient(ellipse at 82% 12%, rgba(205, 72, 75, 0.2), transparent 38%),
+        radial-gradient(ellipse at 58% 88%, rgba(116, 20, 31, 0.18), transparent 45%);
+    opacity: 0.54;
+}
+
+.rb-soft-aurora-canvas::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+    background: radial-gradient(circle at center, transparent, rgba(8, 8, 8, 0.52) 76%);
+}
+
+.rb-soft-aurora-canvas canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.magic-bento-grid {
+    position: relative;
+    isolation: isolate;
+    --bento-grid-x: 50%;
+    --bento-grid-y: 50%;
+}
+
+.magic-bento-grid::before {
+    position: absolute;
+    inset: -4rem;
+    z-index: -1;
+    content: '';
+    pointer-events: none;
+    background: radial-gradient(
+        420px circle at var(--bento-grid-x) var(--bento-grid-y),
+        rgba(153, 27, 39, 0.075),
+        transparent 68%
+    );
+    opacity: 0;
+    transition: opacity 360ms ease;
+}
+
+.magic-bento-grid:hover::before {
+    opacity: 1;
+}
+
+.magic-bento-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    --magic-x: 50%;
+    --magic-y: 50%;
+    --magic-color: 201, 79, 89;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.magic-bento-card::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: radial-gradient(
+        380px circle at var(--magic-x) var(--magic-y),
+        rgba(var(--magic-color), 0.12),
+        transparent 62%
+    );
+    opacity: 0;
+    transition: opacity 280ms ease;
+}
+
+.magic-bento-card::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.028), transparent 38%, rgba(115, 24, 35, 0.025));
+}
+
+.magic-bento-card:hover::before,
+.magic-bento-card:focus-within::before {
+    opacity: 1;
+}
+
+.magic-bento-card > :not(.magic-bento-particle, .magic-bento-ripple) {
+    position: relative;
+    z-index: 2;
+}
+
+.magic-bento-particle {
+    position: absolute;
+    z-index: 1;
+    width: 3px;
+    height: 3px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: rgba(var(--particle-color), 0.9);
+    box-shadow: 0 0 8px rgba(var(--particle-color), 0.46);
+}
+
+.magic-bento-ripple {
+    position: absolute;
+    z-index: 1;
+    width: 540px;
+    height: 540px;
+    margin: -270px 0 0 -270px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--particle-color), 0.16), transparent 67%);
+}
+
+.rb-fluid-glass {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    --glass-x: 50%;
+    --glass-y: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.055),
+        rgba(255, 255, 255, 0.012) 48%,
+        rgba(76, 16, 24, 0.08)
+    );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px) saturate(1.22);
+    -webkit-backdrop-filter: blur(20px) saturate(1.22);
+}
+
+.rb-fluid-glass-strong {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(10, 9, 10, 0.72) 52%, rgba(80, 17, 25, 0.13));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 28px 80px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(30px) saturate(1.35);
+    -webkit-backdrop-filter: blur(30px) saturate(1.35);
+}
+
+.rb-fluid-glass::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: radial-gradient(
+        240px circle at var(--glass-x) var(--glass-y),
+        rgba(255, 224, 224, 0.1),
+        rgba(201, 79, 89, 0.045) 36%,
+        transparent 68%
+    );
+    opacity: 0;
+    transition: opacity 280ms ease;
+}
+
+.rb-fluid-glass:hover::before,
+.rb-fluid-glass:focus-within::before {
+    opacity: 1;
+}
+
+.rb-fluid-caustic {
+    position: absolute;
+    top: -65%;
+    left: -15%;
+    z-index: 0;
+    width: 70%;
+    height: 190%;
+    pointer-events: none;
+    background: linear-gradient(95deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+    filter: blur(12px);
+    transform: rotate(18deg);
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rb-fluid-glass:hover .rb-fluid-caustic {
+    transform: translateX(115%) rotate(18deg);
+}
+
+.rb-fluid-content {
+    position: relative;
+    z-index: 1;
+}
+
+.rb-profile-shell {
+    --profile-rx: 0deg;
+    --profile-ry: 0deg;
+    --profile-x: 50%;
+    --profile-y: 50%;
+    margin: 2.25rem 0 1.5rem;
+    transform: perspective(1100px) rotateX(var(--profile-rx)) rotateY(var(--profile-ry));
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rb-profile-card {
+    min-height: 15rem;
+    padding: 2rem;
+    border-radius: 15px;
+}
+
+.rb-profile-card::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: radial-gradient(
+        360px circle at var(--profile-x) var(--profile-y),
+        rgba(240, 138, 144, 0.1),
+        transparent 65%
+    );
+    mix-blend-mode: screen;
+}
+
+.rb-profile-card .rb-fluid-content {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.6rem;
+    min-height: 11rem;
+}
+
+.rb-profile-grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: linear-gradient(to right, black, transparent 75%);
+    mask-image: linear-gradient(to right, black, transparent 75%);
+}
+
+.rb-profile-avatar {
+    display: grid;
+    width: 7rem;
+    height: 7rem;
+    place-items: center;
+    border: 1px solid rgba(240, 138, 144, 0.32);
+    border-radius: 24px;
+    background: rgba(201, 79, 89, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 24px 48px rgba(0, 0, 0, 0.24);
+}
+
+.rb-profile-copy {
+    min-width: 0;
+}
+
+.rb-profile-kicker {
+    color: var(--shell-accent-bright);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.62rem;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.rb-profile-copy h1 {
+    margin: 0.35rem 0 0.2rem;
+    font-size: 2.3rem;
+    line-height: 1;
+    letter-spacing: -0.045em;
+}
+
+.rb-profile-copy p {
+    color: #9b969f;
+    font-size: 0.8rem;
+}
+
+.rb-profile-detail {
+    display: block;
+    max-width: 34rem;
+    margin-top: 0.85rem;
+    overflow: hidden;
+    color: #69656d;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rb-profile-actions {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.rb-profile-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #aaa6ae;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.rb-profile-status i {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--shell-success);
+    box-shadow: 0 0 0 5px rgba(114, 214, 165, 0.08);
+}
+
+.rb-profile-actions button {
+    min-height: 2.45rem;
+    padding: 0 1rem;
+    color: #f8d7d9;
+    border: 1px solid rgba(240, 138, 144, 0.35);
+    border-radius: 8px;
+    background: rgba(201, 79, 89, 0.13);
+    font-size: 0.72rem;
+    font-weight: 650;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.rb-profile-actions button:hover {
+    border-color: rgba(240, 138, 144, 0.52);
+    background: rgba(201, 79, 89, 0.2);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .rb-soft-aurora-canvas {
+        opacity: 0.35;
+    }
+
+    .rb-profile-shell {
+        margin-top: 1.25rem;
+        transform: none;
+    }
+
+    .rb-profile-card {
+        min-height: 0;
+        padding: 1.2rem;
+    }
+
+    .rb-profile-card .rb-fluid-content {
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        min-height: 0;
+    }
+
+    .rb-profile-avatar {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 17px;
+    }
+
+    .rb-profile-avatar svg {
+        width: 3.75rem;
+        height: 3.75rem;
+    }
+
+    .rb-profile-copy h1 {
+        font-size: 1.65rem;
+    }
+
+    .rb-profile-actions {
+        grid-column: 1 / -1;
+        align-items: center;
+        justify-content: space-between;
+        flex-direction: row;
+        width: 100%;
+    }
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .magic-bento-grid::before,
+    .magic-bento-card::before,
+    .rb-fluid-glass::before {
+        display: none;
+    }
+
+    .magic-bento-card,
+    .rb-profile-shell {
+        transform: none !important;
+    }
+
+    .rb-fluid-caustic {
+        display: none;
+    }
+}

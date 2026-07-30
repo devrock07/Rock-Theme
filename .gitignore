@@ -1,0 +1,53 @@
+# Dependencies and local runtimes
+/vendor/
+/node_modules/
+/.runtime/
+/.yarn/
+
+# Environment and credentials
+.env*
+!.env.example
+!.env.ci
+
+# Generated frontend and release output
+/public/assets/*
+!/public/assets/.gitignore
+!/public/assets/svgs/
+!/public/assets/svgs/*.svg
+/public/build/
+/public/hot
+/preview/
+/release/
+/result/
+/coverage/
+coverage.xml
+resources/lang/locales.js
+
+# Local databases and application output
+/database/*.sqlite
+/database/*.sqlite-*
+*.log
+
+# Tool caches
+.php-cs-fixer.cache
+.phpunit.result.cache
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Editors and operating systems
+*.DS_Store*
+/.idea/
+/.vscode/
+/nbproject/
+/.direnv/
+.vagrant/
+
+# Local Docker overrides
+docker-compose.*
+!docker-compose.example.yml
+!docker-compose.example.yaml
+
+# Generated or duplicate media archives
+/misc/
+/public/favicons/*.zip

@@ -1,0 +1,280 @@
+import React, { useEffect, useState } from 'react';
+import { Server } from '@/api/server/getServer';
+import getServers from '@/api/getServers';
+import ServerRow from '@/components/dashboard/ServerRow';
+import Spinner from '@/components/elements/Spinner';
+import PageContentBlock from '@/components/elements/PageContentBlock';
+import useFlash from '@/plugins/useFlash';
+import { useStoreState } from 'easy-peasy';
+import { usePersistedState } from '@/plugins/usePersistedState';
+import Switch from '@/components/elements/Switch';
+import tw from 'twin.macro';
+import useSWR from 'swr';
+import { PaginatedResult } from '@/api/http';
+import Pagination from '@/components/elements/Pagination';
+import { useLocation } from 'react-router-dom';
+import styled from 'styled-components/macro';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircle, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
+import { ShinyText, SplitText } from '@/components/elements/ReactBitsEffects';
+import FluidGlass from '@/components/elements/reactbits/FluidGlass';
+import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
+
+const DashboardHero = styled.section`
+    position: relative;
+    margin-right: -2rem;
+    margin-bottom: 2.5rem;
+    margin-left: -2rem;
+    padding: 3.5rem 2rem 2.35rem;
+    overflow: hidden;
+    border-bottom: 1px solid var(--shell-border);
+    background: linear-gradient(105deg, rgba(9, 9, 10, 0.86), rgba(38, 12, 17, 0.62), rgba(8, 8, 9, 0.48));
+
+    .hero-art {
+        position: absolute;
+        inset: 0 0 0 42%;
+        z-index: 1;
+        pointer-events: none;
+        background-repeat: no-repeat;
+        background-position: center 42%;
+        background-size: cover;
+        opacity: 0.58;
+        filter: saturate(0.86) contrast(1.03);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.35) 18%, black 42%, black 100%);
+        mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.35) 18%, black 42%, black 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 48rem;
+    }
+
+    &::before {
+        position: absolute;
+        top: -13rem;
+        left: 52%;
+        width: 34rem;
+        height: 25rem;
+        content: '';
+        pointer-events: none;
+        border-radius: 50%;
+        background: rgba(153, 27, 39, 0.24);
+        filter: blur(100px);
+    }
+
+    .eyebrow,
+    .hero-stat {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-transform: uppercase;
+    }
+
+    .eyebrow {
+        margin-bottom: 1.1rem;
+        color: #77737f;
+        font-size: 0.64rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+    }
+
+    .hero-copy {
+        position: relative;
+        z-index: 1;
+        max-width: 36rem;
+        margin-top: 1rem;
+        color: var(--shell-muted);
+        font-size: 0.88rem;
+        line-height: 1.7;
+    }
+
+    .hero-stats {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 1.35rem;
+        margin-top: 2.2rem;
+    }
+
+    .hero-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: #9c99a3;
+        font-size: 0.64rem;
+        letter-spacing: 0.05em;
+    }
+
+    .hero-dot {
+        width: 0.38rem;
+        height: 0.38rem;
+        color: var(--shell-success);
+    }
+
+    @media (max-width: 1150px) {
+        margin-right: -1.25rem;
+        margin-left: -1.25rem;
+        padding-right: 1.25rem;
+        padding-left: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+        margin-right: -1rem;
+        margin-left: -1rem;
+        margin-bottom: 1.6rem;
+        padding: 2.7rem 1rem 1.8rem;
+        .hero-art {
+            left: 18%;
+            opacity: 0.24;
+        }
+        .hero-stats {
+            flex-wrap: wrap;
+            gap: 0.65rem 1rem;
+            margin-top: 1.55rem;
+        }
+        .hero-copy {
+            max-width: 18rem;
+            margin-top: 0.8rem;
+            font-size: 0.82rem;
+        }
+    }
+`;
+
+const DashboardToolbar = styled.div`
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+
+    .section-kicker {
+        color: #706d77;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.62rem;
+        font-weight: 650;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+`;
+
+const ToolbarGlass = styled(FluidGlass)`
+    margin-bottom: 1rem;
+    border-radius: 10px;
+
+    .rb-fluid-content {
+        padding: 0.85rem 1rem;
+    }
+
+    ${DashboardToolbar} {
+        margin-bottom: 0;
+    }
+`;
+
+const ServerGrid = styled(MagicBentoGrid)`
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+`;
+
+export default () => {
+    const { search } = useLocation();
+    const defaultPage = Number(new URLSearchParams(search).get('page') || '1');
+    const [page, setPage] = useState(!isNaN(defaultPage) && defaultPage > 0 ? defaultPage : 1);
+    const { clearFlashes, clearAndAddHttpError } = useFlash();
+    const uuid = useStoreState((state) => state.user.data!.uuid);
+    const username = useStoreState((state) => state.user.data!.username);
+    const branding = useStoreState((state) => state.settings.data!.branding);
+    const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
+    const { data: servers, error } = useSWR<PaginatedResult<Server>>(
+        ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
+        () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
+    );
+
+    useEffect(() => setPage(1), [showOnlyAdmin]);
+    useEffect(() => {
+        if (servers && servers.pagination.currentPage > 1 && !servers.items.length) setPage(1);
+    }, [servers?.pagination.currentPage]);
+    useEffect(() => {
+        window.history.replaceState(null, document.title, `/${page <= 1 ? '' : `?page=${page}`}`);
+    }, [page]);
+    useEffect(() => {
+        if (error) clearAndAddHttpError({ key: 'dashboard', error });
+        if (!error) clearFlashes('dashboard');
+    }, [error]);
+
+    const dashboardSubtitle = branding.dashboardSubtitle.replace(/\{username\}/gi, username);
+
+    return (
+        <PageContentBlock className='content-dashboard' title={'Dashboard'} showFlashKey={'dashboard'}>
+            <DashboardHero>
+                {!!branding.dashboardImage && (
+                    <div className={'hero-art'} style={{ backgroundImage: `url("${branding.dashboardImage}")` }} />
+                )}
+                <div className={'hero-content'}>
+                    <p className={'eyebrow'}>
+                        <ShinyText>{branding.owner} / Control</ShinyText>
+                    </p>
+                    <SplitText text={branding.dashboardTitle} />
+                    {!!dashboardSubtitle && <p className={'hero-copy'}>{dashboardSubtitle}</p>}
+                    <div className={'hero-stats'}>
+                        <div className={'hero-stat'}>
+                            <FontAwesomeIcon icon={faCircle} className={'hero-dot'} />
+                            {servers ? servers.pagination.total : '—'} total
+                        </div>
+                        <div className={'hero-stat'}>{rootAdmin ? 'Administrator' : 'Member'}</div>
+                    </div>
+                </div>
+            </DashboardHero>
+            <ToolbarGlass>
+                <DashboardToolbar>
+                    <div>
+                        <div className={'section-kicker'}>Instances</div>
+                    </div>
+                    {rootAdmin && (
+                        <div css={tw`flex items-center`}>
+                            <FontAwesomeIcon icon={faShieldAlt} css={tw`text-neutral-500 mr-2`} />
+                            <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
+                                {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
+                            </p>
+                            <Switch
+                                name={'show_all_servers'}
+                                defaultChecked={showOnlyAdmin}
+                                onChange={() => setShowOnlyAdmin((s) => !s)}
+                            />
+                        </div>
+                    )}
+                </DashboardToolbar>
+            </ToolbarGlass>
+            {!servers ? (
+                <Spinner centered size={'large'} />
+            ) : (
+                <Pagination data={servers} onPageSelect={setPage}>
+                    {({ items }) =>
+                        items.length ? (
+                            <ServerGrid>
+                                {items.map((server) => (
+                                    <ServerRow key={server.uuid} server={server} />
+                                ))}
+                            </ServerGrid>
+                        ) : (
+                            <p css={tw`text-center text-sm text-neutral-400`}>
+                                {showOnlyAdmin
+                                    ? 'There are no other servers to display.'
+                                    : 'There are no servers associated with your account.'}
+                            </p>
+                        )
+                    }
+                </Pagination>
+            )}
+        </PageContentBlock>
+    );
+};

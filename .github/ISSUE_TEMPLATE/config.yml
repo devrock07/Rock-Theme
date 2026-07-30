@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+    - name: Pterodactyl documentation
+      url: https://pterodactyl.io
+      about: Use the upstream documentation for panel, Wings, node, and game-server configuration.
+    - name: Report a security vulnerability
+      url: https://github.com/devrock07/Rock-Theme/security/advisories/new
+      about: Report suspected Rock Theme vulnerabilities privately.
