@@ -14,6 +14,8 @@ import Tooltip from '@/components/elements/tooltip/Tooltip';
 import Avatar from '@/components/Avatar';
 
 const RightNavigation = styled.div`
+    flex: 0 0 auto;
+
     & > a,
     & > button,
     & > .navigation-link {
@@ -80,6 +82,18 @@ const RightNavigation = styled.div`
             }
         }
     }
+
+    @media (max-width: 420px) {
+        & > a,
+        & > button,
+        & > .navigation-link,
+        & > .search-trigger {
+            width: 2.15rem;
+            height: 2.15rem;
+            margin-left: 0.25rem;
+            backdrop-filter: none;
+        }
+    }
 `;
 
 const Topbar = styled.div`
@@ -106,13 +120,28 @@ const Topbar = styled.div`
         width: 1.75rem;
         height: 1.75rem;
         margin-right: 0.6rem;
+        flex: 0 0 auto;
         border-radius: 6px;
         object-fit: contain;
+    }
+
+    .brand-mark {
+        flex: 0 0 auto;
     }
 
     .brand-name {
         color: var(--shell-text);
         letter-spacing: -0.025em;
+    }
+
+    #logo,
+    #logo > a,
+    .brand-name {
+        min-width: 0;
+    }
+
+    #logo > a {
+        max-width: 100%;
     }
 
     .user-copy {
@@ -150,7 +179,7 @@ const Topbar = styled.div`
         }
 
         .brand-name {
-            max-width: 8.25rem;
+            max-width: 6.75rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -173,14 +202,9 @@ export default () => {
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const location = useLocation();
-    const [showSidebar, setShowSidebar] = useState(false);
 
     useEffect(() => {
-        if (location.pathname.startsWith('/server') || location.pathname.startsWith('/account')) {
-            setShowSidebar(true);
-            return;
-        }
-        setShowSidebar(false);
+        document.getElementById('sidebar')?.classList.remove('active-nav');
     }, [location.pathname]);
 
     const onTriggerLogout = () => {
@@ -195,13 +219,15 @@ export default () => {
         <Topbar className={'topbar'}>
             <SpinnerOverlay visible={isLoggingOut} />
             <div className={'w-full flex items-center h-full px-4 sm:px-6'}>
-                {showSidebar && (
-                    <FontAwesomeIcon
-                        icon={faBars}
-                        className='navbar-button'
-                        onClick={onTriggerNavButton}
-                    ></FontAwesomeIcon>
-                )}
+                <button
+                    type={'button'}
+                    className={'navbar-button'}
+                    onClick={onTriggerNavButton}
+                    aria-label={'Toggle navigation'}
+                    aria-controls={'sidebar'}
+                >
+                    <FontAwesomeIcon icon={faBars} />
+                </button>
 
                 <div id={'logo'} className={'flex-1'}>
                     <Link to={'/'} className={'inline-flex items-center no-underline'}>

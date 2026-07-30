@@ -32,12 +32,9 @@
     @apply flex flex-col w-full;
 
     & .overflows_container {
-        @apply -ml-4 sm:ml-0;
-        width: calc(100% + 2rem);
-
-        @screen sm {
-            @apply w-full;
-        }
+        width: 100%;
+        min-width: 0;
+        margin-left: 0;
     }
 
     & > .container {

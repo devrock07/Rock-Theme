@@ -44,6 +44,29 @@ You should have received a copy of the GNU General Public License along with Noo
 
 .navbar-button {
     display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    margin: 0 0.65rem 0 0;
+    padding: 0;
+    flex: 0 0 2.1rem;
+    color: #aaa4ad;
+    border: 1px solid var(--shell-border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.navbar-button > svg {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.navbar-button:active {
+    color: white;
+    border-color: rgba(201, 79, 89, 0.38);
+    background: rgba(201, 79, 89, 0.12);
 }
 
 /* Sidebar links */
@@ -216,8 +239,6 @@ div.content {
 
     .navbar-button {
         display: inline-flex;
-        font-size: 1.1rem;
-        margin-left: 0.25rem;
         cursor: pointer;
     }
 }
@@ -264,5 +285,6 @@ div.content {
     width: 100%;
     z-index: 100;
     height: 4.5rem;
+    overflow-x: clip;
     overflow-y: hidden;
 }

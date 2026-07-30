@@ -33,6 +33,13 @@ export default createGlobalStyle`
         unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
     }
 
+    html, body, #app {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-x: clip;
+    }
+
     body {
         ${tw`font-sans text-neutral-200`};
         min-height: 100vh;
@@ -47,6 +54,8 @@ export default createGlobalStyle`
     .nook-container {
         position: relative;
         z-index: 1;
+        width: 100%;
+        max-width: 100%;
         min-height: 100vh;
     }
 

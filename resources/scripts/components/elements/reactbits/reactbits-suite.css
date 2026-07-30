@@ -25,13 +25,16 @@
 .magic-bento-grid {
     position: relative;
     isolation: isolate;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     --bento-grid-x: 50%;
     --bento-grid-y: 50%;
 }
 
 .magic-bento-grid::before {
     position: absolute;
-    inset: -4rem;
+    inset: -4rem 0;
     z-index: -1;
     content: '';
     pointer-events: none;
