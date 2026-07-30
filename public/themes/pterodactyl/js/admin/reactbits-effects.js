@@ -1,5 +1,5 @@
 /*
- * Interactions adapted from the SpotlightCard, MagicBento, Magnet, and ClickSpark patterns
+ * Interactions adapted from the SpotlightCard, MagicBento, and Magnet patterns
  * in React Bits by David Haz. MIT + Commons Clause; see THIRD_PARTY_NOTICES.md.
  */
 (function () {
@@ -156,70 +156,7 @@
         });
     }
 
-    var canvas;
-    var context;
-    var sparks = [];
-    var frame = 0;
-
-    function resizeCanvas() {
-        if (!canvas || !context) return;
-        var ratio = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = window.innerWidth * ratio;
-        canvas.height = window.innerHeight * ratio;
-        canvas.style.width = window.innerWidth + 'px';
-        canvas.style.height = window.innerHeight + 'px';
-        context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    }
-
-    function draw(now) {
-        frame = 0;
-        context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        sparks = sparks.filter(function (spark) {
-            var progress = (now - spark.start) / 420;
-            if (progress >= 1) return false;
-            var eased = progress * (2 - progress);
-            var distance = eased * 22;
-            var length = 7 * (1 - eased);
-            var x = spark.x + distance * Math.cos(spark.angle);
-            var y = spark.y + distance * Math.sin(spark.angle);
-            context.beginPath();
-            context.moveTo(x, y);
-            context.lineTo(x + length * Math.cos(spark.angle), y + length * Math.sin(spark.angle));
-            context.strokeStyle = 'rgba(240, 138, 144,' + (1 - progress) + ')';
-            context.lineWidth = 1.5;
-            context.stroke();
-            return true;
-        });
-        if (sparks.length) frame = window.requestAnimationFrame(draw);
-    }
-
-    if (motionEnabled) {
-        canvas = document.createElement('canvas');
-        canvas.className = 'rb-click-spark';
-        canvas.setAttribute('aria-hidden', 'true');
-        document.body.appendChild(canvas);
-        context = canvas.getContext('2d');
-    }
-
-    if (context) {
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        document.addEventListener('click', function (event) {
-            if (!event.target || !event.target.closest('a, button, .btn, input, select')) return;
-            for (var index = 0; index < 8; index++) {
-                sparks.push({
-                    x: event.clientX,
-                    y: event.clientY,
-                    angle: (Math.PI * 2 * index) / 8,
-                    start: performance.now(),
-                });
-            }
-            if (!frame) frame = window.requestAnimationFrame(draw);
-        });
-    }
-
     window.addEventListener('pagehide', function () {
-        if (frame) window.cancelAnimationFrame(frame);
         if (cursorFrame) window.cancelAnimationFrame(cursorFrame);
         if (cursorAura) cursorAura.remove();
         document.querySelectorAll('.rb-magic-particle').forEach(function (particle) {

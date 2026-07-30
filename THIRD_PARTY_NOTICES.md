@@ -10,13 +10,13 @@ The following client-side implementations are adapted from patterns or
 components published by
 [React Bits](https://github.com/DavidHDev/react-bits) by David Haz:
 
--   Split Text, Shiny Text, Border Glow, Tilt Spotlight, and Click Spark in
+-   Split Text, Shiny Text, Border Glow, and Tilt Spotlight in
     `resources/scripts/components/elements/ReactBitsEffects.tsx`
 -   Spotlight Card in
     `resources/scripts/components/elements/SpotlightCard.tsx`
 -   Magic Bento, Fluid Glass, Profile Card, and Soft Aurora in
     `resources/scripts/components/elements/reactbits/`
--   Spotlight Card, Magnet, Shiny Text, Gradient Text, and Click Spark-style
+-   Spotlight Card, Magnet, Shiny Text, and Gradient Text
     interactions in
     `public/themes/pterodactyl/js/admin/reactbits-effects.js`
 

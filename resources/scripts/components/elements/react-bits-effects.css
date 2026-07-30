@@ -187,17 +187,6 @@
     }
 }
 
-.rb-click-spark-root {
-    min-height: 100vh;
-}
-
-.rb-click-spark-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    pointer-events: none;
-}
-
 .rb-glass-plane {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.018) 55%) !important;

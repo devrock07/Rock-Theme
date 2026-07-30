@@ -3,7 +3,7 @@ import './react-bits-effects.css';
 
 /*
  * Lightweight adaptations of React Bits interaction patterns by David Haz:
- * SplitText, ShinyText, SpotlightCard, Magnet, BorderGlow, and ClickSpark.
+ * SplitText, ShinyText, SpotlightCard, Magnet, and BorderGlow.
  * MIT + Commons Clause. See THIRD_PARTY_NOTICES.md.
  */
 
@@ -137,78 +137,6 @@ export const BorderGlow: React.FC<
     return (
         <div ref={ref} className={`rb-border-glow ${className}`} onPointerMove={handlePointerMove} {...props}>
             <div className={'rb-border-content'}>{children}</div>
-        </div>
-    );
-};
-
-interface Spark {
-    x: number;
-    y: number;
-    angle: number;
-    started: number;
-}
-
-export const ClickSpark: React.FC = ({ children }) => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const sparks = useRef<Spark[]>([]);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext('2d');
-        if (!canvas || !context || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-        let animationFrame = 0;
-        const resize = () => {
-            const ratio = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * ratio;
-            canvas.height = window.innerHeight * ratio;
-            context.setTransform(ratio, 0, 0, ratio, 0, 0);
-        };
-        const draw = (now: number) => {
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            sparks.current = sparks.current.filter((spark) => {
-                const progress = (now - spark.started) / 440;
-                if (progress >= 1) return false;
-                const eased = progress * (2 - progress);
-                const distance = eased * 24;
-                const length = 8 * (1 - eased);
-                const x = spark.x + distance * Math.cos(spark.angle);
-                const y = spark.y + distance * Math.sin(spark.angle);
-                context.beginPath();
-                context.moveTo(x, y);
-                context.lineTo(x + length * Math.cos(spark.angle), y + length * Math.sin(spark.angle));
-                context.strokeStyle = `rgba(240, 138, 144, ${1 - progress})`;
-                context.lineWidth = 1.5;
-                context.stroke();
-                return true;
-            });
-            animationFrame = requestAnimationFrame(draw);
-        };
-        resize();
-        window.addEventListener('resize', resize);
-        animationFrame = requestAnimationFrame(draw);
-        return () => {
-            window.removeEventListener('resize', resize);
-            cancelAnimationFrame(animationFrame);
-        };
-    }, []);
-
-    const onClick: React.MouseEventHandler<HTMLDivElement> = (event) => {
-        if (!(event.target as HTMLElement).closest('a, button, [role="button"]')) return;
-        for (let index = 0; index < 8; index++) {
-            sparks.current.push({
-                x: event.clientX,
-                y: event.clientY,
-                angle: (Math.PI * 2 * index) / 8,
-                started: performance.now(),
-            });
-        }
-    };
-
-    return (
-        <div className={'rb-click-spark-root'} onClick={onClick}>
-            <canvas ref={canvasRef} className={'rb-click-spark-canvas'} aria-hidden={'true'} />
-            {children}
         </div>
     );
 };
