@@ -9,13 +9,13 @@
             <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
             <meta name="csrf-token" content="{{ csrf_token() }}">
             <meta name="robots" content="noindex">
-            <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png?v=rock-red-1">
-            <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png?v=rock-red-1" sizes="32x32">
-            <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png?v=rock-red-1" sizes="16x16">
-            <link rel="manifest" href="/favicons/manifest.json">
+            <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png?v=rock-red-2">
+            <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png?v=rock-red-2" sizes="32x32">
+            <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png?v=rock-red-2" sizes="16x16">
+            <link rel="manifest" href="/favicons/manifest.json?v=rock-red-2">
             <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#c94f59">
-            <link rel="shortcut icon" href="/favicons/favicon.ico?v=rock-red-1">
-            <meta name="msapplication-config" content="/favicons/browserconfig.xml">
+            <link rel="shortcut icon" href="/favicons/favicon.ico?v=rock-red-2">
+            <meta name="msapplication-config" content="/favicons/browserconfig.xml?v=rock-red-2">
             <meta name="theme-color" content="#09090a">
         @show
 
