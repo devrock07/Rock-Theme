@@ -24,31 +24,9 @@
 
 .magic-bento-grid {
     position: relative;
-    isolation: isolate;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    --bento-grid-x: 50%;
-    --bento-grid-y: 50%;
-}
-
-.magic-bento-grid::before {
-    position: absolute;
-    inset: -4rem 0;
-    z-index: -1;
-    content: '';
-    pointer-events: none;
-    background: radial-gradient(
-        420px circle at var(--bento-grid-x) var(--bento-grid-y),
-        rgba(153, 27, 39, 0.075),
-        transparent 68%
-    );
-    opacity: 0;
-    transition: opacity 360ms ease;
-}
-
-.magic-bento-grid:hover::before {
-    opacity: 1;
 }
 
 .magic-bento-card {
@@ -374,7 +352,6 @@
 }
 
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
-    .magic-bento-grid::before,
     .magic-bento-card::before,
     .rb-fluid-glass::before {
         display: none;

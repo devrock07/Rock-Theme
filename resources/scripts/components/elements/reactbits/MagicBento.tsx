@@ -181,22 +181,9 @@ export const MagicBentoCard: React.FC<CardProps> = ({
 export const MagicBentoGrid: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
     children,
     className = '',
-    onPointerMove,
     ...props
-}) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
-        if (ref.current) {
-            const bounds = ref.current.getBoundingClientRect();
-            ref.current.style.setProperty('--bento-grid-x', `${event.clientX - bounds.left}px`);
-            ref.current.style.setProperty('--bento-grid-y', `${event.clientY - bounds.top}px`);
-        }
-        onPointerMove?.(event);
-    };
-
-    return (
-        <div ref={ref} className={`magic-bento-grid ${className}`} onPointerMove={handlePointerMove} {...props}>
-            {children}
-        </div>
-    );
-};
+}) => (
+    <div className={`magic-bento-grid ${className}`} {...props}>
+        {children}
+    </div>
+);
