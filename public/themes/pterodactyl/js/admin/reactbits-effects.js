@@ -15,6 +15,10 @@
         '.box, .admin-resource-link, .admin-status-strip, .nav-tabs-custom'
     );
 
+    document.querySelectorAll('.content-wrapper .modal').forEach(function (modal) {
+        document.body.appendChild(modal);
+    });
+
     if (motionEnabled) {
         cursorAura = document.createElement('div');
         cursorAura.className = 'rb-admin-cursor-aura';

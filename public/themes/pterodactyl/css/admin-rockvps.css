@@ -58,11 +58,6 @@ body {
     animation: rb-aurora-drift 12s ease-in-out infinite alternate;
 }
 
-.content-wrapper > * {
-    position: relative;
-    z-index: 1;
-}
-
 @keyframes rb-aurora-drift {
     from {
         opacity: 0.55;
@@ -897,6 +892,24 @@ input[type='radio'] {
     background: var(--admin-surface-raised);
 }
 
+.modal {
+    z-index: 10550 !important;
+}
+
+.modal-backdrop {
+    z-index: 10540 !important;
+}
+
+.modal.in .modal-dialog,
+.modal-content,
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-content button,
+.modal-content a {
+    pointer-events: auto;
+}
+
 .main-footer {
     margin-left: 224px;
     padding: 15px 32px;
@@ -1012,7 +1025,7 @@ input[type='radio'] {
 
 .rb-reveal.rb-visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
 }
 
 .sidebar-menu > li > a > i {
