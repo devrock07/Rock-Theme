@@ -27,6 +27,8 @@ class SettingsServiceProvider extends ServiceProvider
         'branding:dashboard_title',
         'branding:dashboard_subtitle',
         'branding:dashboard_image',
+        'branding:console_background',
+        'branding:console_background_opacity',
         'recaptcha:enabled',
         'recaptcha:secret_key',
         'recaptcha:website_key',
