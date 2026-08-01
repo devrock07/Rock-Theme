@@ -5,6 +5,18 @@
 (function () {
     'use strict';
 
+    function init() {
+        document.querySelectorAll('.content-wrapper .modal').forEach(function (modal) {
+            document.body.appendChild(modal);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var coarsePointer = window.matchMedia('(hover: none), (pointer: coarse)').matches;
     var motionEnabled = !reducedMotion && !coarsePointer;
@@ -14,10 +26,6 @@
     var spotlightTargets = document.querySelectorAll(
         '.box, .admin-resource-link, .admin-status-strip, .nav-tabs-custom'
     );
-
-    document.querySelectorAll('.content-wrapper .modal').forEach(function (modal) {
-        document.body.appendChild(modal);
-    });
 
     if (motionEnabled) {
         cursorAura = document.createElement('div');

@@ -46,6 +46,7 @@ body {
 
 .content-wrapper::before {
     position: fixed;
+    z-index: 1;
     top: 3rem;
     right: 3%;
     width: 36rem;
@@ -908,6 +909,18 @@ input[type='radio'] {
 .modal-content button,
 .modal-content a {
     pointer-events: auto;
+}
+
+.select2-dropdown {
+    z-index: 10600 !important;
+}
+
+.select2-container {
+    z-index: 10580 !important;
+}
+
+.dropdown-menu {
+    z-index: 10600 !important;
 }
 
 .main-footer {

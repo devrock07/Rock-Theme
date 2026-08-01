@@ -24,6 +24,7 @@ interface State {
 
 class DropdownMenu extends React.PureComponent<Props, State> {
     menu = createRef<HTMLDivElement>();
+    root = createRef<HTMLDivElement>();
 
     state: State = {
         posX: 0,
@@ -36,11 +37,17 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
         const menu = this.menu.current;
+        const root = this.root.current;
 
-        if (this.state.visible && !prevState.visible && menu) {
+        if (this.state.visible && !prevState.visible && menu && root) {
             document.addEventListener('click', this.windowListener);
             document.addEventListener('contextmenu', this.contextMenuListener);
-            menu.style.left = `${Math.round(this.state.posX - menu.clientWidth)}px`;
+
+            const rootRect = root.getBoundingClientRect();
+            const relativeX = this.state.posX - rootRect.left;
+            const left = Math.max(0, Math.round(relativeX - menu.clientWidth));
+            menu.style.left = `${left}px`;
+            menu.style.top = `${Math.round(rootRect.height + 4)}px`;
         }
 
         if (!this.state.visible && prevState.visible) {
@@ -84,7 +91,7 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     render() {
         return (
-            <div>
+            <div ref={this.root} style={{ position: 'relative', display: 'inline-block' }}>
                 {this.props.renderToggle(this.onClickHandler)}
                 <Fade timeout={150} in={this.state.visible} unmountOnExit>
                     <div
