@@ -35,20 +35,22 @@ import { Dialog } from '@/components/elements/dialog';
 
 type ModalType = 'rename' | 'move' | 'chmod';
 
-const StyledRow = styled.div<{ $danger?: boolean }>`
-    ${tw`p-2 flex items-center rounded`};
+const StyledRow = styled.button<{ $danger?: boolean }>`
+    ${tw`p-2 flex items-center rounded w-full text-left`};
+    border: 0;
+    background: transparent;
     ${(props) =>
         props.$danger ? tw`hover:bg-red-100 hover:text-red-700` : tw`hover:bg-neutral-100 hover:text-neutral-700`};
 `;
 
-interface RowProps extends React.HTMLAttributes<HTMLDivElement> {
+interface RowProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     icon: IconDefinition;
     title: string;
     $danger?: boolean;
 }
 
 const Row = ({ icon, title, ...props }: RowProps) => (
-    <StyledRow {...props}>
+    <StyledRow type={'button'} {...props}>
         <FontAwesomeIcon icon={icon} css={tw`text-xs`} fixedWidth />
         <span css={tw`ml-2`}>{title}</span>
     </StyledRow>
@@ -129,6 +131,22 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
 
     return (
         <>
+            {modal === 'chmod' ? (
+                <ChmodFileModal
+                    visible
+                    appear
+                    files={[{ file: file.name, mode: file.modeBits }]}
+                    onDismissed={() => setModal(null)}
+                />
+            ) : modal ? (
+                <RenameFileModal
+                    visible
+                    appear
+                    files={[file.name]}
+                    useMoveTerminology={modal === 'move'}
+                    onDismissed={() => setModal(null)}
+                />
+            ) : null}
             <Dialog.Confirm
                 open={showConfirmation}
                 onClose={() => setShowConfirmation(false)}
@@ -144,24 +162,6 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
                 renderToggle={(onClick) => (
                     <div css={tw`px-4 py-2 hover:text-white`} onClick={onClick}>
                         <FontAwesomeIcon icon={faEllipsisH} />
-                        {modal ? (
-                            modal === 'chmod' ? (
-                                <ChmodFileModal
-                                    visible
-                                    appear
-                                    files={[{ file: file.name, mode: file.modeBits }]}
-                                    onDismissed={() => setModal(null)}
-                                />
-                            ) : (
-                                <RenameFileModal
-                                    visible
-                                    appear
-                                    files={[file.name]}
-                                    useMoveTerminology={modal === 'move'}
-                                    onDismissed={() => setModal(null)}
-                                />
-                            )
-                        ) : null}
                         <SpinnerOverlay visible={showSpinner} fixed size={'large'} />
                     </div>
                 )}
