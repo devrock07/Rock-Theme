@@ -211,9 +211,6 @@ export default ({ server, className }: { server: Server; className?: string }) =
             <Link to={`/server/${server.id}`} className={'card-link'}>
                 <div className={'flex items-start justify-between gap-4'}>
                     <div className={'min-w-0'}>
-                        <p className={'micro mb-2'}>
-                            {server.node} / {server.identifier}
-                        </p>
                         <h3 className={'text-lg font-medium truncate'}>{server.name}</h3>
                     </div>
                     <span className={'micro status'}>
