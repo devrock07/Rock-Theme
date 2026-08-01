@@ -12,6 +12,7 @@ export interface SiteSettings {
         dashboardTitle: string;
         dashboardSubtitle: string;
         dashboardImage: string;
+        panelPetEnabled: boolean;
     };
     recaptcha: {
         enabled: boolean;

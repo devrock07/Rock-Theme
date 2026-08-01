@@ -79,6 +79,23 @@
                                 <label class="control-label">Dashboard Image</label>
                                 <input type="text" class="form-control" name="branding:dashboard_image" value="{{ old('branding:dashboard_image', config('branding.dashboard_image')) }}" placeholder="/branding/hero.png or https://..." maxlength="500" />
                             </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Panel Pet</label>
+                                <div>
+                                    @php
+                                        $panelPetEnabled = filter_var(old('branding:panel_pet_enabled', config('branding.panel_pet_enabled', true)), FILTER_VALIDATE_BOOLEAN);
+                                    @endphp
+                                    <div class="btn-group" data-toggle="buttons">
+                                        <label class="btn btn-primary @if ($panelPetEnabled) active @endif">
+                                            <input type="radio" name="branding:panel_pet_enabled" autocomplete="off" value="1" @if ($panelPetEnabled) checked @endif> Enabled
+                                        </label>
+                                        <label class="btn btn-primary @if (!$panelPetEnabled) active @endif">
+                                            <input type="radio" name="branding:panel_pet_enabled" autocomplete="off" value="0" @if (!$panelPetEnabled) checked @endif> Disabled
+                                        </label>
+                                    </div>
+                                </div>
+                                <p class="text-muted"><small>Lets the Rock Bot roam around the client panel.</small></p>
+                            </div>
                         </div>
                     </div>
                     <div class="box-header with-border">

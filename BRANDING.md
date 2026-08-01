@@ -8,6 +8,7 @@ Use **Admin → Settings → Branding** to change:
 -   Copyright start year
 -   Dashboard title and subtitle
 -   Dashboard character or background image
+-   Roaming Rock Bot panel pet
 
 Changes are stored in the panel database and apply to the client, login, and
 admin views.
@@ -24,6 +25,7 @@ BRAND_START_YEAR=2022
 BRAND_DASHBOARD_TITLE="Your infrastructure, without the noise."
 BRAND_DASHBOARD_SUBTITLE="Welcome back, {username}."
 BRAND_DASHBOARD_IMAGE=""
+BRAND_PANEL_PET_ENABLED=true
 ```
 
 `{username}` in the dashboard subtitle is replaced with the signed-in user's
@@ -40,6 +42,13 @@ Branding settings:
 ```
 
 Remote HTTPS image URLs are also supported when the remote host allows them.
+
+## Panel pet
+
+Use **Admin → Settings → Dashboard → Panel Pet** to enable or disable the
+roaming Rock Bot. It stays click-through so it never blocks panel controls,
+automatically scales down on mobile, and respects reduced-motion preferences.
+`BRAND_PANEL_PET_ENABLED` is the fallback for fresh installations.
 
 ## Logo and device icons
 
