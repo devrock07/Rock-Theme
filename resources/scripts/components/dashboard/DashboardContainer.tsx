@@ -17,7 +17,6 @@ import styled from 'styled-components/macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { ShinyText, SplitText } from '@/components/elements/ReactBitsEffects';
-import FluidGlass from '@/components/elements/reactbits/FluidGlass';
 import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
 
 const DashboardHero = styled.section`
@@ -161,47 +160,14 @@ const DashboardHero = styled.section`
 
 const DashboardToolbar = styled.div`
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: flex-end;
     gap: 1rem;
-    margin-bottom: 1.1rem;
-
-    .section-kicker {
-        color: #706d77;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.62rem;
-        font-weight: 650;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-    }
+    margin-bottom: 0.85rem;
 
     @media (max-width: 640px) {
         align-items: flex-start;
         flex-direction: column;
-    }
-`;
-
-const ToolbarGlass = styled(FluidGlass)`
-    margin-bottom: 1rem;
-    border-radius: 10px;
-
-    .rb-fluid-content {
-        padding: 0.85rem 1rem;
-    }
-
-    &::after {
-        position: absolute;
-        right: 0.8rem;
-        bottom: 0;
-        left: 0.8rem;
-        height: 1px;
-        content: '';
-        pointer-events: none;
-        background: linear-gradient(90deg, transparent, rgba(201, 79, 89, 0.2), transparent);
-    }
-
-    ${DashboardToolbar} {
-        margin-bottom: 0;
     }
 `;
 
@@ -264,26 +230,21 @@ export default () => {
                     </div>
                 </div>
             </DashboardHero>
-            <ToolbarGlass>
+            {rootAdmin && (
                 <DashboardToolbar>
-                    <div>
-                        <div className={'section-kicker'}>Instances</div>
+                    <div css={tw`flex items-center`}>
+                        <FontAwesomeIcon icon={faShieldAlt} css={tw`text-neutral-500 mr-2`} />
+                        <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
+                            {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
+                        </p>
+                        <Switch
+                            name={'show_all_servers'}
+                            defaultChecked={showOnlyAdmin}
+                            onChange={() => setShowOnlyAdmin((s) => !s)}
+                        />
                     </div>
-                    {rootAdmin && (
-                        <div css={tw`flex items-center`}>
-                            <FontAwesomeIcon icon={faShieldAlt} css={tw`text-neutral-500 mr-2`} />
-                            <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
-                                {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
-                            </p>
-                            <Switch
-                                name={'show_all_servers'}
-                                defaultChecked={showOnlyAdmin}
-                                onChange={() => setShowOnlyAdmin((s) => !s)}
-                            />
-                        </div>
-                    )}
                 </DashboardToolbar>
-            </ToolbarGlass>
+            )}
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
