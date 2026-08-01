@@ -39,8 +39,16 @@ const StyledRow = styled.button<{ $danger?: boolean }>`
     ${tw`p-2 flex items-center rounded w-full text-left`};
     border: 0;
     background: transparent;
-    ${(props) =>
-        props.$danger ? tw`hover:bg-red-100 hover:text-red-700` : tw`hover:bg-neutral-100 hover:text-neutral-700`};
+    color: ${(props) => (props.$danger ? '#e99aa2' : '#c9b7bc')};
+    transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+
+    &:hover,
+    &:focus-visible {
+        color: ${(props) => (props.$danger ? '#ff8d98' : '#ffd6da')};
+        background: ${(props) => (props.$danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(201, 79, 89, 0.15)')};
+        transform: translateX(2px);
+        outline: none;
+    }
 `;
 
 interface RowProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
