@@ -9,5 +9,4 @@ return [
     'dashboard_title' => env('BRAND_DASHBOARD_TITLE', 'Your infrastructure, without the noise.'),
     'dashboard_subtitle' => env('BRAND_DASHBOARD_SUBTITLE', 'Welcome back, {username}.'),
     'dashboard_image' => env('BRAND_DASHBOARD_IMAGE', ''),
-    'panel_pet_enabled' => filter_var(env('BRAND_PANEL_PET_ENABLED', true), FILTER_VALIDATE_BOOL),
 ];

@@ -40,5 +40,6 @@ export default ({ title, legend, value, children, tone = 'rose' }: ChartBlockPro
             <div className={styles.chart_canvas}>{children}</div>
             <span className={styles.chart_base} aria-hidden={'true'} />
         </div>
+        <span className={styles.chart_depth_edge} aria-hidden={'true'} />
     </MagicBentoCard>
 );

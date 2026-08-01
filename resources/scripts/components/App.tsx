@@ -16,7 +16,6 @@ import '@/assets/tailwind.css';
 import Spinner from '@/components/elements/Spinner';
 import { AmbientCursor } from '@/components/elements/ReactBitsEffects';
 import SoftAurora from '@/components/elements/reactbits/SoftAurora';
-import PanelPet from '@/components/elements/PanelPet';
 
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
 const ServerRouter = lazy(() => import(/* webpackChunkName: "server" */ '@/routers/ServerRouter'));
@@ -64,7 +63,6 @@ const App = () => {
             <GlobalStylesheet />
             <SoftAurora />
             <AmbientCursor />
-            {SiteConfiguration?.branding.panelPetEnabled && <PanelPet />}
             <StoreProvider store={store}>
                 <ProgressBar />
                 <div css={tw`mx-auto w-auto`} className='nook-container'>

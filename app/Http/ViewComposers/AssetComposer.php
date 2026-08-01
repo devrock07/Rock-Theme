@@ -32,7 +32,6 @@ class AssetComposer
                 'dashboardTitle' => config('branding.dashboard_title', 'Your infrastructure, without the noise.'),
                 'dashboardSubtitle' => config('branding.dashboard_subtitle', 'Welcome back, {username}.'),
                 'dashboardImage' => config('branding.dashboard_image', ''),
-                'panelPetEnabled' => filter_var(config('branding.panel_pet_enabled', true), FILTER_VALIDATE_BOOL),
             ],
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
