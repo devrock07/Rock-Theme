@@ -22,6 +22,8 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:dashboard_title' => 'required|string|max:100',
             'branding:dashboard_subtitle' => 'nullable|string|max:160',
             'branding:dashboard_image' => 'nullable|string|max:500',
+            'branding:console_background' => 'nullable|string|max:500',
+            'branding:console_background_opacity' => 'required|integer|min:5|max:45',
             'pterodactyl:auth:2fa_required' => 'required|integer|in:0,1,2',
             'app:locale' => ['required', 'string', Rule::in(array_keys($this->getAvailableLanguages()))],
         ];
@@ -39,6 +41,8 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:dashboard_title' => 'Dashboard Title',
             'branding:dashboard_subtitle' => 'Dashboard Subtitle',
             'branding:dashboard_image' => 'Dashboard Image',
+            'branding:console_background' => 'Console Background',
+            'branding:console_background_opacity' => 'Console Background Opacity',
             'pterodactyl:auth:2fa_required' => 'Require 2-Factor Authentication',
             'app:locale' => 'Default Language',
         ];

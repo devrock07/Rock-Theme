@@ -12,6 +12,8 @@ export interface SiteSettings {
         dashboardTitle: string;
         dashboardSubtitle: string;
         dashboardImage: string;
+        consoleBackground: string;
+        consoleBackgroundOpacity: number;
     };
     recaptcha: {
         enabled: boolean;

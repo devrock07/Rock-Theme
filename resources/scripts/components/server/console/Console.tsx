@@ -17,12 +17,14 @@ import { SocketEvent, SocketRequest } from '@/components/server/events';
 import classNames from 'classnames';
 import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
 import NookConfig from '@/config';
+import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 
 import 'xterm/css/xterm.css';
 import styles from './style.module.css';
 
 const theme = {
-    background: th`colors.black`.toString(),
+    background: 'rgba(0, 0, 0, 0.32)',
     cursor: 'transparent',
     black: th`colors.black`.toString(),
     red: '#E54B4B',
@@ -69,6 +71,10 @@ export default () => {
     const isTransferring = ServerContext.useStoreState((state) => state.server.data!.isTransferring);
     const [history, setHistory] = usePersistedState<string[]>(`${serverId}:command_history`, []);
     const [historyIndex, setHistoryIndex] = useState(-1);
+    const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
+    const consoleBackground = branding.consoleBackground.trim();
+    const consoleBackgroundOpacity = Math.min(45, Math.max(5, branding.consoleBackgroundOpacity || 18)) / 100;
+    const isVideoBackground = /\.(mp4|webm|ogg|ogv|mov)(?:[?#].*)?$/i.test(consoleBackground);
     // SearchBarAddon has hardcoded z-index: 999 :(
     const zIndex = `
     .xterm-search-bar__addon {
@@ -200,7 +206,27 @@ export default () => {
     }, [connected, instance]);
 
     return (
-        <div className={classNames(styles.terminal, 'relative')}>
+        <div
+            className={classNames(styles.terminal, 'relative', { [styles.has_media]: !!consoleBackground })}
+            style={{ '--console-media-opacity': consoleBackgroundOpacity } as React.CSSProperties}
+        >
+            {!!consoleBackground && (
+                <div className={styles.console_media} aria-hidden={'true'}>
+                    {isVideoBackground ? (
+                        <video
+                            src={consoleBackground}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            preload={'metadata'}
+                            disablePictureInPicture
+                        />
+                    ) : (
+                        <span style={{ backgroundImage: `url("${consoleBackground}")` }} />
+                    )}
+                </div>
+            )}
             <SpinnerOverlay visible={!connected} size={'large'} />
             <div
                 className={classNames(styles.container, styles.overflows_container, { 'rounded-b': !canSendCommands })}

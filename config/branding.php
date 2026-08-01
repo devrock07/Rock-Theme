@@ -9,4 +9,6 @@ return [
     'dashboard_title' => env('BRAND_DASHBOARD_TITLE', 'Your infrastructure, without the noise.'),
     'dashboard_subtitle' => env('BRAND_DASHBOARD_SUBTITLE', 'Welcome back, {username}.'),
     'dashboard_image' => env('BRAND_DASHBOARD_IMAGE', ''),
+    'console_background' => env('BRAND_CONSOLE_BACKGROUND', ''),
+    'console_background_opacity' => (int) env('BRAND_CONSOLE_BACKGROUND_OPACITY', 18),
 ];

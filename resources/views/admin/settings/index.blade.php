@@ -82,6 +82,26 @@
                         </div>
                     </div>
                     <div class="box-header with-border">
+                        <h3 class="box-title">Console</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-8">
+                                <label class="control-label">Background Media</label>
+                                <input type="text" class="form-control" name="branding:console_background" value="{{ old('branding:console_background', config('branding.console_background')) }}" placeholder="/branding/console.webp, .gif, .mp4 or https://..." maxlength="500" />
+                                <p class="text-muted"><small>Supports images, animated GIFs, MP4, WebM, OGG and MOV. Leave blank for the standard console.</small></p>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Media Visibility</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="branding:console_background_opacity" value="{{ old('branding:console_background_opacity', config('branding.console_background_opacity', 18)) }}" min="5" max="45" step="1" />
+                                    <span class="input-group-addon">%</span>
+                                </div>
+                                <p class="text-muted"><small>Recommended: 12-24% for readable output.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-header with-border">
                         <h3 class="box-title">Branding</h3>
                     </div>
                     <div class="box-body">

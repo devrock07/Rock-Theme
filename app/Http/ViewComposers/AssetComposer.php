@@ -32,6 +32,8 @@ class AssetComposer
                 'dashboardTitle' => config('branding.dashboard_title', 'Your infrastructure, without the noise.'),
                 'dashboardSubtitle' => config('branding.dashboard_subtitle', 'Welcome back, {username}.'),
                 'dashboardImage' => config('branding.dashboard_image', ''),
+                'consoleBackground' => config('branding.console_background', ''),
+                'consoleBackgroundOpacity' => (int) config('branding.console_background_opacity', 18),
             ],
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),

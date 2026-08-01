@@ -8,6 +8,7 @@ Use **Admin → Settings → Branding** to change:
 -   Copyright start year
 -   Dashboard title and subtitle
 -   Dashboard character or background image
+-   Console image, GIF, or video background and visibility
 
 Changes are stored in the panel database and apply to the client, login, and
 admin views.
@@ -24,6 +25,8 @@ BRAND_START_YEAR=2022
 BRAND_DASHBOARD_TITLE="Your infrastructure, without the noise."
 BRAND_DASHBOARD_SUBTITLE="Welcome back, {username}."
 BRAND_DASHBOARD_IMAGE=""
+BRAND_CONSOLE_BACKGROUND=""
+BRAND_CONSOLE_BACKGROUND_OPACITY=18
 ```
 
 `{username}` in the dashboard subtitle is replaced with the signed-in user's
@@ -40,6 +43,14 @@ Branding settings:
 ```
 
 Remote HTTPS image URLs are also supported when the remote host allows them.
+
+## Console background
+
+Set **Admin → Settings → Console → Background Media** to a local public path
+or remote URL. Images, animated GIFs, MP4, WebM, OGG, and MOV files are
+supported. Media is rendered behind terminal output with a dark readability
+layer and never receives pointer input. Use **Media Visibility** to keep text
+legible; 12–24% works well for most artwork.
 
 ## Logo and device icons
 
