@@ -45,7 +45,10 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
             const rootRect = root.getBoundingClientRect();
             const relativeX = this.state.posX - rootRect.left;
-            const left = Math.max(0, Math.round(relativeX - menu.clientWidth));
+            const viewportPadding = 8;
+            const minimumLeft = viewportPadding - rootRect.left;
+            const maximumLeft = window.innerWidth - viewportPadding - rootRect.left - menu.clientWidth;
+            const left = Math.min(maximumLeft, Math.max(minimumLeft, Math.round(relativeX - menu.clientWidth)));
             menu.style.left = `${left}px`;
             menu.style.top = `${Math.round(rootRect.height + 4)}px`;
         }
@@ -91,7 +94,10 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     render() {
         return (
-            <div ref={this.root} style={{ position: 'relative', display: 'inline-block' }}>
+            <div
+                ref={this.root}
+                style={{ position: 'relative', display: 'inline-block', zIndex: this.state.visible ? 60 : 'auto' }}
+            >
                 {this.props.renderToggle(this.onClickHandler)}
                 <Fade timeout={150} in={this.state.visible} unmountOnExit>
                     <div
