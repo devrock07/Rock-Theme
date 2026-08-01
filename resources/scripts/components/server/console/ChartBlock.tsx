@@ -6,11 +6,12 @@ import { MagicBentoCard } from '@/components/elements/reactbits/MagicBento';
 interface ChartBlockProps {
     title: string;
     legend?: React.ReactNode;
+    value?: React.ReactNode;
     children: React.ReactNode;
     tone?: 'rose' | 'crimson' | 'ember';
 }
 
-export default ({ title, legend, children, tone = 'rose' }: ChartBlockProps) => (
+export default ({ title, legend, value, children, tone = 'rose' }: ChartBlockProps) => (
     <MagicBentoCard
         className={classNames(styles.chart_container, styles[`chart_tone_${tone}`], 'group')}
         glowColor={tone === 'rose' ? '240, 138, 144' : tone === 'crimson' ? '201, 79, 89' : '217, 96, 105'}
@@ -31,7 +32,10 @@ export default ({ title, legend, children, tone = 'rose' }: ChartBlockProps) => 
                         {title}
                     </h3>
                 </div>
-                {legend && <div className={'flex flex-shrink-0 items-center text-sm'}>{legend}</div>}
+                <div className={styles.chart_readout}>
+                    {value && <strong>{value}</strong>}
+                    {legend && <div className={'flex flex-shrink-0 items-center text-sm'}>{legend}</div>}
+                </div>
             </div>
             <div className={styles.chart_canvas}>{children}</div>
             <span className={styles.chart_base} aria-hidden={'true'} />

@@ -21,7 +21,7 @@ export default createGlobalStyle`
         --shell-warning: #e9b96e;
         --shell-danger: #ed7682;
         --shell-radius: 12px;
-        --shell-shadow: none;
+        --shell-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
     }
 
     @font-face {
@@ -119,6 +119,28 @@ export default createGlobalStyle`
     ::selection {
         color: white;
         background: rgba(185, 45, 55, 0.58);
+    }
+
+    ::placeholder {
+        color: #66616a;
+        opacity: 1;
+    }
+
+    :focus-visible {
+        outline: 2px solid rgba(240, 138, 144, 0.72);
+        outline-offset: 2px;
+    }
+
+    hr {
+        border-color: rgba(255, 255, 255, 0.075);
+    }
+
+    [role='tooltip'] {
+        color: #eadde0;
+        border: 1px solid rgba(240, 138, 144, 0.18);
+        background: rgba(24, 14, 18, 0.96);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+        backdrop-filter: blur(14px);
     }
 
     a, button {

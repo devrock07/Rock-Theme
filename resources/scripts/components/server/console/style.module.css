@@ -151,6 +151,20 @@
     transform: translateZ(24px);
 }
 
+.chart_readout {
+    @apply flex flex-shrink-0 items-center;
+    gap: 0.65rem;
+}
+
+.chart_readout > strong {
+    color: rgb(var(--chart-accent));
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 18px rgba(var(--chart-accent), 0.3);
+}
+
 .chart_live_dot {
     width: 0.42rem;
     height: 0.42rem;
@@ -170,6 +184,21 @@
     min-width: 0;
     padding: 0.45rem 0.35rem 0.65rem 0.45rem;
     transform: translateZ(14px);
+}
+
+.chart_canvas::after {
+    position: absolute;
+    right: 0.9rem;
+    bottom: 0.55rem;
+    left: 2.85rem;
+    z-index: -1;
+    height: 42%;
+    content: '';
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(var(--chart-accent), 0.055), transparent);
+    filter: blur(14px);
+    transform: perspective(420px) rotateX(62deg) translateY(35%);
+    transform-origin: bottom;
 }
 
 .chart_canvas canvas {
@@ -267,7 +296,8 @@
     }
 
     .chart_grid_plane,
-    .chart_base {
+    .chart_base,
+    .chart_canvas::after {
         transform: none;
     }
 }
@@ -288,7 +318,8 @@
     .chart_header,
     .chart_canvas,
     .chart_grid_plane,
-    .chart_base {
+    .chart_base,
+    .chart_canvas::after {
         transform: none;
     }
 }
