@@ -2,7 +2,6 @@
 
 namespace Pterodactyl\Console\Commands;
 
-use Throwable;
 use Pterodactyl\Models\Server;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +24,7 @@ class RockTelemetryCommand extends Command
             function (Server $server) use ($repository, $recorder) {
                 try {
                     $recorder->record($server, $repository->setServer($server)->getDetails());
-                } catch (Throwable) {
+                } catch (\Throwable) {
                     // A single unavailable node should not stop collection for other servers.
                 }
             },

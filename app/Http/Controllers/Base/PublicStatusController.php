@@ -2,7 +2,6 @@
 
 namespace Pterodactyl\Http\Controllers\Base;
 
-use Throwable;
 use Pterodactyl\Models\Node;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -30,7 +29,7 @@ class PublicStatusController extends Controller
                 try {
                     $repository->setNode($node)->getSystemInformation();
                     ++$operational;
-                } catch (Throwable) {
+                } catch (\Throwable) {
                     // The total count below records this node as unavailable.
                 }
             }
