@@ -21,6 +21,9 @@ Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.ind
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
+    Route::get('/rock', [Client\Account\RockPreferencesController::class, 'index']);
+    Route::put('/rock', [Client\Account\RockPreferencesController::class, 'update']);
+    Route::delete('/rock/notifications', [Client\Account\RockPreferencesController::class, 'clearNotifications']);
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {
         Route::get('/', [Client\AccountController::class, 'index'])->name('api:client.account');
         Route::get('/two-factor', [Client\TwoFactorController::class, 'index']);
@@ -62,6 +65,7 @@ Route::group([
         ResourceBelongsToServer::class,
     ],
 ], function () {
+    Route::get('/resources/history', Client\Servers\TelemetryHistoryController::class);
     Route::get('/', [Client\Servers\ServerController::class, 'index'])->name('api:client:server.view');
     Route::middleware([ResourceLimit::Websocket->middleware()])
         ->get('/websocket', Client\Servers\WebsocketController::class)

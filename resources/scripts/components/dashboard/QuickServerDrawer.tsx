@@ -143,15 +143,15 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
                 <div className={'drawer-card mt-5'}>
                     <p className={'text-xs uppercase tracking-widest text-neutral-500 mb-3'}>Power</p>
                     <div className={'power-grid'}>
-                        <button disabled={busy} onClick={() => power('start')}>
+                        <button disabled={busy || !server.powerPermissions.start} onClick={() => power('start')}>
                             <FontAwesomeIcon icon={faPlay} className={'mr-2'} />
                             Start
                         </button>
-                        <button disabled={busy} onClick={() => power('restart')}>
+                        <button disabled={busy || !server.powerPermissions.restart} onClick={() => power('restart')}>
                             <FontAwesomeIcon icon={faRedo} className={'mr-2'} />
                             Restart
                         </button>
-                        <button disabled={busy} onClick={() => power('stop')}>
+                        <button disabled={busy || !server.powerPermissions.stop} onClick={() => power('stop')}>
                             <FontAwesomeIcon icon={faStop} className={'mr-2'} />
                             Stop
                         </button>

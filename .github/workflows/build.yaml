@@ -35,5 +35,8 @@ jobs:
             - name: Lint
               run: yarn lint
 
+            - name: Run frontend tests
+              run: yarn test --runInBand
+
             - name: Build production assets
               run: yarn build:production

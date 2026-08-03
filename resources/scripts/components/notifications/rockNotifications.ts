@@ -2,7 +2,7 @@ export interface RockNotification {
     id: string;
     title: string;
     message: string;
-    createdAt: number;
+    createdAt: number | string;
     tone: 'info' | 'warning' | 'danger' | 'success';
     href?: string;
 }
@@ -30,4 +30,9 @@ export const pushRockNotification = (notification: Omit<RockNotification, 'id' |
 export const clearRockNotifications = () => {
     localStorage.setItem(STORAGE_KEY, '[]');
     window.dispatchEvent(new CustomEvent('rock:notifications-cleared'));
+};
+
+export const setRockNotifications = (notifications: RockNotification[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+    window.dispatchEvent(new CustomEvent('rock:notification'));
 };

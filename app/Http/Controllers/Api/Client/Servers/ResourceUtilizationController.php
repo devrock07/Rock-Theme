@@ -5,6 +5,7 @@ namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 use Carbon\Carbon;
 use Pterodactyl\Models\Server;
 use Illuminate\Cache\Repository;
+use Pterodactyl\Services\RockTheme\TelemetryRecorder;
 use Pterodactyl\Transformers\Api\Client\StatsTransformer;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
@@ -15,8 +16,11 @@ class ResourceUtilizationController extends ClientApiController
     /**
      * ResourceUtilizationController constructor.
      */
-    public function __construct(private Repository $cache, private DaemonServerRepository $repository)
-    {
+    public function __construct(
+        private Repository $cache,
+        private DaemonServerRepository $repository,
+        private TelemetryRecorder $telemetryRecorder,
+    ) {
         parent::__construct();
     }
 
@@ -33,6 +37,7 @@ class ResourceUtilizationController extends ClientApiController
         $stats = $this->cache->remember($key, Carbon::now()->addSeconds(20), function () use ($server) {
             return $this->repository->setServer($server)->getDetails();
         });
+        $this->telemetryRecorder->record($server, $stats);
 
         return $this->fractal->item($stats)
             ->transformWith($this->getTransformer(StatsTransformer::class))

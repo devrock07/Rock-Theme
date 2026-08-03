@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Server } from '@/api/server/getServer';
 import getServers from '@/api/getServers';
 import ServerRow from '@/components/dashboard/ServerRow';
@@ -19,6 +19,7 @@ import { ShinyText, SplitText } from '@/components/elements/ReactBitsEffects';
 import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
 import QuickServerDrawer from '@/components/dashboard/QuickServerDrawer';
 import { ServerStats } from '@/api/server/getServerResourceUsage';
+import { getRockAccountData, saveServerPreferences, ServerPreference } from '@/api/account/rockData';
 
 const DashboardHero = styled.section`
     position: relative;
@@ -200,11 +201,6 @@ const SkeletonCard = styled.div`
     }
 `;
 
-interface ServerPreference {
-    favorite: boolean;
-    group: string;
-}
-
 export default () => {
     const { search } = useLocation();
     const defaultPage = Number(new URLSearchParams(search).get('page') || '1');
@@ -221,6 +217,9 @@ export default () => {
     );
     const [activeGroup, setActiveGroup] = useState('All');
     const [quickServer, setQuickServer] = useState<{ server: Server; stats: ServerStats | null } | null>(null);
+    const preferencesReady = useRef(false);
+    const saveTimer = useRef<number>();
+    const { data: accountData } = useSWR('/api/client/account/rock', getRockAccountData);
     const { data: servers, error } = useSWR<PaginatedResult<Server>>(
         ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
         () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
@@ -237,6 +236,25 @@ export default () => {
         if (error) clearAndAddHttpError({ key: 'dashboard', error });
         if (!error) clearFlashes('dashboard');
     }, [error]);
+    useEffect(() => {
+        if (!accountData || preferencesReady.current) return;
+        const local = preferences || {};
+        const merged = { ...local, ...accountData.serverPreferences };
+        setPreferences(merged);
+        preferencesReady.current = true;
+        if (Object.keys(local).length && !Object.keys(accountData.serverPreferences).length) {
+            saveServerPreferences(merged).catch(() => undefined);
+        }
+    }, [accountData]);
+    useEffect(() => {
+        if (!preferencesReady.current) return;
+        window.clearTimeout(saveTimer.current);
+        saveTimer.current = window.setTimeout(
+            () => saveServerPreferences(preferences || {}).catch(() => undefined),
+            500
+        );
+        return () => window.clearTimeout(saveTimer.current);
+    }, [preferences]);
 
     const dashboardSubtitle = branding.dashboardSubtitle.replace(/\{username\}/gi, username);
     const serverPreferences = preferences || {};

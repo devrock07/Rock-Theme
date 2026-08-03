@@ -1,4 +1,6 @@
 import React from 'react';
+import useSWR from 'swr';
+import http from '@/api/http';
 import { Link } from 'react-router-dom';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
@@ -60,6 +62,11 @@ const Page = styled.main`
 export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
+    const { data } = useSWR('/api/public/status', (url) => http.get(url).then((response) => response.data), {
+        refreshInterval: 60000,
+    });
+    const operational = data?.status === 'operational';
+    const statusLabel = !data ? 'Checking systems' : operational ? 'Operational' : 'Service degraded';
 
     if (!branding.statusEnabled) {
         return (
@@ -79,7 +86,7 @@ export default () => {
         <Page>
             <section className={'status-shell'}>
                 <div className={'status-pill'}>
-                    <FontAwesomeIcon icon={faCheckCircle} /> Operational
+                    <FontAwesomeIcon icon={faCheckCircle} /> {statusLabel}
                 </div>
                 <p className={'mt-8 text-xs uppercase tracking-widest text-neutral-500'}>{name} status</p>
                 <h1 className={'mt-3 text-4xl sm:text-5xl'}>{branding.statusTitle}</h1>
@@ -92,13 +99,17 @@ export default () => {
                     </div>
                     <div>
                         <FontAwesomeIcon icon={faSignal} className={'text-primary-300 mb-3'} />
-                        <p>Network</p>
-                        <small className={'text-green-300'}>Operational</small>
+                        <p>Nodes</p>
+                        <small className={data?.nodes?.unavailable ? 'text-red-300' : 'text-green-300'}>
+                            {data ? `${data.nodes.operational}/${data.nodes.total} online` : 'Checking'}
+                        </small>
                     </div>
                     <div>
                         <FontAwesomeIcon icon={faShieldAlt} className={'text-primary-300 mb-3'} />
-                        <p>Control API</p>
-                        <small className={'text-green-300'}>Operational</small>
+                        <p>Maintenance</p>
+                        <small className={data?.nodes?.maintenance ? 'text-yellow-300' : 'text-green-300'}>
+                            {data ? `${data.nodes.maintenance} nodes` : 'Checking'}
+                        </small>
                     </div>
                 </div>
                 <Link to={'/'} className={'inline-flex items-center gap-2 mt-8 text-primary-300 no-underline'}>

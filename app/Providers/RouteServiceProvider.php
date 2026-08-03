@@ -39,6 +39,9 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             Route::middleware('web')->group(function () {
                 Route::get('/status', [IndexController::class, 'index'])->name('public.status');
+                Route::get('/api/public/status', \Pterodactyl\Http\Controllers\Base\PublicStatusController::class)
+                    ->middleware('throttle:60,1')
+                    ->name('public.status.api');
 
                 Route::middleware(['auth.session', RequireTwoFactorAuthentication::class])
                     ->group(base_path('routes/base.php'));

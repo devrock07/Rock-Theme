@@ -11,6 +11,7 @@ import { theme } from 'twin.macro';
 import ChartBlock from '@/components/server/console/ChartBlock';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import { unstable_batchedUpdates } from 'react-dom';
+import getTelemetryHistory from '@/api/server/getTelemetryHistory';
 
 export default () => {
     const serverId = ServerContext.useStoreState((state) => state.server.data!.id);
@@ -64,14 +65,18 @@ export default () => {
 
     useEffect(() => {
         if (range === 'live') return;
-        const since = Date.now() - (range === '1h' ? 3600000 : 86400000);
-        const points = history.current.filter((point) => point.t >= since);
-        const sampled = points
-            .filter((_, index) => index % Math.max(1, Math.ceil(points.length / 20)) === 0)
-            .slice(-20);
-        cpu.replace([sampled.map((point) => point.cpu)]);
-        memory.replace([sampled.map((point) => point.memory)]);
-        network.replace([sampled.map((point) => point.tx), sampled.map((point) => point.rx)]);
+        getTelemetryHistory(serverId, range)
+            .then((remote) => {
+                const since = Date.now() - (range === '1h' ? 3600000 : 86400000);
+                const points = remote.length ? remote : history.current.filter((point) => point.t >= since);
+                const sampled = points
+                    .filter((_, index) => index % Math.max(1, Math.ceil(points.length / 40)) === 0)
+                    .slice(-40);
+                cpu.replace([sampled.map((point) => point.cpu)]);
+                memory.replace([sampled.map((point) => point.memory)]);
+                network.replace([sampled.map((point) => point.tx), sampled.map((point) => point.rx)]);
+            })
+            .catch(() => undefined);
     }, [range]);
 
     useEffect(() => {

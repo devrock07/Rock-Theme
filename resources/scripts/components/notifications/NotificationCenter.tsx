@@ -3,7 +3,13 @@ import styled from 'styled-components/macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-import { clearRockNotifications, getRockNotifications, RockNotification } from './rockNotifications';
+import {
+    clearRockNotifications,
+    getRockNotifications,
+    RockNotification,
+    setRockNotifications,
+} from './rockNotifications';
+import { clearServerNotifications, getRockAccountData } from '@/api/account/rockData';
 
 const Center = styled.div`
     position: relative;
@@ -93,6 +99,24 @@ export default () => {
             window.removeEventListener('rock:notifications-cleared', refresh);
         };
     }, []);
+    useEffect(() => {
+        const sync = () =>
+            getRockAccountData()
+                .then((data) => {
+                    const remote: RockNotification[] = data.notifications.map((item) => ({
+                        ...item,
+                        tone: item.type === 'offline' ? 'danger' : item.type === 'recovered' ? 'success' : 'warning',
+                    }));
+                    const local = getRockNotifications().filter(
+                        (item) => !remote.some((entry) => entry.id === item.id)
+                    );
+                    setRockNotifications([...remote, ...local].slice(0, 30));
+                })
+                .catch(() => undefined);
+        sync();
+        const timer = window.setInterval(sync, 60000);
+        return () => window.clearInterval(timer);
+    }, []);
 
     return (
         <Center>
@@ -110,7 +134,13 @@ export default () => {
                         <strong>Notifications</strong>
                         <div className={'flex gap-3'}>
                             {!!items.length && (
-                                <button onClick={clearRockNotifications} aria-label={'Clear notifications'}>
+                                <button
+                                    onClick={() => {
+                                        clearRockNotifications();
+                                        clearServerNotifications().catch(() => undefined);
+                                    }}
+                                    aria-label={'Clear notifications'}
+                                >
                                     <FontAwesomeIcon icon={faCheck} />
                                 </button>
                             )}

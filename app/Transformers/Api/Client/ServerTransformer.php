@@ -38,6 +38,11 @@ class ServerTransformer extends BaseClientTransformer
 
         return [
             'server_owner' => $user->id === $server->owner_id,
+            'power_permissions' => [
+                'start' => $user->can(Permission::ACTION_CONTROL_START, $server),
+                'restart' => $user->can(Permission::ACTION_CONTROL_RESTART, $server),
+                'stop' => $user->can(Permission::ACTION_CONTROL_STOP, $server),
+            ],
             'identifier' => config('pterodactyl.features.new_server_identifiers')
                 ? $server->identifier
                 : $server->uuidShort,

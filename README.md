@@ -18,11 +18,11 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.14.1`.
 -   Configurable panel name, footer, mark or logo, dashboard copy, and artwork
 -   Admin Theme Studio with presets, custom accent, glass, radius, motion,
     login artwork, console appearance, and live preview
--   Command palette, favorites, server groups, quick-control drawer, and local
-    resource notifications
--   Live, one-hour, and 24-hour browser-retained telemetry views
+-   Command palette, account-synced favorites and server groups, permission-aware
+    quick controls, and durable resource notifications
+-   Live, one-hour, and 24-hour telemetry views with seven-day server-side retention
 -   Mobile bottom navigation and polished loading skeletons
--   Branded public status page at `/status`
+-   Branded public status page at `/status` backed by live Wings node health checks
 -   Soft Aurora, Magic Bento, Fluid Glass, Profile Card, spotlight, and motion
     treatments adapted for the panel
 -   Seamless pointer ambience, polished page transitions, magnetic controls,
@@ -68,6 +68,9 @@ php artisan up
 ```
 
 Replace `www-data` with the account used by your web server when necessary.
+The normal Pterodactyl scheduler (`php artisan schedule:run` every minute) also
+collects Rock Theme telemetry every five minutes and removes samples older than
+seven days.
 
 ## Branding
 
