@@ -126,8 +126,8 @@ export default () => {
                                 </a>
                             )}
                         </Sidebar>
-                        <MobileBottomNav serverId={id} />
                     </CSSTransition>
+                    <MobileBottomNav serverId={id} />
                     <InstallListener />
                     <TransferListener />
                     <WebsocketHandler />
