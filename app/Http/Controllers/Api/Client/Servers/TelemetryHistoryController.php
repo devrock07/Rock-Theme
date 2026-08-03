@@ -13,10 +13,14 @@ class TelemetryHistoryController extends ClientApiController
     public function __invoke(GetServerRequest $request, Server $server): JsonResponse
     {
         $hours = $request->query('range') === '24h' ? 24 : 1;
-        $samples = DB::table('rock_telemetry_samples')
-            ->where('server_id', $server->id)
-            ->where('recorded_at', '>=', now()->subHours($hours))
-            ->orderBy('recorded_at')->get();
+        try {
+            $samples = DB::table('rock_telemetry_samples')
+                ->where('server_id', $server->id)
+                ->where('recorded_at', '>=', now()->subHours($hours))
+                ->orderBy('recorded_at')->get();
+        } catch (\Throwable) {
+            return response()->json(['samples' => []]);
+        }
         $stride = max(1, (int) ceil($samples->count() / 120));
 
         return response()->json(['samples' => $samples->filter(fn ($sample, $index) => $index % $stride === 0)->values()]);

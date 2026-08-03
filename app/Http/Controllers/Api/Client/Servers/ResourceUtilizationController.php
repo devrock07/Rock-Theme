@@ -37,7 +37,11 @@ class ResourceUtilizationController extends ClientApiController
         $stats = $this->cache->remember($key, Carbon::now()->addSeconds(20), function () use ($server) {
             return $this->repository->setServer($server)->getDetails();
         });
-        $this->telemetryRecorder->record($server, $stats);
+        try {
+            $this->telemetryRecorder->record($server, $stats);
+        } catch (\Throwable) {
+            // Resource data is critical to the server view; telemetry must never prevent it from rendering.
+        }
 
         return $this->fractal->item($stats)
             ->transformWith($this->getTransformer(StatsTransformer::class))
