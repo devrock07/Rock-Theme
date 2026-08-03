@@ -21,6 +21,7 @@ import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
 import Sidebar from '@/components/Sidebar';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -125,6 +126,7 @@ export default () => {
                                 </a>
                             )}
                         </Sidebar>
+                        <MobileBottomNav serverId={id} />
                     </CSSTransition>
                     <InstallListener />
                     <TransferListener />

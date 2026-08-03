@@ -15,6 +15,19 @@
         <link rel="shortcut icon" href="/favicons/favicon.ico?v=rock-red-2">
         <meta name="msapplication-config" content="/favicons/browserconfig.xml?v=rock-red-2">
         <meta name="theme-color" content="#09090a">
+        <style>
+            :root {
+                --admin-accent: {{ config('branding.accent', '#c94f59') }};
+                --admin-accent-bright: color-mix(in srgb, {{ config('branding.accent', '#c94f59') }} 62%, white);
+                --admin-accent-soft: color-mix(in srgb, {{ config('branding.accent', '#c94f59') }} 12%, transparent);
+                --admin-radius: {{ (int) config('branding.card_radius', 12) }}px;
+                --admin-glass: {{ (int) config('branding.glass_strength', 18) }}px;
+            }
+            .box, .modal-content, .small-box, .info-box { border-radius: var(--admin-radius) !important; }
+            @if(!config('branding.motion_enabled', true))
+                *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+            @endif
+        </style>
 
         @include('layouts.scripts')
 

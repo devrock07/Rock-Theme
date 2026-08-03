@@ -16,6 +16,8 @@ import '@/assets/tailwind.css';
 import Spinner from '@/components/elements/Spinner';
 import { AmbientCursor } from '@/components/elements/ReactBitsEffects';
 import SoftAurora from '@/components/elements/reactbits/SoftAurora';
+import ThemeRuntime from '@/components/ThemeRuntime';
+import PublicStatusPage from '@/components/status/PublicStatusPage';
 
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
 const ServerRouter = lazy(() => import(/* webpackChunkName: "server" */ '@/routers/ServerRouter'));
@@ -64,10 +66,14 @@ const App = () => {
             <SoftAurora />
             <AmbientCursor />
             <StoreProvider store={store}>
+                <ThemeRuntime />
                 <ProgressBar />
                 <div css={tw`mx-auto w-auto`} className='nook-container'>
                     <Router history={history}>
                         <Switch>
+                            <Route path={'/status'} exact>
+                                <PublicStatusPage />
+                            </Route>
                             <Route path={'/auth'}>
                                 <Spinner.Suspense>
                                     <AuthenticationRouter />

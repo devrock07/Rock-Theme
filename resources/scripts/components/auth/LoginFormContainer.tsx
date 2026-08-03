@@ -77,6 +77,30 @@ const Container = styled.div`
         z-index: 1;
     }
 
+    .auth-media {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.38;
+        filter: saturate(0.82) contrast(1.06);
+        -webkit-mask-image: linear-gradient(to top, black, rgba(0, 0, 0, 0.52));
+        mask-image: linear-gradient(to top, black, rgba(0, 0, 0, 0.52));
+    }
+
+    .auth-brand::after {
+        position: absolute;
+        inset: 0;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(145deg, rgba(7, 7, 8, 0.78), rgba(var(--shell-accent-rgb), 0.12));
+    }
+
+    .auth-mark {
+        z-index: 2;
+    }
+
     .auth-form {
         display: flex;
         flex-direction: column;
@@ -138,6 +162,8 @@ const Container = styled.div`
 export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
+    const loginMedia = branding.loginMedia.trim();
+    const isVideo = /\.(mp4|webm|ogg|ogv|mov)(?:[?#].*)?$/i.test(loginMedia);
 
     return (
         <Container>
@@ -145,6 +171,19 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
             <Form {...props} ref={ref}>
                 <div className={'auth-shell'}>
                     <div className={'auth-brand'}>
+                        {!!loginMedia &&
+                            (isVideo ? (
+                                <video className={'auth-media'} src={loginMedia} autoPlay muted loop playsInline />
+                            ) : (
+                                <span
+                                    className={'auth-media'}
+                                    style={{
+                                        backgroundImage: `url("${loginMedia}")`,
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                    }}
+                                />
+                            ))}
                         <span className={'auth-mark'}>
                             {branding.logo ? (
                                 <img className={'auth-logo'} src={branding.logo} alt={''} aria-hidden={'true'} />
@@ -156,12 +195,14 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
                         </span>
                         <div className={'auth-brand-copy'}>
                             <p css={tw`text-xs uppercase tracking-widest text-neutral-500 mb-4`}>{branding.owner}</p>
-                            <h1 css={tw`text-4xl text-white leading-tight`}>Server control.</h1>
+                            <h1 css={tw`text-4xl text-white leading-tight`}>{branding.loginTitle}</h1>
                         </div>
                     </div>
                     <div className={'auth-form'}>
                         {title && <h2 css={tw`text-2xl text-neutral-100 font-semibold mb-2`}>{title}</h2>}
-                        <p css={tw`text-sm text-neutral-400 mb-7`}>Use your account.</p>
+                        {!!branding.loginSubtitle && (
+                            <p css={tw`text-sm text-neutral-400 mb-7`}>{branding.loginSubtitle}</p>
+                        )}
                         {props.children}
                     </div>
                 </div>

@@ -15,6 +15,7 @@ export default createGlobalStyle`
         --shell-text: #f4f3f7;
         --shell-muted: #85838d;
         --shell-accent: #c94f59;
+        --shell-accent-rgb: 201, 79, 89;
         --shell-accent-bright: #f08a90;
         --shell-accent-soft: rgba(201, 79, 89, 0.12);
         --shell-success: #72d6a5;
@@ -22,6 +23,44 @@ export default createGlobalStyle`
         --shell-danger: #ed7682;
         --shell-radius: 12px;
         --shell-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    :root[data-rock-theme='crimson-glass'] {
+        --shell-bg: #0b080a;
+        --shell-panel: #151014;
+        --shell-panel-strong: #1b1217;
+        --shell-border: rgba(255, 225, 230, 0.11);
+        --shell-shadow: 0 28px 80px rgba(44, 4, 13, 0.4);
+    }
+
+    :root[data-rock-theme='pure-black'] {
+        --shell-bg: #030304;
+        --shell-panel: #080809;
+        --shell-panel-strong: #0b0b0c;
+        --shell-panel-soft: #101011;
+        --shell-border: rgba(255, 255, 255, 0.075);
+    }
+
+    :root[data-rock-theme='minimal-light'] {
+        color-scheme: light;
+        --shell-bg: #e9e6e7;
+        --shell-panel: #f8f6f7;
+        --shell-panel-strong: #ffffff;
+        --shell-panel-soft: #dedadc;
+        --shell-border: rgba(40, 22, 28, 0.12);
+        --shell-border-strong: rgba(40, 22, 28, 0.22);
+        --shell-text: #211b1d;
+        --shell-muted: #746b6f;
+        --shell-shadow: 0 22px 60px rgba(55, 35, 42, 0.12);
+    }
+
+    :root[data-rock-motion='reduced'] *,
+    :root[data-rock-motion='reduced'] *::before,
+    :root[data-rock-motion='reduced'] *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
     }
 
     @font-face {
@@ -66,7 +105,7 @@ export default createGlobalStyle`
         content: '';
         pointer-events: none;
         background:
-            linear-gradient(115deg, transparent 0 38%, rgba(201, 79, 89, 0.018) 50%, transparent 63%),
+            linear-gradient(115deg, transparent 0 38%, rgba(var(--shell-accent-rgb), 0.018) 50%, transparent 63%),
             radial-gradient(circle at 50% -18%, rgba(255, 255, 255, 0.035), transparent 34rem);
     }
 
@@ -235,6 +274,7 @@ export default createGlobalStyle`
     @media (max-width: 640px) {
         .rock-page {
             min-height: calc(100vh - 8rem);
+            padding-bottom: 4.5rem;
         }
 
         .rock-footer p {

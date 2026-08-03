@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faCircle, faEthernet, faSlidersH } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faBolt, faCircle, faEthernet, faSlidersH, faStar } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import { Server } from '@/api/server/getServer';
 import getServerResourceUsage, { ServerStats } from '@/api/server/getServerResourceUsage';
@@ -8,6 +8,7 @@ import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
 import Spinner from '@/components/elements/Spinner';
 import styled from 'styled-components/macro';
 import { MagicBentoCard } from '@/components/elements/reactbits/MagicBento';
+import { pushRockNotification } from '@/components/notifications/rockNotifications';
 
 const Card = styled(MagicBentoCard)`
     min-height: 14rem;
@@ -30,6 +31,35 @@ const Card = styled(MagicBentoCard)`
         padding: 1.25rem;
         color: var(--shell-text);
         text-decoration: none;
+    }
+
+    .server-title {
+        color: var(--shell-text);
+        text-decoration: none;
+    }
+    .server-title:hover {
+        color: var(--shell-accent-bright);
+    }
+    .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .icon-button {
+        display: grid;
+        width: 2rem;
+        height: 2rem;
+        place-items: center;
+        color: #77737f;
+        border: 1px solid var(--shell-border);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+    .icon-button:hover,
+    .icon-button.active {
+        color: var(--shell-accent-bright);
+        border-color: rgba(var(--shell-accent-rgb), 0.3);
+        background: rgba(var(--shell-accent-rgb), 0.1);
     }
 
     .micro {
@@ -104,7 +134,9 @@ const Card = styled(MagicBentoCard)`
     }
     .footer {
         display: flex;
+        align-items: center;
         justify-content: flex-end;
+        gap: 0.55rem;
         margin-top: 1.15rem;
         padding-top: 0.8rem;
         border-top: 1px solid var(--shell-border);
@@ -159,8 +191,18 @@ const Card = styled(MagicBentoCard)`
 
 type Timer = ReturnType<typeof setInterval>;
 
-export default ({ server, className }: { server: Server; className?: string }) => {
+interface Props {
+    server: Server;
+    className?: string;
+    favorite?: boolean;
+    onToggleFavorite?: () => void;
+    onOpenQuick?: (server: Server, stats: ServerStats | null) => void;
+}
+
+export default ({ server, className, favorite = false, onToggleFavorite, onOpenQuick }: Props) => {
     const interval = useRef<Timer>(null) as React.MutableRefObject<Timer>;
+    const previousStatus = useRef<string>();
+    const lastHighCpuAlert = useRef(0);
     const [stats, setStats] = useState<ServerStats | null>(null);
     const isSuspended = stats?.isSuspended || server.status === 'suspended';
 
@@ -178,6 +220,28 @@ export default ({ server, className }: { server: Server; className?: string }) =
             interval.current && clearInterval(interval.current);
         };
     }, [isSuspended, server.isNodeUnderMaintenance]);
+
+    useEffect(() => {
+        if (!stats) return;
+        if (previousStatus.current && previousStatus.current !== stats.status) {
+            pushRockNotification({
+                title: server.name,
+                message: `Server changed from ${previousStatus.current} to ${stats.status}.`,
+                tone: stats.status === 'offline' ? 'danger' : 'success',
+                href: `/server/${server.id}`,
+            });
+        }
+        previousStatus.current = stats.status;
+        if (stats.cpuUsagePercent >= 90 && Date.now() - lastHighCpuAlert.current > 15 * 60 * 1000) {
+            lastHighCpuAlert.current = Date.now();
+            pushRockNotification({
+                title: `${server.name} resource alert`,
+                message: `CPU usage reached ${stats.cpuUsagePercent.toFixed(1)}%.`,
+                tone: 'warning',
+                href: `/server/${server.id}`,
+            });
+        }
+    }, [stats?.status, stats?.cpuUsagePercent]);
 
     const statusLabel = isSuspended
         ? 'Suspended'
@@ -205,17 +269,28 @@ export default ({ server, className }: { server: Server; className?: string }) =
             enableStars
             enableTilt
             enableMagnetism
-            clickEffect
+            clickEffect={false}
             style={{ '--status-color': color } as React.CSSProperties}
         >
-            <Link to={`/server/${server.id}`} className={'card-link'}>
+            <div className={'card-link'}>
                 <div className={'flex items-start justify-between gap-4'}>
                     <div className={'min-w-0'}>
-                        <h3 className={'text-lg font-medium truncate'}>{server.name}</h3>
+                        <Link className={'server-title'} to={`/server/${server.id}`}>
+                            <h3 className={'text-lg font-medium truncate'}>{server.name}</h3>
+                        </Link>
                     </div>
-                    <span className={'micro status'}>
-                        <FontAwesomeIcon icon={faCircle} /> {statusLabel}
-                    </span>
+                    <div className={'card-actions'}>
+                        <button
+                            className={`icon-button ${favorite ? 'active' : ''}`}
+                            onClick={onToggleFavorite}
+                            aria-label={favorite ? 'Remove favorite' : 'Add favorite'}
+                        >
+                            <FontAwesomeIcon icon={faStar} />
+                        </button>
+                        <span className={'micro status'}>
+                            <FontAwesomeIcon icon={faCircle} /> {statusLabel}
+                        </span>
+                    </div>
                 </div>
                 <div className={'allocation'}>
                     <FontAwesomeIcon icon={faEthernet} />
@@ -267,13 +342,16 @@ export default ({ server, className }: { server: Server; className?: string }) =
                     </div>
                 )}
                 <div className={'footer micro'}>
-                    <span className={'manage'}>
+                    <button className={'manage'} onClick={() => onOpenQuick?.(server, stats)}>
+                        <FontAwesomeIcon icon={faBolt} /> Quick view
+                    </button>
+                    <Link className={'manage'} to={`/server/${server.id}`}>
                         <FontAwesomeIcon icon={faSlidersH} />
                         Manage server
                         <FontAwesomeIcon icon={faArrowRight} />
-                    </span>
+                    </Link>
                 </div>
-            </Link>
+            </div>
         </Card>
     );
 };

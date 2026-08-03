@@ -124,6 +124,16 @@
     }
 }
 
+.scanlines::after {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    content: '';
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(255, 255, 255, 0.018) 4px);
+    mix-blend-mode: soft-light;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .console_media > video {
         display: none;

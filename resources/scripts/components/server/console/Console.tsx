@@ -74,6 +74,7 @@ export default () => {
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
     const consoleBackground = branding.consoleBackground.trim();
     const consoleBackgroundOpacity = Math.min(45, Math.max(5, branding.consoleBackgroundOpacity || 18)) / 100;
+    const consoleFontSize = Math.min(18, Math.max(10, branding.consoleFontSize || 12));
     const isVideoBackground = /\.(mp4|webm|ogg|ogv|mov)(?:[?#].*)?$/i.test(consoleBackground);
     // SearchBarAddon has hardcoded z-index: 999 :(
     const zIndex = `
@@ -129,6 +130,11 @@ export default () => {
             e.currentTarget.value = '';
         }
     };
+
+    useEffect(() => {
+        terminal.options.fontSize = consoleFontSize;
+        if (terminal.element) fitAddon.fit();
+    }, [consoleFontSize, terminal]);
 
     useEffect(() => {
         if (connected && ref.current && !terminal.element) {
@@ -207,7 +213,10 @@ export default () => {
 
     return (
         <div
-            className={classNames(styles.terminal, 'relative', { [styles.has_media]: !!consoleBackground })}
+            className={classNames(styles.terminal, 'relative', {
+                [styles.has_media]: !!consoleBackground,
+                [styles.scanlines]: branding.consoleScanlines,
+            })}
             style={{ '--console-media-opacity': consoleBackgroundOpacity } as React.CSSProperties}
         >
             {!!consoleBackground && (

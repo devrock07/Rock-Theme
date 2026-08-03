@@ -9,6 +9,10 @@ Use **Admin → Settings → Branding** to change:
 -   Dashboard title and subtitle
 -   Dashboard character or background image
 -   Console image, GIF, or video background and visibility
+-   Theme preset, accent color, glass strength, card radius, and motion level
+-   Login title, subtitle, and image/GIF/video artwork
+-   Console font size and optional scanline treatment
+-   Public status-page visibility, headline, and message
 
 Changes are stored in the panel database and apply to the client, login, and
 admin views.
@@ -25,8 +29,21 @@ BRAND_START_YEAR=2022
 BRAND_DASHBOARD_TITLE="Your infrastructure, without the noise."
 BRAND_DASHBOARD_SUBTITLE="Welcome back, {username}."
 BRAND_DASHBOARD_IMAGE=""
+BRAND_THEME_PRESET=makima
+BRAND_ACCENT="#c94f59"
+BRAND_GLASS_STRENGTH=18
+BRAND_CARD_RADIUS=12
+BRAND_MOTION_ENABLED=true
+BRAND_LOGIN_MEDIA=""
+BRAND_LOGIN_TITLE="Server control."
+BRAND_LOGIN_SUBTITLE="Use your account."
 BRAND_CONSOLE_BACKGROUND=""
 BRAND_CONSOLE_BACKGROUND_OPACITY=18
+BRAND_CONSOLE_FONT_SIZE=12
+BRAND_CONSOLE_SCANLINES=false
+BRAND_STATUS_ENABLED=true
+BRAND_STATUS_TITLE="Systems operational"
+BRAND_STATUS_MESSAGE="Infrastructure is online and operating normally."
 ```
 
 `{username}` in the dashboard subtitle is replaced with the signed-in user's
@@ -51,6 +68,26 @@ or remote URL. Images, animated GIFs, MP4, WebM, OGG, and MOV files are
 supported. Media is rendered behind terminal output with a dark readability
 layer and never receives pointer input. Use **Media Visibility** to keep text
 legible; 12–24% works well for most artwork.
+
+## Theme Studio and login builder
+
+Theme Studio applies the chosen preset and accent to both the client and admin
+interfaces. Glass strength, corner radius, and motion are global controls. The
+login media field accepts the same local paths and remote image/video formats
+as the console background.
+
+## Dashboard tools
+
+Press `Ctrl+K` to open the command palette. Favorites, custom server groups,
+notifications, and telemetry samples are stored in the current browser. Quick
+view uses the normal Pterodactyl client API and respects the signed-in user's
+power permissions.
+
+## Public status page
+
+The branded page is available at `/status` without authentication when enabled.
+It is an operator-controlled availability notice; it does not expose private
+nodes or server telemetry.
 
 ## Logo and device icons
 

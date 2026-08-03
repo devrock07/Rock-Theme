@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Server } from '@/api/server/getServer';
 import getServers from '@/api/getServers';
 import ServerRow from '@/components/dashboard/ServerRow';
-import Spinner from '@/components/elements/Spinner';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
 import { useStoreState } from 'easy-peasy';
@@ -18,6 +17,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircle, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { ShinyText, SplitText } from '@/components/elements/ReactBitsEffects';
 import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
+import QuickServerDrawer from '@/components/dashboard/QuickServerDrawer';
+import { ServerStats } from '@/api/server/getServerResourceUsage';
 
 const DashboardHero = styled.section`
     position: relative;
@@ -180,6 +181,30 @@ const ServerGrid = styled(MagicBentoGrid)`
     }
 `;
 
+const SkeletonCard = styled.div`
+    min-height: 14rem;
+    border: 1px solid var(--shell-border);
+    border-radius: var(--shell-radius);
+    background: linear-gradient(
+        110deg,
+        rgba(255, 255, 255, 0.018) 8%,
+        rgba(var(--shell-accent-rgb), 0.07) 18%,
+        rgba(255, 255, 255, 0.018) 33%
+    );
+    background-size: 220% 100%;
+    animation: skeleton-wave 1.5s linear infinite;
+    @keyframes skeleton-wave {
+        to {
+            background-position-x: -220%;
+        }
+    }
+`;
+
+interface ServerPreference {
+    favorite: boolean;
+    group: string;
+}
+
 export default () => {
     const { search } = useLocation();
     const defaultPage = Number(new URLSearchParams(search).get('page') || '1');
@@ -190,6 +215,12 @@ export default () => {
     const branding = useStoreState((state) => state.settings.data!.branding);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
+    const [preferences, setPreferences] = usePersistedState<Record<string, ServerPreference>>(
+        `${uuid}:server_preferences`,
+        {}
+    );
+    const [activeGroup, setActiveGroup] = useState('All');
+    const [quickServer, setQuickServer] = useState<{ server: Server; stats: ServerStats | null } | null>(null);
     const { data: servers, error } = useSWR<PaginatedResult<Server>>(
         ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
         () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
@@ -208,6 +239,19 @@ export default () => {
     }, [error]);
 
     const dashboardSubtitle = branding.dashboardSubtitle.replace(/\{username\}/gi, username);
+    const serverPreferences = preferences || {};
+    const updatePreference = (serverId: string, next: Partial<ServerPreference>) =>
+        setPreferences((current) => ({
+            ...(current || {}),
+            [serverId]: {
+                favorite: (current || {})[serverId]?.favorite || false,
+                group: (current || {})[serverId]?.group || '',
+                ...next,
+            },
+        }));
+    const groups = Array.from(
+        new Set((servers?.items || []).map((server) => serverPreferences[server.id]?.group?.trim()).filter(Boolean))
+    ) as string[];
 
     return (
         <PageContentBlock className='content-dashboard' title={'Dashboard'} showFlashKey={'dashboard'}>
@@ -245,15 +289,57 @@ export default () => {
                     </div>
                 </DashboardToolbar>
             )}
+            <div className={'flex flex-wrap gap-2 mb-4'}>
+                {['All', 'Favorites', ...groups].map((group) => (
+                    <button
+                        key={group}
+                        onClick={() => setActiveGroup(group)}
+                        className={`px-3 py-2 rounded-full text-xs border ${
+                            activeGroup === group
+                                ? 'border-primary-400 text-primary-200 bg-primary-900'
+                                : 'border-neutral-700 text-neutral-400'
+                        }`}
+                    >
+                        {group}
+                    </button>
+                ))}
+            </div>
             {!servers ? (
-                <Spinner centered size={'large'} />
+                <ServerGrid>
+                    {Array.from({ length: 4 }).map((_, index) => (
+                        <SkeletonCard key={index} />
+                    ))}
+                </ServerGrid>
             ) : (
                 <Pagination data={servers} onPageSelect={setPage}>
-                    {({ items }) =>
-                        items.length ? (
+                    {({ items }) => {
+                        const visibleItems = items
+                            .filter(
+                                (server) =>
+                                    activeGroup === 'All' ||
+                                    (activeGroup === 'Favorites'
+                                        ? serverPreferences[server.id]?.favorite
+                                        : serverPreferences[server.id]?.group === activeGroup)
+                            )
+                            .sort(
+                                (left, right) =>
+                                    Number(!!serverPreferences[right.id]?.favorite) -
+                                    Number(!!serverPreferences[left.id]?.favorite)
+                            );
+                        return visibleItems.length ? (
                             <ServerGrid>
-                                {items.map((server) => (
-                                    <ServerRow key={server.uuid} server={server} />
+                                {visibleItems.map((server) => (
+                                    <ServerRow
+                                        key={server.uuid}
+                                        server={server}
+                                        favorite={!!serverPreferences[server.id]?.favorite}
+                                        onToggleFavorite={() =>
+                                            updatePreference(server.id, {
+                                                favorite: !serverPreferences[server.id]?.favorite,
+                                            })
+                                        }
+                                        onOpenQuick={(selected, stats) => setQuickServer({ server: selected, stats })}
+                                    />
                                 ))}
                             </ServerGrid>
                         ) : (
@@ -262,9 +348,18 @@ export default () => {
                                     ? 'There are no other servers to display.'
                                     : 'There are no servers associated with your account.'}
                             </p>
-                        )
-                    }
+                        );
+                    }}
                 </Pagination>
+            )}
+            {quickServer && (
+                <QuickServerDrawer
+                    server={quickServer.server}
+                    stats={quickServer.stats}
+                    group={serverPreferences[quickServer.server.id]?.group || ''}
+                    onGroupChange={(group) => updatePreference(quickServer.server.id, { group })}
+                    onClose={() => setQuickServer(null)}
+                />
             )}
         </PageContentBlock>
     );

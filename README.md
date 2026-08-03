@@ -16,6 +16,13 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.14.1`.
 -   Unified dark-red visual system across the client and admin panels
 -   Responsive layouts for desktop, tablet, and mobile
 -   Configurable panel name, footer, mark or logo, dashboard copy, and artwork
+-   Admin Theme Studio with presets, custom accent, glass, radius, motion,
+    login artwork, console appearance, and live preview
+-   Command palette, favorites, server groups, quick-control drawer, and local
+    resource notifications
+-   Live, one-hour, and 24-hour browser-retained telemetry views
+-   Mobile bottom navigation and polished loading skeletons
+-   Branded public status page at `/status`
 -   Soft Aurora, Magic Bento, Fluid Glass, Profile Card, spotlight, and motion
     treatments adapted for the panel
 -   Seamless pointer ambience, polished page transitions, magnetic controls,
@@ -64,7 +71,7 @@ Replace `www-data` with the account used by your web server when necessary.
 
 ## Branding
 
-Open **Admin → Settings → Branding** to configure the public identity without
+Open **Admin → Settings** to configure the public identity and Theme Studio without
 editing the theme source. See [BRANDING.md](./BRANDING.md) for the available
 settings, local image paths, and favicon locations.
 

@@ -12,6 +12,7 @@ import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import Avatar from '@/components/Avatar';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 const RightNavigation = styled.div`
     flex: 0 0 auto;
@@ -256,6 +257,7 @@ export default () => {
 
                 <RightNavigation className={'flex items-center justify-center'}>
                     <SearchContainer />
+                    <NotificationCenter />
                     <Tooltip placement={'bottom'} content={'Dashboard'}>
                         <NavLink to={'/'} exact className={'optional-nav'}>
                             <FontAwesomeIcon icon={faLayerGroup} />

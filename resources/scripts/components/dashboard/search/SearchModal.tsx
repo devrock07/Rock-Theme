@@ -14,6 +14,8 @@ import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Input from '@/components/elements/Input';
 import { ip } from '@/lib/formatters';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBolt, faCode, faHome, faKey, faServer, faTerminal, faUser } from '@fortawesome/free-solid-svg-icons';
 
 type Props = RequiredModalProps;
 
@@ -33,6 +35,18 @@ const ServerResult = styled(Link)`
     }
 `;
 
+const CommandResult = styled(Link)`
+    ${tw`flex items-center p-3 rounded no-underline transition-all duration-150`};
+    color: var(--shell-muted);
+    border: 1px solid transparent;
+
+    &:hover {
+        color: var(--shell-text);
+        border-color: var(--shell-border);
+        background: rgba(201, 79, 89, 0.07);
+    }
+`;
+
 const SearchWatcher = () => {
     const { values, submitForm } = useFormikContext<Values>();
 
@@ -49,6 +63,13 @@ export default ({ ...props }: Props) => {
     const ref = useRef<HTMLInputElement>(null);
     const isAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const [servers, setServers] = useState<Server[]>([]);
+    const commands = [
+        { name: 'Dashboard', hint: 'Servers and telemetry', path: '/', icon: faHome },
+        { name: 'Account', hint: 'Profile and security', path: '/account', icon: faUser },
+        { name: 'API credentials', hint: 'Application access', path: '/account/api', icon: faCode },
+        { name: 'SSH keys', hint: 'Secure file access', path: '/account/ssh', icon: faKey },
+        { name: 'Public status', hint: 'Infrastructure status', path: '/status', icon: faServer },
+    ];
     const { clearAndAddHttpError, clearFlashes } = useStoreActions(
         (actions: Actions<ApplicationStore>) => actions.flashes
     );
@@ -79,18 +100,16 @@ export default ({ ...props }: Props) => {
     return (
         <Formik
             onSubmit={search}
-            validationSchema={object().shape({
-                term: string().min(3, 'Please enter at least three characters to begin searching.'),
-            })}
+            validationSchema={object().shape({ term: string() })}
             initialValues={{ term: '' } as Values}
         >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, values }) => (
                 <Modal {...props}>
                     <Form>
                         <FormikFieldWrapper
                             name={'term'}
                             label={'Search term'}
-                            description={'Enter a server name, uuid, or allocation to begin searching.'}
+                            description={'Search servers, pages, and actions.'}
                         >
                             <SearchWatcher />
                             <InputSpinner visible={isSubmitting}>
@@ -98,8 +117,37 @@ export default ({ ...props }: Props) => {
                             </InputSpinner>
                         </FormikFieldWrapper>
                     </Form>
+                    <div css={tw`mt-5`}>
+                        <p css={tw`text-2xs uppercase tracking-widest text-neutral-500 mb-2`}>Quick actions</p>
+                        {commands
+                            .filter((command) =>
+                                `${command.name} ${command.hint}`.toLowerCase().includes(values.term.toLowerCase())
+                            )
+                            .map((command) => (
+                                <CommandResult key={command.path} to={command.path} onClick={() => props.onDismissed()}>
+                                    <FontAwesomeIcon icon={command.icon} css={tw`w-4 mr-3 text-primary-300`} />
+                                    <span css={tw`flex-1 text-sm`}>{command.name}</span>
+                                    <small css={tw`text-neutral-500`}>{command.hint}</small>
+                                </CommandResult>
+                            ))}
+                        {isAdmin && (
+                            <a
+                                href={'/admin'}
+                                className={
+                                    'flex items-center p-3 rounded no-underline text-neutral-400 hover:text-white'
+                                }
+                            >
+                                <FontAwesomeIcon icon={faBolt} css={tw`w-4 mr-3 text-primary-300`} />
+                                <span css={tw`flex-1 text-sm`}>Admin panel</span>
+                                <small css={tw`text-neutral-500`}>Administration</small>
+                            </a>
+                        )}
+                    </div>
                     {servers.length > 0 && (
                         <div css={tw`mt-6`}>
+                            <p css={tw`text-2xs uppercase tracking-widest text-neutral-500 mb-2`}>
+                                <FontAwesomeIcon icon={faTerminal} css={tw`mr-2`} /> Servers
+                            </p>
                             {servers.map((server) => (
                                 <ServerResult
                                     key={server.uuid}

@@ -12,8 +12,21 @@ export interface SiteSettings {
         dashboardTitle: string;
         dashboardSubtitle: string;
         dashboardImage: string;
+        themePreset: 'makima' | 'crimson-glass' | 'pure-black' | 'minimal-light';
+        accent: string;
+        glassStrength: number;
+        cardRadius: number;
+        motionEnabled: boolean;
+        loginMedia: string;
+        loginTitle: string;
+        loginSubtitle: string;
         consoleBackground: string;
         consoleBackgroundOpacity: number;
+        consoleFontSize: number;
+        consoleScanlines: boolean;
+        statusEnabled: boolean;
+        statusTitle: string;
+        statusMessage: string;
     };
     recaptcha: {
         enabled: boolean;

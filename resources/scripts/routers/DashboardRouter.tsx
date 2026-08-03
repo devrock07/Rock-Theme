@@ -13,6 +13,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { faLayerGroup, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 export default () => {
     const location = useLocation();
@@ -52,6 +53,7 @@ export default () => {
                     </>
                 )}
             </Sidebar>
+            <MobileBottomNav />
 
             <TransitionRouter>
                 <React.Suspense fallback={<Spinner centered />}>

@@ -140,7 +140,26 @@ function useChart(label: string, opts?: UseChartOptions) {
             })
         );
 
-    return { props: { data, options }, push, clear };
+    const replace = (items: (number | null)[][]) =>
+        setData((state) => {
+            const length = Math.max(20, ...items.map((values) => values.length));
+            return merge(state, {
+                labels: Array(length)
+                    .fill(0)
+                    .map((_, index) => index),
+                datasets: state.datasets.map((dataset, index) => ({
+                    ...dataset,
+                    data: Array(Math.max(0, length - (items[index]?.length || 0)))
+                        .fill(null)
+                        .concat(items[index] || []),
+                })),
+            });
+        });
+
+    const renderedOptions = merge(options, {
+        scales: { x: { max: Math.max(19, data.labels?.length ? data.labels.length - 1 : 19) } },
+    });
+    return { props: { data, options: renderedOptions }, push, clear, replace };
 }
 
 function useChartTickLabel(label: string, max: number, tickLabel: string, roundTo?: number) {

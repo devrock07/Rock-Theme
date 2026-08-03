@@ -82,22 +82,128 @@
                         </div>
                     </div>
                     <div class="box-header with-border">
+                        <h3 class="box-title">Theme Studio</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-3">
+                                <label class="control-label">Preset</label>
+                                @php($themePreset = old('branding:theme_preset', config('branding.theme_preset', 'makima')))
+                                <select class="form-control" id="theme-preset" name="branding:theme_preset">
+                                    <option value="makima" @if($themePreset === 'makima') selected @endif>Makima Red</option>
+                                    <option value="crimson-glass" @if($themePreset === 'crimson-glass') selected @endif>Crimson Glass</option>
+                                    <option value="pure-black" @if($themePreset === 'pure-black') selected @endif>Pure Black</option>
+                                    <option value="minimal-light" @if($themePreset === 'minimal-light') selected @endif>Minimal Light</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label class="control-label">Accent</label>
+                                <input type="color" class="form-control" id="theme-accent" name="branding:accent" value="{{ old('branding:accent', config('branding.accent', '#c94f59')) }}" />
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Glass</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="theme-glass" name="branding:glass_strength" value="{{ old('branding:glass_strength', config('branding.glass_strength', 18)) }}" min="0" max="30" />
+                                    <span class="input-group-addon">px</span>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Radius</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="theme-radius" name="branding:card_radius" value="{{ old('branding:card_radius', config('branding.card_radius', 12)) }}" min="6" max="20" />
+                                    <span class="input-group-addon">px</span>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Motion</label>
+                                @php($motionEnabled = (int) old('branding:motion_enabled', config('branding.motion_enabled', true)))
+                                <select class="form-control" name="branding:motion_enabled">
+                                    <option value="1" @if($motionEnabled === 1) selected @endif>Enabled</option>
+                                    <option value="0" @if($motionEnabled === 0) selected @endif>Reduced</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="theme-preview" style="padding: 22px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: linear-gradient(135deg, rgba(201,79,89,.14), #0d0d0f); box-shadow: 0 18px 50px rgba(0,0,0,.24);">
+                            <small style="letter-spacing:.14em;text-transform:uppercase;opacity:.55">Live preview</small>
+                            <h3 style="margin:8px 0 5px">Rock Theme</h3>
+                            <span id="theme-preview-chip" style="display:inline-block;padding:5px 10px;border-radius:999px;background:#c94f5922;color:#f08a90;border:1px solid #c94f5955">Premium control</span>
+                        </div>
+                    </div>
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Login</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Title</label>
+                                <input type="text" class="form-control" name="branding:login_title" value="{{ old('branding:login_title', config('branding.login_title', 'Server control.')) }}" maxlength="80" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Subtitle</label>
+                                <input type="text" class="form-control" name="branding:login_subtitle" value="{{ old('branding:login_subtitle', config('branding.login_subtitle', 'Use your account.')) }}" maxlength="120" />
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Artwork / Video</label>
+                                <input type="text" class="form-control" name="branding:login_media" value="{{ old('branding:login_media', config('branding.login_media')) }}" placeholder="/branding/login.webp, .gif, .mp4 or https://..." maxlength="500" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-header with-border">
                         <h3 class="box-title">Console</h3>
                     </div>
                     <div class="box-body">
                         <div class="row">
-                            <div class="form-group col-md-8">
+                            <div class="form-group col-md-6">
                                 <label class="control-label">Background Media</label>
                                 <input type="text" class="form-control" name="branding:console_background" value="{{ old('branding:console_background', config('branding.console_background')) }}" placeholder="/branding/console.webp, .gif, .mp4 or https://..." maxlength="500" />
                                 <p class="text-muted"><small>Supports images, animated GIFs, MP4, WebM, OGG and MOV. Leave blank for the standard console.</small></p>
                             </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-2">
                                 <label class="control-label">Media Visibility</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" name="branding:console_background_opacity" value="{{ old('branding:console_background_opacity', config('branding.console_background_opacity', 18)) }}" min="5" max="45" step="1" />
                                     <span class="input-group-addon">%</span>
                                 </div>
                                 <p class="text-muted"><small>Recommended: 12-24% for readable output.</small></p>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Font Size</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="branding:console_font_size" value="{{ old('branding:console_font_size', config('branding.console_font_size', 12)) }}" min="10" max="18" />
+                                    <span class="input-group-addon">px</span>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Scanlines</label>
+                                @php($scanlines = (int) old('branding:console_scanlines', config('branding.console_scanlines', false)))
+                                <select class="form-control" name="branding:console_scanlines">
+                                    <option value="0" @if($scanlines === 0) selected @endif>Off</option>
+                                    <option value="1" @if($scanlines === 1) selected @endif>On</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Public Status</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Status Page</label>
+                                @php($statusEnabled = (int) old('branding:status_enabled', config('branding.status_enabled', true)))
+                                <select class="form-control" name="branding:status_enabled">
+                                    <option value="1" @if($statusEnabled === 1) selected @endif>Public</option>
+                                    <option value="0" @if($statusEnabled === 0) selected @endif>Hidden</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Headline</label>
+                                <input type="text" class="form-control" name="branding:status_title" value="{{ old('branding:status_title', config('branding.status_title', 'Systems operational')) }}" maxlength="80" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label class="control-label">Message</label>
+                                <input type="text" class="form-control" name="branding:status_message" value="{{ old('branding:status_message', config('branding.status_message', 'Infrastructure is online and operating normally.')) }}" maxlength="240" />
+                                <p class="text-muted"><small>Public URL: <code>{{ url('/status') }}</code></small></p>
                             </div>
                         </div>
                     </div>
@@ -137,4 +243,39 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('footer-scripts')
+    @parent
+    <script>
+        (() => {
+            const preset = document.getElementById('theme-preset');
+            const accent = document.getElementById('theme-accent');
+            const glass = document.getElementById('theme-glass');
+            const radius = document.getElementById('theme-radius');
+            const preview = document.getElementById('theme-preview');
+            const chip = document.getElementById('theme-preview-chip');
+            const presets = {
+                'makima': ['#c94f59', '#0d0d0f'],
+                'crimson-glass': ['#e35d6a', '#171015'],
+                'pure-black': ['#cf4f5a', '#050506'],
+                'minimal-light': ['#b93445', '#ebe7e8'],
+            };
+            const render = () => {
+                const colors = presets[preset.value] || presets.makima;
+                preview.style.borderRadius = `${radius.value}px`;
+                preview.style.backdropFilter = `blur(${glass.value}px)`;
+                preview.style.background = `linear-gradient(135deg, ${accent.value}24, ${colors[1]})`;
+                chip.style.color = accent.value;
+                chip.style.borderColor = `${accent.value}66`;
+                chip.style.background = `${accent.value}22`;
+            };
+            preset && preset.addEventListener('change', () => {
+                accent.value = (presets[preset.value] || presets.makima)[0];
+                render();
+            });
+            [preset, accent, glass, radius].forEach((input) => input && input.addEventListener('input', render));
+            render();
+        })();
+    </script>
 @endsection
