@@ -4,6 +4,7 @@ const { compilerOptions } = require('./tsconfig');
 /** @type {import('ts-jest').InitialOptionsTsJest} */
 module.exports = {
     preset: 'ts-jest',
+    testEnvironment: 'jsdom',
     globals: {
         'ts-jest': {
             isolatedModules: true,
@@ -21,8 +22,8 @@ module.exports = {
         '<rootDir>/resources/scripts/setup-tests.ts',
     ],
     transform: {
-        '.*\\.[t|j]sx$': 'babel-jest',
-        '.*\\.ts$': 'ts-jest',
+        '^.+\\.tsx?$': 'ts-jest',
+        '^.+\\.jsx?$': 'babel-jest',
     },
     testPathIgnorePatterns: ['/node_modules/'],
 };
