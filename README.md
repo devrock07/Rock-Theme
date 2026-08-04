@@ -23,6 +23,7 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.0`.
 -   Live, one-hour, and 24-hour telemetry views with seven-day server-side retention
 -   Mobile bottom navigation and polished loading skeletons
 -   Branded public status page at `/status` backed by live Wings node health checks
+-   Admin-controlled global announcement banner with notice, warning, and critical modes
 -   Soft Aurora, Magic Bento, Fluid Glass, Profile Card, spotlight, and motion
     treatments adapted for the panel
 -   Seamless pointer ambience, polished page transitions, magnetic controls,
@@ -46,16 +47,20 @@ before installing it, and test upgrades in a staging environment first.
 
 ## Installation & Management
 
-Run the universal Rock Theme shell manager to install, update, or remove the theme interactively:
+Run the verified Rock Theme shell manager to install, update, or restore a
+manager-created pre-theme backup interactively:
 
 ```bash
-bash <(curl -sSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh)
 ```
 
 The script presents a menu with three options:
-1. **Install Theme** – Downloads the latest release archive, runs migrations, flushes view/config caches, and sets server permissions.
-2. **Update Theme** – Checks your current theme installation against the latest GitHub release and updates seamlessly.
-3. **Remove Theme** – Restores the panel to the clean upstream Pterodactyl state.
+1. **Install Theme** – Verifies the latest release checksum, saves the original panel, and installs the compiled theme.
+2. **Update Theme** – Creates a safety backup and installs the latest verified release.
+3. **Restore Backup** – Restores the manager-created pre-theme files while preserving the current `.env` and `storage` directory.
+
+Failed downloads never touch the panel. If an operation fails after maintenance
+mode begins, the manager automatically brings the panel back online.
 
 ### Manual Installation
 
@@ -66,8 +71,11 @@ cd /var/www/pterodactyl
 
 php artisan down
 
-curl -L https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz \
-  | tar -xz
+curl -fL -o panel.tar.gz https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz
+curl -fL -o panel.tar.gz.sha256 https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz.sha256
+sha256sum --check panel.tar.gz.sha256
+tar -xzf panel.tar.gz
+rm panel.tar.gz panel.tar.gz.sha256
 
 composer install --no-dev --optimize-autoloader
 php artisan migrate --seed --force

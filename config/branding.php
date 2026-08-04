@@ -31,5 +31,3 @@ return [
     'announcement_type' => env('BRAND_ANNOUNCEMENT_TYPE', 'notice'),
     'announcement_link' => env('BRAND_ANNOUNCEMENT_LINK', ''),
 ];
-
-

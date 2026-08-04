@@ -16,7 +16,7 @@ class PublicStatusController extends Controller
             abort(404);
         }
 
-        return response()->json(Cache::remember('rock:public-status', 45, function () use ($repository) {
+        return response()->json(Cache::remember('rock:public-status:v2', 45, function () use ($repository) {
             $nodes = Node::query()->get();
             $operational = 0;
             $maintenance = 0;
@@ -45,10 +45,7 @@ class PublicStatusController extends Controller
                     $nodeList[] = [
                         'id' => $node->id,
                         'name' => $node->name,
-                        'fqdn' => $node->fqdn,
                         'status' => $nodeStatus,
-                        'maintenance' => (bool) $node->maintenance_mode,
-                        'location_id' => $node->location_id,
                     ];
                 }
             }

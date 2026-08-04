@@ -21,10 +21,23 @@ import {
 interface NodeItem {
     id: number;
     name: string;
-    fqdn: string;
     status: 'operational' | 'maintenance' | 'unavailable';
-    maintenance: boolean;
-    location_id: number;
+}
+
+interface StatusResponse {
+    status: 'operational' | 'maintenance' | 'degraded';
+    nodes: {
+        total: number;
+        operational: number;
+        maintenance: number;
+        unavailable: number;
+        items: NodeItem[];
+    };
+    settings: {
+        showNodes: boolean;
+        mode: 'all' | 'operational_only' | 'summary_only';
+    };
+    checkedAt: string;
 }
 
 const Page = styled.main`
@@ -32,15 +45,16 @@ const Page = styled.main`
     min-height: 100vh;
     place-items: center;
     padding: 2.5rem 1rem;
-    background: radial-gradient(circle at 50% 0%, rgba(201, 79, 89, 0.12), transparent 70%), #0a0a0c;
+    background: radial-gradient(circle at 18% 0%, rgba(var(--shell-accent-rgb), 0.16), transparent 35%),
+        radial-gradient(circle at 82% 12%, rgba(var(--shell-accent-rgb), 0.08), transparent 30%), #0a0a0c;
 
     .status-shell {
-        width: min(52rem, 100%);
+        width: min(58rem, 100%);
         padding: clamp(1.5rem, 5vw, 3rem);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: var(--shell-radius, 12px);
-        background: linear-gradient(145deg, rgba(201, 79, 89, 0.06), rgba(12, 12, 15, 0.94) 40%);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        background: linear-gradient(145deg, rgba(var(--shell-accent-rgb), 0.08), rgba(12, 12, 15, 0.94) 40%);
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.035);
         backdrop-filter: blur(16px);
     }
 
@@ -72,6 +86,12 @@ const Page = styled.main`
             border: 1px solid rgba(251, 191, 36, 0.25);
             background: rgba(251, 191, 36, 0.08);
         }
+
+        &.checking {
+            color: var(--shell-muted);
+            border: 1px solid var(--shell-border);
+            background: rgba(255, 255, 255, 0.035);
+        }
     }
 
     .status-grid {
@@ -89,7 +109,8 @@ const Page = styled.main`
         transition: border-color 0.2s ease, transform 0.2s ease;
 
         &:hover {
-            border-color: rgba(201, 79, 89, 0.35);
+            border-color: rgba(var(--shell-accent-rgb), 0.35);
+            transform: translateY(-2px);
         }
     }
 
@@ -108,6 +129,35 @@ const Page = styled.main`
         border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 8px;
         background: rgba(0, 0, 0, 0.25);
+        gap: 1rem;
+    }
+
+    .node-name {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .status-error {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding: 0.85rem 1rem;
+        color: #fca5a5;
+        border: 1px solid rgba(248, 113, 113, 0.2);
+        border-radius: 8px;
+        background: rgba(248, 113, 113, 0.06);
+        font-size: 0.78rem;
+
+        button {
+            flex: 0 0 auto;
+            padding: 0.35rem 0.65rem;
+            color: var(--shell-text);
+            border: 1px solid rgba(248, 113, 113, 0.24);
+            border-radius: 6px;
+            background: rgba(248, 113, 113, 0.1);
+        }
     }
 
     .badge {
@@ -144,24 +194,53 @@ const Page = styled.main`
         .status-grid {
             grid-template-columns: 1fr;
         }
+
+        .status-shell {
+            padding: 1.25rem;
+        }
+
+        .node-row {
+            align-items: flex-start;
+        }
+
+        .status-error {
+            align-items: flex-start;
+            flex-direction: column;
+        }
     }
 `;
 
 export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
-    const { data } = useSWR('/api/public/status', (url) => http.get(url).then((response) => response.data), {
-        refreshInterval: 60000,
-    });
+    const { data, error, mutate } = useSWR<StatusResponse>(
+        '/api/public/status',
+        (url) => http.get(url).then((response) => response.data),
+        { refreshInterval: 60000 }
+    );
 
+    const isChecking = !data && !error;
     const isOperational = data?.status === 'operational';
-    const isDegraded = data?.status === 'degraded';
     const isMaintenance = data?.status === 'maintenance';
 
-    const pillClass = isOperational ? 'operational' : isMaintenance ? 'maintenance' : 'degraded';
-    const statusIcon = isOperational ? faCheckCircle : isMaintenance ? faTools : faExclamationTriangle;
-    const statusLabel = !data
+    const pillClass = isChecking
+        ? 'checking'
+        : isOperational
+        ? 'operational'
+        : isMaintenance
+        ? 'maintenance'
+        : 'degraded';
+    const statusIcon = isChecking
+        ? faSignal
+        : isOperational
+        ? faCheckCircle
+        : isMaintenance
+        ? faTools
+        : faExclamationTriangle;
+    const statusLabel = isChecking
         ? 'Checking Systems'
+        : error
+        ? 'Status Check Failed'
         : isOperational
         ? 'All Systems Operational'
         : isMaintenance
@@ -188,7 +267,7 @@ export default () => {
     return (
         <Page>
             <section className={'status-shell'}>
-                <div className={`status-pill ${pillClass}`}>
+                <div className={`status-pill ${pillClass}`} aria-live={'polite'}>
                     <FontAwesomeIcon icon={statusIcon} /> {statusLabel}
                 </div>
 
@@ -200,13 +279,25 @@ export default () => {
                     {branding.statusMessage}
                 </p>
 
+                {error && (
+                    <div className={'status-error'} role={'alert'}>
+                        <span>Live node data is temporarily unavailable. The panel will retry automatically.</span>
+                        <button type={'button'} onClick={() => mutate()}>
+                            Retry now
+                        </button>
+                    </div>
+                )}
+
                 <div className={'status-grid'}>
                     <div className={'status-card'}>
                         <FontAwesomeIcon icon={faServer} className={'text-red-400 text-lg mb-3'} />
                         <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>Control Panel</p>
                         <div className={'mt-2'}>
-                            <span className={'badge badge-green'}>
-                                <FontAwesomeIcon icon={faCheckCircle} /> Operational
+                            <span
+                                className={`badge ${error ? 'badge-red' : isChecking ? 'badge-yellow' : 'badge-green'}`}
+                            >
+                                <FontAwesomeIcon icon={error ? faExclamationTriangle : faCheckCircle} />
+                                {error ? 'Status API unavailable' : isChecking ? 'Checking' : 'Operational'}
                             </span>
                         </div>
                     </div>
@@ -216,7 +307,9 @@ export default () => {
                         <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>Active Nodes</p>
                         <div className={'mt-2'}>
                             <span className={`badge ${data?.nodes?.unavailable ? 'badge-red' : 'badge-green'}`}>
-                                <FontAwesomeIcon icon={data?.nodes?.unavailable ? faExclamationTriangle : faCheckCircle} />
+                                <FontAwesomeIcon
+                                    icon={data?.nodes?.unavailable ? faExclamationTriangle : faCheckCircle}
+                                />
                                 {data ? `${data.nodes.operational}/${data.nodes.total} Online` : 'Checking...'}
                             </span>
                         </div>
@@ -224,7 +317,9 @@ export default () => {
 
                     <div className={'status-card'}>
                         <FontAwesomeIcon icon={faShieldAlt} className={'text-red-400 text-lg mb-3'} />
-                        <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>Node Maintenance</p>
+                        <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>
+                            Node Maintenance
+                        </p>
                         <div className={'mt-2'}>
                             <span className={`badge ${data?.nodes?.maintenance ? 'badge-yellow' : 'badge-green'}`}>
                                 <FontAwesomeIcon icon={data?.nodes?.maintenance ? faTools : faCheckCircle} />
@@ -244,7 +339,13 @@ export default () => {
                                 <div key={node.id} className={'node-row'}>
                                     <div className={'flex items-center gap-3'}>
                                         <FontAwesomeIcon
-                                            icon={node.status === 'operational' ? faHdd : node.status === 'maintenance' ? faTools : faNetworkWired}
+                                            icon={
+                                                node.status === 'operational'
+                                                    ? faHdd
+                                                    : node.status === 'maintenance'
+                                                    ? faTools
+                                                    : faNetworkWired
+                                            }
                                             className={
                                                 node.status === 'operational'
                                                     ? 'text-green-400'
@@ -253,9 +354,9 @@ export default () => {
                                                     : 'text-red-400'
                                             }
                                         />
-                                        <div>
+                                        <div className={'node-name'}>
                                             <p className={'text-sm font-medium text-neutral-200'}>{node.name}</p>
-                                            <p className={'text-xs text-neutral-500 font-mono'}>{node.fqdn}</p>
+                                            <p className={'text-xs text-neutral-500'}>Infrastructure node</p>
                                         </div>
                                     </div>
                                     <div>
@@ -280,7 +381,9 @@ export default () => {
                 <div className={'mt-8 pt-6 border-t border-white/5 flex items-center justify-between flex-wrap gap-4'}>
                     <Link
                         to={'/'}
-                        className={'inline-flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 no-underline transition-colors'}
+                        className={
+                            'inline-flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 no-underline transition-colors'
+                        }
                     >
                         Open Control Panel <FontAwesomeIcon icon={faArrowRight} />
                     </Link>
@@ -294,4 +397,3 @@ export default () => {
         </Page>
     );
 };
-
