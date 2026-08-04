@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components/macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -43,28 +44,57 @@ const Center = styled.div`
         padding: 0 0.2rem;
         color: white;
         border-radius: 999px;
-        background: var(--shell-accent);
+        background: #d95763;
+        box-shadow: 0 0 12px rgba(217, 87, 99, 0.34);
         font-size: 0.58rem;
     }
-    .notification-panel {
+`;
+
+const NotificationBackdrop = styled.div`
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    background: rgba(3, 2, 3, 0.66);
+    backdrop-filter: blur(5px);
+`;
+
+const NotificationPanel = styled.div`
+    position: fixed;
+    z-index: 999;
+    display: flex;
+    width: min(23rem, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 5.75rem);
+    overflow: hidden;
+    flex-direction: column;
+    border: 1px solid rgba(224, 91, 103, 0.24);
+    border-radius: 14px;
+    background: linear-gradient(150deg, rgba(28, 17, 21, 0.985), rgba(9, 9, 11, 0.985) 52%);
+    box-shadow: inset 0 1px 0 rgba(255, 225, 230, 0.055), 0 25px 70px rgba(0, 0, 0, 0.58),
+        0 0 42px rgba(201, 79, 89, 0.07);
+    backdrop-filter: blur(24px) saturate(1.2);
+
+    &::before {
         position: absolute;
-        top: calc(100% + 0.7rem);
-        right: 0;
-        z-index: 130;
-        width: min(23rem, calc(100vw - 1.5rem));
-        overflow: hidden;
-        border: 1px solid var(--shell-border-strong);
-        border-radius: var(--shell-radius);
-        background: color-mix(in srgb, var(--shell-panel-strong) 96%, transparent);
-        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.48);
-        backdrop-filter: blur(var(--shell-glass));
+        top: 0;
+        right: 12%;
+        left: 12%;
+        height: 1px;
+        content: '';
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.58), transparent);
     }
+
     .notification-head {
+        position: sticky;
+        top: 0;
+        z-index: 2;
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0.85rem 1rem;
-        border-bottom: 1px solid var(--shell-border);
+        border-bottom: 1px solid rgba(224, 91, 103, 0.14);
+        background: rgba(13, 11, 13, 0.9);
+        backdrop-filter: blur(18px);
     }
     .notification-head strong {
         color: var(--shell-text);
@@ -91,13 +121,15 @@ const Center = styled.div`
         border-radius: 7px;
     }
     .notification-actions button:hover {
-        color: var(--shell-text);
-        border-color: var(--shell-border);
-        background: var(--shell-accent-soft);
+        color: #f6a0a7;
+        border-color: rgba(224, 91, 103, 0.26);
+        background: rgba(201, 79, 89, 0.12);
     }
     .notification-list {
-        max-height: min(27rem, calc(100vh - 7rem));
+        min-height: 0;
+        max-height: min(27rem, calc(100dvh - 9rem));
         overflow-y: auto;
+        overscroll-behavior: contain;
     }
     .notification-item {
         position: relative;
@@ -141,6 +173,7 @@ const Center = styled.div`
         display: block;
         margin-top: 0.25rem;
         color: var(--shell-muted);
+        overflow-wrap: anywhere;
     }
     .notification-time {
         color: var(--shell-muted);
@@ -153,7 +186,57 @@ const Center = styled.div`
         color: var(--shell-muted);
         text-align: center;
     }
+
+    @media (max-width: 700px) {
+        width: auto;
+        border-radius: 16px;
+
+        .notification-head {
+            padding: 0.9rem 1rem;
+        }
+
+        .notification-head strong {
+            font-size: 0.9rem;
+        }
+
+        .notification-actions button {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+        .notification-list {
+            max-height: none;
+        }
+
+        .notification-item {
+            padding: 1rem 1rem 1rem 1.3rem;
+        }
+
+        .notification-item strong {
+            white-space: normal;
+        }
+    }
 `;
+
+interface PanelPosition {
+    top: number;
+    right: number;
+    mobile: boolean;
+    maxHeight: number;
+}
+
+const getPanelPosition = (trigger?: HTMLButtonElement | null): PanelPosition => {
+    const mobile = window.innerWidth <= 700;
+    const rect = trigger?.getBoundingClientRect();
+    const top = Math.max(12, (rect?.bottom || 64) + 10);
+
+    return {
+        top,
+        right: mobile ? 12 : Math.max(12, window.innerWidth - (rect?.right || window.innerWidth - 12)),
+        mobile,
+        maxHeight: Math.max(220, window.innerHeight - top - (mobile ? 12 : 16)),
+    };
+};
 
 const relativeTime = (value: RockNotification['createdAt']) => {
     const timestamp = typeof value === 'number' ? value : Date.parse(value);
@@ -168,7 +251,10 @@ const relativeTime = (value: RockNotification['createdAt']) => {
 export default () => {
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState<RockNotification[]>(getRockNotifications);
+    const [panelPosition, setPanelPosition] = useState<PanelPosition>(() => getPanelPosition());
     const center = useRef<HTMLDivElement>(null);
+    const trigger = useRef<HTMLButtonElement>(null);
+    const panel = useRef<HTMLDivElement>(null);
 
     const sync = useCallback(() => {
         return getRockAccountData()
@@ -200,7 +286,8 @@ export default () => {
         if (!open) return;
         sync();
         const close = (event: MouseEvent) => {
-            if (!center.current?.contains(event.target as Node)) setOpen(false);
+            const target = event.target as Node;
+            if (!center.current?.contains(target) && !panel.current?.contains(target)) setOpen(false);
         };
         const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
         document.addEventListener('mousedown', close);
@@ -211,9 +298,36 @@ export default () => {
         };
     }, [open, sync]);
 
+    useLayoutEffect(() => {
+        if (!open) return;
+
+        const updatePosition = () => setPanelPosition(getPanelPosition(trigger.current));
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true);
+        window.visualViewport?.addEventListener('resize', updatePosition);
+
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+            window.visualViewport?.removeEventListener('resize', updatePosition);
+        };
+    }, [open]);
+
+    useEffect(() => {
+        if (!open || !panelPosition.mobile) return;
+
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [open, panelPosition.mobile]);
+
     return (
         <Center ref={center}>
             <button
+                ref={trigger}
                 type={'button'}
                 className={'navigation-link notification-trigger'}
                 onClick={() => setOpen((value) => !value)}
@@ -226,57 +340,83 @@ export default () => {
                     <span className={'notification-count'}>{items.length > 9 ? '9+' : items.length}</span>
                 )}
             </button>
-            {open && (
-                <div
-                    id={'rock-notification-panel'}
-                    className={'notification-panel'}
-                    role={'dialog'}
-                    aria-label={'Notifications'}
-                >
-                    <div className={'notification-head'}>
-                        <div>
-                            <strong>Notifications</strong>
-                            <small>{items.length ? `${items.length} recent` : 'You are all caught up'}</small>
-                        </div>
-                        <div className={'notification-actions'}>
-                            {!!items.length && (
-                                <button
-                                    type={'button'}
-                                    onClick={() => {
-                                        clearRockNotifications();
-                                        clearServerNotifications().catch(() => undefined);
-                                    }}
-                                    aria-label={'Clear notifications'}
-                                >
-                                    <FontAwesomeIcon icon={faCheck} />
-                                </button>
+            {open &&
+                createPortal(
+                    <>
+                        {panelPosition.mobile && (
+                            <NotificationBackdrop aria-hidden={'true'} onClick={() => setOpen(false)} />
+                        )}
+                        <NotificationPanel
+                            ref={panel}
+                            id={'rock-notification-panel'}
+                            role={'dialog'}
+                            aria-label={'Notifications'}
+                            aria-modal={panelPosition.mobile || undefined}
+                            style={
+                                panelPosition.mobile
+                                    ? {
+                                          top: panelPosition.top,
+                                          right: 12,
+                                          left: 12,
+                                          maxHeight: panelPosition.maxHeight,
+                                      }
+                                    : {
+                                          top: panelPosition.top,
+                                          right: panelPosition.right,
+                                          maxHeight: panelPosition.maxHeight,
+                                      }
+                            }
+                        >
+                            <div className={'notification-head'}>
+                                <div>
+                                    <strong>Notifications</strong>
+                                    <small>{items.length ? `${items.length} recent` : 'You are all caught up'}</small>
+                                </div>
+                                <div className={'notification-actions'}>
+                                    {!!items.length && (
+                                        <button
+                                            type={'button'}
+                                            onClick={() => {
+                                                clearRockNotifications();
+                                                clearServerNotifications().catch(() => undefined);
+                                            }}
+                                            aria-label={'Clear notifications'}
+                                        >
+                                            <FontAwesomeIcon icon={faCheck} />
+                                        </button>
+                                    )}
+                                    <button
+                                        type={'button'}
+                                        onClick={() => setOpen(false)}
+                                        aria-label={'Close notifications'}
+                                    >
+                                        <FontAwesomeIcon icon={faTimes} />
+                                    </button>
+                                </div>
+                            </div>
+                            {!items.length ? (
+                                <div className={'empty'}>All quiet.</div>
+                            ) : (
+                                <div className={'notification-list'}>
+                                    {items.map((item) => (
+                                        <Link
+                                            key={item.id}
+                                            className={'notification-item'}
+                                            data-tone={item.tone}
+                                            to={item.href || '/'}
+                                            onClick={() => setOpen(false)}
+                                        >
+                                            <strong>{item.title}</strong>
+                                            <small>{item.message}</small>
+                                            <span className={'notification-time'}>{relativeTime(item.createdAt)}</span>
+                                        </Link>
+                                    ))}
+                                </div>
                             )}
-                            <button type={'button'} onClick={() => setOpen(false)} aria-label={'Close notifications'}>
-                                <FontAwesomeIcon icon={faTimes} />
-                            </button>
-                        </div>
-                    </div>
-                    {!items.length ? (
-                        <div className={'empty'}>All quiet.</div>
-                    ) : (
-                        <div className={'notification-list'}>
-                            {items.map((item) => (
-                                <Link
-                                    key={item.id}
-                                    className={'notification-item'}
-                                    data-tone={item.tone}
-                                    to={item.href || '/'}
-                                    onClick={() => setOpen(false)}
-                                >
-                                    <strong>{item.title}</strong>
-                                    <small>{item.message}</small>
-                                    <span className={'notification-time'}>{relativeTime(item.createdAt)}</span>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
+                        </NotificationPanel>
+                    </>,
+                    document.getElementById('modal-portal') || document.body
+                )}
         </Center>
     );
 };

@@ -9,37 +9,70 @@ const Bar = styled.nav`
     @media (max-width: 700px) {
         position: fixed;
         right: 0.65rem;
-        bottom: 0.65rem;
+        bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
         left: 0.65rem;
         z-index: 120;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         padding: 0.42rem;
-        border: 1px solid var(--shell-border-strong);
-        border-radius: 14px;
-        background: color-mix(in srgb, var(--shell-panel-strong) 92%, transparent);
-        box-shadow: 0 18px 55px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        border: 1px solid rgba(224, 91, 103, 0.24);
+        border-radius: 16px;
+        background: linear-gradient(145deg, rgba(22, 15, 18, 0.96), rgba(8, 8, 10, 0.97));
+        box-shadow: inset 0 1px 0 rgba(255, 225, 230, 0.055), 0 18px 55px rgba(0, 0, 0, 0.56),
+            0 0 34px rgba(201, 79, 89, 0.06);
         backdrop-filter: blur(var(--shell-glass));
+
+        &::before {
+            position: absolute;
+            top: 0;
+            right: 12%;
+            left: 12%;
+            height: 1px;
+            content: '';
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.5), transparent);
+        }
     }
     a {
+        position: relative;
         display: flex;
         min-width: 0;
-        min-height: 3rem;
+        min-height: 3.15rem;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 0.3rem;
         color: var(--shell-muted);
-        border-radius: 10px;
+        border: 1px solid transparent;
+        border-radius: 11px;
         font-size: 0.59rem;
         text-decoration: none;
+        transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
     }
-    a.active {
-        color: var(--shell-accent-bright);
-        background: rgba(var(--shell-accent-rgb), 0.12);
+    && a.active {
+        color: #f6a0a7;
+        border-color: rgba(224, 91, 103, 0.3);
+        background: linear-gradient(145deg, rgba(201, 79, 89, 0.22), rgba(112, 28, 40, 0.13));
+        box-shadow: inset 0 1px 0 rgba(255, 226, 230, 0.07), 0 8px 24px rgba(107, 20, 33, 0.2);
     }
     svg {
         font-size: 0.9rem;
+    }
+
+    && a.active svg {
+        color: #ef7c86;
+        filter: drop-shadow(0 0 8px rgba(224, 91, 103, 0.32));
+    }
+
+    @media (max-width: 380px) {
+        right: 0.45rem;
+        left: 0.45rem;
+        padding: 0.32rem;
+
+        a {
+            min-height: 3rem;
+        }
     }
 `;
 
