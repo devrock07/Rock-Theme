@@ -2,7 +2,6 @@
 
 namespace Pterodactyl\Tests\Integration\Http\Controllers\Base;
 
-use RuntimeException;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\Location;
 use Illuminate\Support\Facades\Cache;
@@ -43,7 +42,7 @@ class PublicStatusControllerTest extends HttpTestCase
                 return [];
             }
 
-            throw new RuntimeException('Wings is unavailable.');
+            throw new \RuntimeException('Wings is unavailable.');
         });
 
         $response = $this->getJson(route('public.status.api'));
