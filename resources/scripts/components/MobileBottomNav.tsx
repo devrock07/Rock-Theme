@@ -17,7 +17,7 @@ const Bar = styled.nav`
         padding: 0.42rem;
         border: 1px solid var(--shell-border-strong);
         border-radius: 14px;
-        background: rgba(10, 9, 11, 0.9);
+        background: color-mix(in srgb, var(--shell-panel-strong) 92%, transparent);
         box-shadow: 0 18px 55px rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(var(--shell-glass));
     }

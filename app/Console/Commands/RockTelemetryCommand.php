@@ -5,6 +5,7 @@ namespace Pterodactyl\Console\Commands;
 use Pterodactyl\Models\Server;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Pterodactyl\Services\RockTheme\TelemetryRecorder;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 
@@ -15,7 +16,15 @@ class RockTelemetryCommand extends Command
 
     public function handle(DaemonServerRepository $repository, TelemetryRecorder $recorder): int
     {
-        DB::table('rock_telemetry_samples')->where('recorded_at', '<', now()->subDays(7))->delete();
+        if (!Schema::hasTable('rock_telemetry_samples')) {
+            return self::SUCCESS;
+        }
+
+        try {
+            DB::table('rock_telemetry_samples')->where('recorded_at', '<', now()->subDays(7))->delete();
+        } catch (\Throwable) {
+            return self::SUCCESS;
+        }
         if ($this->option('prune-only')) {
             return self::SUCCESS;
         }

@@ -33,9 +33,9 @@ const RightNavigation = styled.div`
 
         &:active,
         &:hover {
-            color: white;
+            color: var(--shell-text);
             border-color: var(--shell-border-strong);
-            background: linear-gradient(135deg, rgba(201, 79, 89, 0.11), rgba(255, 255, 255, 0.035));
+            background: linear-gradient(135deg, var(--shell-accent-soft), rgba(255, 255, 255, 0.035));
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.16);
             transform: translateY(-1px);
         }
@@ -43,7 +43,7 @@ const RightNavigation = styled.div`
 
     & > a.active {
         color: var(--shell-accent-bright);
-        border-color: rgba(201, 79, 89, 0.42);
+        border-color: rgba(var(--shell-accent-rgb), 0.42);
         background: var(--shell-accent-soft);
     }
 
@@ -102,7 +102,7 @@ const RightNavigation = styled.div`
 const Topbar = styled.div`
     position: relative;
     border-bottom: 1px solid var(--shell-border);
-    background: linear-gradient(105deg, rgba(8, 8, 9, 0.9), rgba(28, 12, 15, 0.76), rgba(8, 8, 9, 0.88));
+    background: linear-gradient(105deg, var(--shell-panel), var(--shell-panel-strong), var(--shell-panel));
     box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.025);
     backdrop-filter: blur(22px) saturate(1.35);
 
@@ -114,7 +114,7 @@ const Topbar = styled.div`
         height: 1px;
         content: '';
         pointer-events: none;
-        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.42), transparent);
+        background: linear-gradient(90deg, transparent, rgba(var(--shell-accent-rgb), 0.42), transparent);
     }
 
     .brand-mark {
@@ -125,9 +125,9 @@ const Topbar = styled.div`
         height: 1.75rem;
         margin-right: 0.6rem;
         color: var(--shell-accent-bright);
-        border: 1px solid rgba(201, 79, 89, 0.44);
+        border: 1px solid rgba(var(--shell-accent-rgb), 0.44);
         border-radius: 6px;
-        background: rgba(201, 79, 89, 0.09);
+        background: rgba(var(--shell-accent-rgb), 0.09);
         font-size: 0.72rem;
     }
 

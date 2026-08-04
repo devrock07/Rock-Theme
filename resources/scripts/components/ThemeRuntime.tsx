@@ -4,8 +4,11 @@ import { ApplicationStore } from '@/state';
 
 const hexToRgb = (value: string) => {
     const match = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(value);
-    return match ? `${parseInt(match[1], 16)}, ${parseInt(match[2], 16)}, ${parseInt(match[3], 16)}` : '201, 79, 89';
+    return match ? [parseInt(match[1], 16), parseInt(match[2], 16), parseInt(match[3], 16)] : [201, 79, 89];
 };
+
+const mixWithWhite = (rgb: number[], amount = 0.38) =>
+    `rgb(${rgb.map((channel) => Math.round(channel + (255 - channel) * amount)).join(', ')})`;
 
 export default () => {
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
@@ -14,19 +17,32 @@ export default () => {
         const root = document.documentElement;
         const accent = branding.accent || '#c94f59';
         const rgb = hexToRgb(accent);
+        const glassStrength = Number.isFinite(branding.glassStrength) ? branding.glassStrength : 18;
+        const cardRadius = Number.isFinite(branding.cardRadius) ? branding.cardRadius : 12;
 
         root.dataset.rockTheme = branding.themePreset || 'makima';
         root.dataset.rockMotion = branding.motionEnabled ? 'full' : 'reduced';
         root.style.setProperty('--shell-accent', accent);
-        root.style.setProperty('--shell-accent-rgb', rgb);
-        root.style.setProperty('--shell-accent-bright', `color-mix(in srgb, ${accent} 62%, white)`);
-        root.style.setProperty('--shell-accent-soft', `rgba(${rgb}, 0.12)`);
-        root.style.setProperty('--shell-glass', `${Math.min(30, Math.max(0, branding.glassStrength || 0))}px`);
-        root.style.setProperty('--shell-radius', `${Math.min(20, Math.max(6, branding.cardRadius || 12))}px`);
+        root.style.setProperty('--shell-accent-rgb', rgb.join(', '));
+        root.style.setProperty('--shell-accent-bright', mixWithWhite(rgb));
+        root.style.setProperty('--shell-accent-soft', `rgba(${rgb.join(', ')}, 0.12)`);
+        root.style.setProperty('--shell-glass', `${Math.min(30, Math.max(0, glassStrength))}px`);
+        root.style.setProperty('--shell-radius', `${Math.min(20, Math.max(6, cardRadius))}px`);
+
+        const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+        themeColor?.setAttribute('content', branding.themePreset === 'minimal-light' ? '#e9e6e7' : '#09090a');
 
         return () => {
             delete root.dataset.rockTheme;
             delete root.dataset.rockMotion;
+            [
+                '--shell-accent',
+                '--shell-accent-rgb',
+                '--shell-accent-bright',
+                '--shell-accent-soft',
+                '--shell-glass',
+                '--shell-radius',
+            ].forEach((property) => root.style.removeProperty(property));
         };
     }, [branding]);
 

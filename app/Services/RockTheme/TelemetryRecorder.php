@@ -5,11 +5,16 @@ namespace Pterodactyl\Services\RockTheme;
 use Illuminate\Support\Arr;
 use Pterodactyl\Models\Server;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class TelemetryRecorder
 {
     public function record(Server $server, array $stats): void
     {
+        if (!Schema::hasTable('rock_telemetry_samples')) {
+            return;
+        }
+
         $recordedAt = now()->startOfMinute();
         $state = Arr::get($stats, 'state', 'unknown');
         $previous = DB::table('rock_telemetry_samples')
@@ -47,6 +52,10 @@ class TelemetryRecorder
 
     private function notifyUsers(Server $server, string $type, string $title, string $message): void
     {
+        if (!Schema::hasTable('rock_notifications')) {
+            return;
+        }
+
         $userIds = $server->subusers()->pluck('user_id')->push($server->owner_id)->unique();
         $now = now();
         DB::table('rock_notifications')->insert($userIds->map(fn ($userId) => [

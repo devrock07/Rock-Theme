@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-rock-theme="{{ config('branding.theme_preset', 'makima') }}" data-rock-motion="{{ config('branding.motion_enabled', true) ? 'full' : 'reduced' }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">

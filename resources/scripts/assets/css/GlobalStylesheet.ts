@@ -23,6 +23,7 @@ export default createGlobalStyle`
         --shell-danger: #ed7682;
         --shell-radius: 12px;
         --shell-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+        --shell-grid: rgba(255, 255, 255, 0.052);
     }
 
     :root[data-rock-theme='crimson-glass'] {
@@ -52,6 +53,7 @@ export default createGlobalStyle`
         --shell-text: #211b1d;
         --shell-muted: #746b6f;
         --shell-shadow: 0 22px 60px rgba(55, 35, 42, 0.12);
+        --shell-grid: rgba(40, 22, 28, 0.075);
     }
 
     :root[data-rock-motion='reduced'] *,
@@ -84,7 +86,7 @@ export default createGlobalStyle`
         min-height: 100vh;
         letter-spacing: -0.01em;
         background:
-            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.052) 1px, transparent 0),
+            radial-gradient(circle at 1px 1px, var(--shell-grid) 1px, transparent 0),
             var(--shell-bg);
         background-size: 28px 28px, auto;
         background-attachment: fixed;
@@ -180,6 +182,39 @@ export default createGlobalStyle`
         background: rgba(24, 14, 18, 0.96);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
         backdrop-filter: blur(14px);
+    }
+
+    :root[data-rock-theme='minimal-light'] .text-neutral-50,
+    :root[data-rock-theme='minimal-light'] .text-neutral-100,
+    :root[data-rock-theme='minimal-light'] .text-neutral-200,
+    :root[data-rock-theme='minimal-light'] .text-neutral-300 {
+        color: var(--shell-text) !important;
+    }
+
+    :root[data-rock-theme='minimal-light'] .text-neutral-400,
+    :root[data-rock-theme='minimal-light'] .text-neutral-500,
+    :root[data-rock-theme='minimal-light'] .text-neutral-600,
+    :root[data-rock-theme='minimal-light'] .text-neutral-700 {
+        color: var(--shell-muted) !important;
+    }
+
+    :root[data-rock-theme='minimal-light'] .bg-neutral-700,
+    :root[data-rock-theme='minimal-light'] .bg-neutral-800,
+    :root[data-rock-theme='minimal-light'] .bg-neutral-900 {
+        background-color: var(--shell-panel) !important;
+    }
+
+    :root[data-rock-theme='minimal-light'] .border-neutral-500,
+    :root[data-rock-theme='minimal-light'] .border-neutral-600,
+    :root[data-rock-theme='minimal-light'] .border-neutral-700,
+    :root[data-rock-theme='minimal-light'] .border-neutral-800,
+    :root[data-rock-theme='minimal-light'] .border-neutral-900 {
+        border-color: var(--shell-border) !important;
+    }
+
+    :root[data-rock-theme='minimal-light'] [role='tooltip'] {
+        color: var(--shell-text);
+        background: var(--shell-panel-strong);
     }
 
     a, button {

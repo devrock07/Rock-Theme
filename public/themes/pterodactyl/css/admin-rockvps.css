@@ -14,6 +14,54 @@
     --admin-success: #72d6a5;
     --admin-danger: #ed7682;
     --admin-warning: #e9b96e;
+    --admin-header: rgba(8, 8, 8, 0.94);
+    --admin-header-mid: rgba(29, 12, 15, 0.88);
+    --admin-sidebar: rgba(8, 8, 8, 0.94);
+    --admin-input: #09090a;
+    --admin-ambient: rgba(153, 27, 39, 0.16);
+    color-scheme: dark;
+}
+
+:root[data-rock-theme='crimson-glass'] {
+    --admin-bg: #0b080a;
+    --admin-surface: #151014;
+    --admin-surface-raised: #1b1217;
+    --admin-border: rgba(255, 225, 230, 0.11);
+    --admin-border-strong: rgba(255, 225, 230, 0.2);
+    --admin-header: rgba(16, 10, 14, 0.88);
+    --admin-header-mid: rgba(47, 16, 24, 0.82);
+    --admin-sidebar: rgba(14, 9, 12, 0.9);
+    --admin-input: #100b0e;
+    --admin-ambient: rgba(201, 79, 89, 0.2);
+}
+
+:root[data-rock-theme='pure-black'] {
+    --admin-bg: #030304;
+    --admin-surface: #080809;
+    --admin-surface-raised: #0b0b0c;
+    --admin-border: rgba(255, 255, 255, 0.075);
+    --admin-border-strong: rgba(255, 255, 255, 0.15);
+    --admin-header: rgba(3, 3, 4, 0.97);
+    --admin-header-mid: rgba(12, 7, 9, 0.96);
+    --admin-sidebar: rgba(3, 3, 4, 0.97);
+    --admin-input: #050506;
+    --admin-ambient: rgba(201, 79, 89, 0.1);
+}
+
+:root[data-rock-theme='minimal-light'] {
+    --admin-bg: #e9e6e7;
+    --admin-surface: #f8f6f7;
+    --admin-surface-raised: #fff;
+    --admin-border: rgba(40, 22, 28, 0.12);
+    --admin-border-strong: rgba(40, 22, 28, 0.22);
+    --admin-text: #211b1d;
+    --admin-muted: #746b6f;
+    --admin-header: rgba(255, 252, 253, 0.94);
+    --admin-header-mid: rgba(244, 229, 233, 0.92);
+    --admin-sidebar: rgba(249, 246, 247, 0.96);
+    --admin-input: #fff;
+    --admin-ambient: rgba(185, 52, 69, 0.1);
+    color-scheme: light;
 }
 
 html,
@@ -25,7 +73,7 @@ body,
 }
 
 body {
-    background-image: radial-gradient(circle at 78% -15%, rgba(153, 27, 39, 0.16), transparent 28rem),
+    background-image: radial-gradient(circle at 78% -15%, var(--admin-ambient), transparent 28rem),
         radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0) !important;
     background-size: auto, 28px 28px !important;
 }
@@ -89,7 +137,7 @@ body {
 .skin-blue .main-header .logo,
 .skin-blue .main-header .navbar {
     height: 58px;
-    background: linear-gradient(105deg, rgba(8, 8, 8, 0.94), rgba(29, 12, 15, 0.88), rgba(8, 8, 8, 0.94)) !important;
+    background: linear-gradient(105deg, var(--admin-header), var(--admin-header-mid), var(--admin-header)) !important;
 }
 
 .skin-blue .main-header .logo {
@@ -181,7 +229,7 @@ body {
     width: 224px;
     padding-top: 0;
     border-right: 1px solid var(--admin-border);
-    background: rgba(8, 8, 8, 0.94) !important;
+    background: var(--admin-sidebar) !important;
 }
 
 .sidebar-mini.sidebar-collapse .main-header .navbar,
@@ -673,7 +721,7 @@ pre {
     color: #aaa5b4;
     border: 1px solid var(--admin-border);
     border-radius: 5px;
-    background: #09090a;
+    background: var(--admin-input);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -687,7 +735,7 @@ textarea.form-control,
     color: #d3d0d8;
     border-color: var(--admin-border-strong);
     border-radius: 7px;
-    background: #09090a;
+    background: var(--admin-input);
     box-shadow: none;
 }
 
@@ -928,7 +976,7 @@ input[type='radio'] {
     padding: 15px 32px;
     color: #5e5b64;
     border-top: 1px solid var(--admin-border);
-    background: rgba(8, 8, 8, 0.9);
+    background: var(--admin-sidebar);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 9px;
     letter-spacing: 0.04em;
@@ -1360,6 +1408,60 @@ textarea.form-control:hover {
     opacity: 0.7;
     -webkit-mask-image: linear-gradient(110deg, transparent 8%, black, transparent 84%);
     mask-image: linear-gradient(110deg, transparent 8%, black, transparent 84%);
+}
+
+:root[data-rock-theme='minimal-light'] .box,
+:root[data-rock-theme='minimal-light'] .nav-tabs-custom,
+:root[data-rock-theme='minimal-light'] .well,
+:root[data-rock-theme='minimal-light'] .small-box,
+:root[data-rock-theme='minimal-light'] .info-box,
+:root[data-rock-theme='minimal-light'] .admin-status-strip,
+:root[data-rock-theme='minimal-light'] .admin-resource-link {
+    color: var(--admin-text) !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 246, 247, 0.9)) !important;
+    box-shadow: inset 0 1px 0 #fff, 0 16px 40px rgba(55, 35, 42, 0.1) !important;
+}
+
+:root[data-rock-theme='minimal-light'] .box-body,
+:root[data-rock-theme='minimal-light'] .table,
+:root[data-rock-theme='minimal-light'] .table > tbody > tr > td,
+:root[data-rock-theme='minimal-light'] .form-group label,
+:root[data-rock-theme='minimal-light'] .control-label,
+:root[data-rock-theme='minimal-light'] .modal-content,
+:root[data-rock-theme='minimal-light'] .dropdown-menu,
+:root[data-rock-theme='minimal-light'] .select2-dropdown {
+    color: var(--admin-text) !important;
+}
+
+:root[data-rock-theme='minimal-light'] .form-control,
+:root[data-rock-theme='minimal-light'] input.form-control,
+:root[data-rock-theme='minimal-light'] textarea.form-control,
+:root[data-rock-theme='minimal-light'] .select2-container--default .select2-selection--single,
+:root[data-rock-theme='minimal-light'] .select2-container--default .select2-selection--multiple,
+:root[data-rock-theme='minimal-light'] .input-group .input-group-addon,
+:root[data-rock-theme='minimal-light'] code,
+:root[data-rock-theme='minimal-light'] pre {
+    color: var(--admin-text) !important;
+    background: var(--admin-input) !important;
+}
+
+:root[data-rock-theme='minimal-light'] .modal-content,
+:root[data-rock-theme='minimal-light'] .dropdown-menu,
+:root[data-rock-theme='minimal-light'] .select2-dropdown {
+    background: var(--admin-surface-raised) !important;
+    box-shadow: 0 24px 70px rgba(55, 35, 42, 0.18) !important;
+}
+
+:root[data-rock-theme='minimal-light'] .content-header > h1 {
+    background-image: linear-gradient(95deg, #211b1d 10%, var(--admin-accent) 43%, #211b1d 62%);
+}
+
+:root[data-rock-motion='reduced'] *,
+:root[data-rock-motion='reduced'] *::before,
+:root[data-rock-motion='reduced'] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
 }
 
 @media (max-width: 767px) {

@@ -117,7 +117,7 @@
                             <div class="form-group col-md-2">
                                 <label class="control-label">Motion</label>
                                 @php($motionEnabled = (int) old('branding:motion_enabled', config('branding.motion_enabled', true)))
-                                <select class="form-control" name="branding:motion_enabled">
+                                <select class="form-control" id="theme-motion" name="branding:motion_enabled">
                                     <option value="1" @if($motionEnabled === 1) selected @endif>Enabled</option>
                                     <option value="0" @if($motionEnabled === 0) selected @endif>Reduced</option>
                                 </select>
@@ -253,6 +253,7 @@
             const accent = document.getElementById('theme-accent');
             const glass = document.getElementById('theme-glass');
             const radius = document.getElementById('theme-radius');
+            const motion = document.getElementById('theme-motion');
             const preview = document.getElementById('theme-preview');
             const chip = document.getElementById('theme-preview-chip');
             const presets = {
@@ -261,8 +262,22 @@
                 'pure-black': ['#cf4f5a', '#050506'],
                 'minimal-light': ['#b93445', '#ebe7e8'],
             };
+            const hexToRgb = (value) => {
+                const match = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(value);
+                return match ? match.slice(1).map((part) => parseInt(part, 16)) : [201, 79, 89];
+            };
             const render = () => {
                 const colors = presets[preset.value] || presets.makima;
+                const rgb = hexToRgb(accent.value);
+                const bright = rgb.map((channel) => Math.round(channel + (255 - channel) * .38)).join(', ');
+                document.documentElement.dataset.rockTheme = preset.value;
+                document.documentElement.dataset.rockMotion = motion.value === '1' ? 'full' : 'reduced';
+                document.documentElement.style.setProperty('--admin-accent', accent.value);
+                document.documentElement.style.setProperty('--admin-accent-bright', `rgb(${bright})`);
+                document.documentElement.style.setProperty('--admin-accent-soft', `rgba(${rgb.join(', ')}, .12)`);
+                document.documentElement.style.setProperty('--admin-accent-border', `rgba(${rgb.join(', ')}, .34)`);
+                document.documentElement.style.setProperty('--admin-radius', `${radius.value}px`);
+                document.documentElement.style.setProperty('--admin-glass', `${glass.value}px`);
                 preview.style.borderRadius = `${radius.value}px`;
                 preview.style.backdropFilter = `blur(${glass.value}px)`;
                 preview.style.background = `linear-gradient(135deg, ${accent.value}24, ${colors[1]})`;
@@ -274,7 +289,7 @@
                 accent.value = (presets[preset.value] || presets.makima)[0];
                 render();
             });
-            [preset, accent, glass, radius].forEach((input) => input && input.addEventListener('input', render));
+            [preset, accent, glass, radius, motion].forEach((input) => input && input.addEventListener('input', render));
             render();
         })();
     </script>
