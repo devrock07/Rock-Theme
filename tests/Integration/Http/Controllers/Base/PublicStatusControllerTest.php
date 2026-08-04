@@ -18,7 +18,7 @@ class PublicStatusControllerTest extends HttpTestCase
         Cache::forget('rock:public-status:v2');
 
         $location = Location::factory()->create();
-        Node::factory()->for($location)->create([
+        $onlineNode = Node::factory()->for($location)->create([
             'name' => 'Online Node',
             'fqdn' => 'private-online.example.com',
             'maintenance_mode' => false,
@@ -28,31 +28,41 @@ class PublicStatusControllerTest extends HttpTestCase
             'fqdn' => 'private-maintenance.example.com',
             'maintenance_mode' => true,
         ]);
-        Node::factory()->for($location)->create([
+        $unavailableNode = Node::factory()->for($location)->create([
             'name' => 'Unavailable Node',
             'fqdn' => 'private-unavailable.example.com',
             'maintenance_mode' => false,
         ]);
 
-        $checks = 0;
+        $total = Node::query()->count();
+        $maintenance = Node::query()->where('maintenance_mode', true)->count();
+        $active = $total - $maintenance;
+        $currentNodeId = null;
         $repository = $this->mock(DaemonConfigurationRepository::class);
-        $repository->shouldReceive('setNode')->twice()->andReturnSelf();
-        $repository->shouldReceive('getSystemInformation')->twice()->andReturnUsing(function () use (&$checks) {
-            if ($checks++ === 0) {
-                return [];
+        $repository->shouldReceive('setNode')->times($active)->andReturnUsing(function (Node $node) use (&$currentNodeId, $repository) {
+            $currentNodeId = $node->id;
+
+            return $repository;
+        });
+        $repository->shouldReceive('getSystemInformation')->times($active)->andReturnUsing(function () use (&$currentNodeId, $unavailableNode) {
+            if ($currentNodeId === $unavailableNode->id) {
+                throw new \RuntimeException('Wings is unavailable.');
             }
 
-            throw new \RuntimeException('Wings is unavailable.');
+            return [];
         });
 
         $response = $this->getJson(route('public.status.api'));
         $response->assertOk();
         $response->assertJsonPath('status', 'degraded');
-        $response->assertJsonPath('nodes.total', 3);
-        $response->assertJsonPath('nodes.operational', 1);
-        $response->assertJsonPath('nodes.maintenance', 1);
+        $response->assertJsonPath('nodes.total', $total);
+        $response->assertJsonPath('nodes.operational', $active - 1);
+        $response->assertJsonPath('nodes.maintenance', $maintenance);
         $response->assertJsonPath('nodes.unavailable', 1);
-        $this->assertCount(3, $response->json('nodes.items'));
+        $this->assertCount($total, $response->json('nodes.items'));
+
+        $this->assertContains($onlineNode->id, array_column($response->json('nodes.items'), 'id'));
+        $this->assertContains($unavailableNode->id, array_column($response->json('nodes.items'), 'id'));
 
         foreach ($response->json('nodes.items') as $node) {
             $this->assertArrayNotHasKey('fqdn', $node);
