@@ -307,20 +307,23 @@ export default () => {
                     </div>
                 </DashboardToolbar>
             )}
-            <div className={'flex flex-wrap gap-2 mb-4'}>
-                {['All', 'Favorites', ...groups].map((group) => (
-                    <button
-                        key={group}
-                        onClick={() => setActiveGroup(group)}
-                        className={`px-3 py-2 rounded-full text-xs border ${
-                            activeGroup === group
-                                ? 'border-primary-400 text-primary-200 bg-primary-900'
-                                : 'border-neutral-700 text-neutral-400'
-                        }`}
-                    >
-                        {group}
-                    </button>
-                ))}
+            <div className={'flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-3 rounded-xl border border-white/5 bg-black/20 backdrop-blur-md'}>
+                <div className={'flex flex-wrap items-center gap-2'}>
+                    <span className={'text-xs font-semibold uppercase tracking-wider text-neutral-500 mr-1'}>Filters:</span>
+                    {['All', 'Favorites', ...groups].map((group) => (
+                        <button
+                            key={group}
+                            onClick={() => setActiveGroup(group)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                                activeGroup === group
+                                    ? 'border-red-500/50 text-red-300 bg-red-950/40 shadow-sm shadow-red-950'
+                                    : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-neutral-300 bg-neutral-900/50'
+                            }`}
+                        >
+                            {group === 'All' ? 'All Servers' : group}
+                        </button>
+                    ))}
+                </div>
             </div>
             {!servers ? (
                 <ServerGrid>
