@@ -44,10 +44,22 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.0`.
 Rock Theme is a full panel overlay. Back up the panel database and `.env`
 before installing it, and test upgrades in a staging environment first.
 
-## Installation
+## Installation & Management
 
-The release archive contains the compiled frontend assets. A direct source
-checkout requires the additional build steps in [BUILDING.md](./BUILDING.md).
+Run the universal Rock Theme shell manager to install, update, or remove the theme interactively:
+
+```bash
+bash <(curl -sSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh)
+```
+
+The script presents a menu with three options:
+1. **Install Theme** – Downloads the latest release archive, runs migrations, flushes view/config caches, and sets server permissions.
+2. **Update Theme** – Checks your current theme installation against the latest GitHub release and updates seamlessly.
+3. **Remove Theme** – Restores the panel to the clean upstream Pterodactyl state.
+
+### Manual Installation
+
+For direct installation without the manager:
 
 ```bash
 cd /var/www/pterodactyl
@@ -61,6 +73,7 @@ composer install --no-dev --optimize-autoloader
 php artisan migrate --seed --force
 php artisan view:clear
 php artisan config:clear
+php artisan route:clear
 php artisan queue:restart
 
 chown -R www-data:www-data /var/www/pterodactyl

@@ -206,6 +206,27 @@
                                 <p class="text-muted"><small>Public URL: <code>{{ url('/status') }}</code></small></p>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Show Node Cards</label>
+                                @php($showNodes = (int) old('branding:status_show_nodes', config('branding.status_show_nodes', true)))
+                                <select class="form-control" name="branding:status_show_nodes">
+                                    <option value="1" @if($showNodes === 1) selected @endif>Visible</option>
+                                    <option value="0" @if($showNodes === 0) selected @endif>Hidden</option>
+                                </select>
+                                <p class="text-muted"><small>Show individual node statuses on the public status page.</small></p>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Node Filter Mode</label>
+                                @php($nodeMode = old('branding:status_node_mode', config('branding.status_node_mode', 'all')))
+                                <select class="form-control" name="branding:status_node_mode">
+                                    <option value="all" @if($nodeMode === 'all') selected @endif>All Nodes</option>
+                                    <option value="operational_only" @if($nodeMode === 'operational_only') selected @endif>Operational Only</option>
+                                    <option value="summary_only" @if($nodeMode === 'summary_only') selected @endif>Summary Totals Only</option>
+                                </select>
+                                <p class="text-muted"><small>Controls which node cards are rendered publicly.</small></p>
+                            </div>
+                        </div>
                     </div>
                     <div class="box-header with-border">
                         <h3 class="box-title">Branding</h3>

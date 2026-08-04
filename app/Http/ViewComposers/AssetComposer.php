@@ -47,6 +47,8 @@ class AssetComposer
                 'statusEnabled' => (bool) config('branding.status_enabled', true),
                 'statusTitle' => config('branding.status_title', 'Systems operational'),
                 'statusMessage' => config('branding.status_message', 'Infrastructure is online and operating normally.'),
+                'statusShowNodes' => (bool) config('branding.status_show_nodes', true),
+                'statusNodeMode' => config('branding.status_node_mode', 'all'),
             ],
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
