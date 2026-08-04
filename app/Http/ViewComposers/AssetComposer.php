@@ -49,6 +49,10 @@ class AssetComposer
                 'statusMessage' => config('branding.status_message', 'Infrastructure is online and operating normally.'),
                 'statusShowNodes' => (bool) config('branding.status_show_nodes', true),
                 'statusNodeMode' => config('branding.status_node_mode', 'all'),
+                'announcementEnabled' => (bool) config('branding.announcement_enabled', false),
+                'announcementMessage' => config('branding.announcement_message', ''),
+                'announcementType' => config('branding.announcement_type', 'notice'),
+                'announcementLink' => config('branding.announcement_link', ''),
             ],
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),

@@ -26,5 +26,10 @@ return [
     'status_message' => env('BRAND_STATUS_MESSAGE', 'Infrastructure is online and operating normally.'),
     'status_show_nodes' => (bool) env('BRAND_STATUS_SHOW_NODES', true),
     'status_node_mode' => env('BRAND_STATUS_NODE_MODE', 'all'),
+    'announcement_enabled' => (bool) env('BRAND_ANNOUNCEMENT_ENABLED', false),
+    'announcement_message' => env('BRAND_ANNOUNCEMENT_MESSAGE', ''),
+    'announcement_type' => env('BRAND_ANNOUNCEMENT_TYPE', 'notice'),
+    'announcement_link' => env('BRAND_ANNOUNCEMENT_LINK', ''),
 ];
+
 
