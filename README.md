@@ -11,6 +11,9 @@ workflow familiar.
 
 Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.0`.
 
+Version 2.0 delivers a viewport-safe notification center and a rebuilt crimson
+mobile navigation surface, with matching behavior across phone and desktop layouts.
+
 ## Highlights
 
 -   Unified dark-red visual system across the client and admin panels
