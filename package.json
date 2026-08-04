@@ -1,8 +1,8 @@
 {
     "name": "rock-theme",
-    "version": "1.1.3",
+    "version": "1.6.4",
     "private": true,
-    "description": "A responsive crimson interface for Pterodactyl Panel 1.14.1.",
+    "description": "A responsive crimson interface for Pterodactyl Panel 1.15.0.",
     "author": {
         "name": "DevRock",
         "url": "https://github.com/devrock07"

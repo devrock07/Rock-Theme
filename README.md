@@ -9,7 +9,7 @@ Rock Theme is a responsive crimson interface for
 server, and administration experiences while keeping the underlying panel
 workflow familiar.
 
-Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.14.1`.
+Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.0`.
 
 ## Highlights
 
@@ -29,12 +29,14 @@ Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.14.1`.
     responsive navigation scrims, and card-local lighting without clipped glow
 -   Reduced-motion and coarse-pointer fallbacks for accessible mobile use
 -   Production release archives with compiled frontend assets
+-   Daily upstream autopilot that ports the theme to verified Pterodactyl releases
+    and publishes only after the complete frontend and database matrix passes
 
 ## Compatibility
 
 | Requirement       | Supported version |
 | ----------------- | ----------------- |
-| Pterodactyl Panel | `1.14.1`          |
+| Pterodactyl Panel | `1.15.0`          |
 | PHP               | `8.2` or `8.3`    |
 | Node.js           | `22` or newer     |
 | Yarn              | Classic `1.x`     |
@@ -90,6 +92,9 @@ yarn build:production
 Development setup and release packaging are documented in
 [BUILDING.md](./BUILDING.md).
 
+Upstream release automation is documented in
+[UPSTREAM_AUTOMATION.md](./UPSTREAM_AUTOMATION.md).
+
 ## Support
 
 -   Report Rock Theme bugs through
@@ -98,7 +103,7 @@ Development setup and release packaging are documented in
     Wings, node, and game-server configuration.
 -   Review [SECURITY.md](./SECURITY.md) before reporting a vulnerability.
 
-Please reproduce theme issues on Pterodactyl `1.14.1` and include the browser,
+Please reproduce theme issues on Pterodactyl `1.15.0` and include the browser,
 screen size, affected view, and screenshots.
 
 ## Credits and licenses

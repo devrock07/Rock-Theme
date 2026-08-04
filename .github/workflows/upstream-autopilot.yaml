@@ -1,0 +1,327 @@
+name: Upstream Autopilot
+
+on:
+    schedule:
+        - cron: '17 2 * * *'
+    workflow_dispatch:
+        inputs:
+            upstream_tag:
+                description: Optional Pterodactyl tag (for example v1.15.0)
+                required: false
+                type: string
+
+concurrency:
+    group: rock-theme-upstream-autopilot
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+env:
+    UPSTREAM_REPOSITORY: pterodactyl/panel
+
+jobs:
+    detect:
+        name: Detect upstream release
+        runs-on: ubuntu-24.04
+        outputs:
+            current: ${{ steps.versions.outputs.current }}
+            latest: ${{ steps.versions.outputs.latest }}
+            next_theme: ${{ steps.versions.outputs.next_theme }}
+            update_required: ${{ steps.versions.outputs.update_required }}
+        steps:
+            - name: Check out source
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Resolve versions
+              id: versions
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REQUESTED_TAG: ${{ inputs.upstream_tag }}
+              run: |
+                  set -euo pipefail
+                  current="$(tr -d '[:space:]' < .rock/upstream-version)"
+                  latest="${REQUESTED_TAG:-}"
+                  if [ -z "$latest" ]; then
+                      latest="$(gh api "repos/${UPSTREAM_REPOSITORY}/releases/latest" --jq .tag_name)"
+                  fi
+                  if ! [[ "$current" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ && "$latest" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "Invalid upstream version: current=$current latest=$latest" >&2
+                      exit 1
+                  fi
+
+                  current_theme="$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1)"
+                  if ! [[ "$current_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                      echo "Unable to resolve the current Rock Theme tag." >&2
+                      exit 1
+                  fi
+                  next_theme="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+                  update_required=false
+                  if [ "$current" != "$latest" ]; then
+                      update_required=true
+                  fi
+
+                  echo "current=$current" >> "$GITHUB_OUTPUT"
+                  echo "latest=$latest" >> "$GITHUB_OUTPUT"
+                  echo "next_theme=$next_theme" >> "$GITHUB_OUTPUT"
+                  echo "update_required=$update_required" >> "$GITHUB_OUTPUT"
+                  {
+                      echo "### Upstream detection"
+                      echo "- Current base: \`$current\`"
+                      echo "- Latest release: \`$latest\`"
+                      echo "- Planned theme release: \`$next_theme\`"
+                      echo "- Update required: \`$update_required\`"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+    prepare:
+        name: Build three-tree update
+        needs: detect
+        if: needs.detect.outputs.update_required == 'true'
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: write
+        outputs:
+            branch: ${{ steps.prepare.outputs.branch }}
+            commit: ${{ steps.prepare.outputs.commit }}
+        steps:
+            - name: Check out source
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Merge official changes over the theme
+              id: prepare
+              env:
+                  CURRENT_TAG: ${{ needs.detect.outputs.current }}
+                  LATEST_TAG: ${{ needs.detect.outputs.latest }}
+                  THEME_TAG: ${{ needs.detect.outputs.next_theme }}
+              run: |
+                  set -euo pipefail
+                  branch="automation/pterodactyl-${LATEST_TAG#v}"
+                  base_ref="refs/rock-upstream/base"
+                  latest_ref="refs/rock-upstream/latest"
+
+                  git config user.name "rock-theme-autopilot[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git fetch --force --no-tags "https://github.com/${UPSTREAM_REPOSITORY}.git" \
+                      "+refs/tags/${CURRENT_TAG}:${base_ref}" \
+                      "+refs/tags/${LATEST_TAG}:${latest_ref}"
+
+                  base_commit="$(git rev-parse "${base_ref}^{commit}")"
+                  latest_commit="$(git rev-parse "${latest_ref}^{commit}")"
+                  if ! merge_output="$(git merge-tree --write-tree --merge-base="$base_commit" HEAD "$latest_commit" 2>&1)"; then
+                      echo "$merge_output" >&2
+                      echo "The upstream release has genuine merge conflicts with Rock Theme." >&2
+                      exit 1
+                  fi
+                  merged_tree="$(printf '%s\n' "$merge_output" | head -n 1)"
+                  git checkout -B "$branch"
+                  git read-tree --reset -u "$merged_tree"
+                  node scripts/update-upstream-metadata.js "$LATEST_TAG" "$THEME_TAG"
+                  git add -A
+                  git commit -m "chore: update Pterodactyl to ${LATEST_TAG}"
+                  git push --force origin "HEAD:refs/heads/$branch"
+
+                  echo "branch=$branch" >> "$GITHUB_OUTPUT"
+                  echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+    frontend:
+        name: Validate frontend
+        needs: [detect, prepare]
+        if: needs.detect.outputs.update_required == 'true'
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        steps:
+            - name: Check out candidate
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.prepare.outputs.branch }}
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: yarn
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
+
+            - name: Typecheck
+              run: yarn tsc
+
+            - name: Lint
+              run: yarn lint
+
+            - name: Test
+              run: yarn test --runInBand
+
+            - name: Build production assets
+              run: yarn build:production
+
+            - name: Save compiled assets
+              uses: actions/upload-artifact@v4
+              with:
+                  name: upstream-build-${{ needs.prepare.outputs.commit }}
+                  path: public/assets
+                  if-no-files-found: error
+                  retention-days: 2
+
+    backend:
+        name: PHP ${{ matrix.php }} / ${{ matrix.database }}
+        needs: [detect, prepare]
+        if: needs.detect.outputs.update_required == 'true'
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        strategy:
+            fail-fast: false
+            matrix:
+                php: ['8.2', '8.3']
+                database: ['mariadb:10', 'mariadb:11', 'mysql:8', 'mysql:9']
+        services:
+            database:
+                image: ${{ matrix.database }}
+                env:
+                    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+                    MYSQL_DATABASE: testing
+                ports:
+                    - 3306/tcp
+        steps:
+            - name: Check out candidate
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.prepare.outputs.branch }}
+
+            - name: Resolve Composer cache
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Composer downloads
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-${{ matrix.php }}-
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php }}
+                  extensions: bcmath, cli, curl, gd, mbstring, mysql, openssl, pdo, tokenizer, xml, zip
+                  tools: composer:v2
+                  coverage: none
+
+            - name: Configure test environment
+              run: cp .env.ci .env
+
+            - name: Install dependencies
+              run: composer install --no-interaction --no-progress --prefer-dist
+
+            - name: Check PHP formatting
+              run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+            - name: Run unit tests
+              run: vendor/bin/phpunit --bootstrap vendor/autoload.php tests/Unit
+              env:
+                  DB_HOST: UNIT_NO_DB
+
+            - name: Run integration tests
+              run: vendor/bin/phpunit tests/Integration
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_PORT: ${{ job.services.database.ports[3306] }}
+                  DB_USERNAME: root
+
+    promote:
+        name: Publish verified update
+        needs: [detect, prepare, frontend, backend]
+        if: needs.detect.outputs.update_required == 'true'
+        runs-on: ubuntu-24.04
+        permissions:
+            actions: write
+            contents: write
+        env:
+            GH_TOKEN: ${{ github.token }}
+            CANDIDATE_BRANCH: ${{ needs.prepare.outputs.branch }}
+            LATEST_TAG: ${{ needs.detect.outputs.latest }}
+            THEME_TAG: ${{ needs.detect.outputs.next_theme }}
+        steps:
+            - name: Check out verified candidate
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ needs.prepare.outputs.branch }}
+                  fetch-depth: 0
+
+            - name: Restore compiled assets
+              uses: actions/download-artifact@v4
+              with:
+                  name: upstream-build-${{ needs.prepare.outputs.commit }}
+                  path: public/assets
+
+            - name: Fast-forward main
+              run: |
+                  set -euo pipefail
+                  git fetch origin main
+                  git merge-base --is-ancestor origin/main HEAD
+                  git push origin HEAD:main
+
+            - name: Create install archive
+              run: |
+                  set -euo pipefail
+                  staging="$(mktemp -d)"
+                  git archive --format=tar HEAD | tar -xf - -C "$staging"
+                  rm -rf "$staging/public/assets" "$staging/.github" "$staging/tests"
+                  mkdir -p "$staging/public/assets"
+                  cp -a public/assets/. "$staging/public/assets/"
+                  tar -C "$staging" -czf panel.tar.gz .
+                  sha256sum panel.tar.gz > panel.tar.gz.sha256
+
+            - name: Tag and publish release
+              run: |
+                  set -euo pipefail
+                  git config user.name "rock-theme-autopilot[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git tag -a "$THEME_TAG" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
+                  git push origin "$THEME_TAG"
+                  gh release create "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 \
+                      --title "Rock Theme $THEME_TAG" \
+                      --notes "Automated, fully tested compatibility update for Pterodactyl $LATEST_TAG." \
+                      --latest
+
+            - name: Publish container and remove candidate branch
+              run: |
+                  gh workflow run docker.yaml --ref "$THEME_TAG"
+                  git push origin --delete "$CANDIDATE_BRANCH" || true
+                  {
+                      echo "### Published"
+                      echo "- Pterodactyl: \`$LATEST_TAG\`"
+                      echo "- Rock Theme: \`$THEME_TAG\`"
+                      echo "- Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${THEME_TAG}"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+    report-failure:
+        name: Report blocked update
+        needs: [detect, prepare, frontend, backend, promote]
+        if: >-
+            ${{ always() && needs.detect.result == 'success' && needs.detect.outputs.update_required == 'true' &&
+                needs.promote.result != 'success' }}
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+            issues: write
+        env:
+            GH_TOKEN: ${{ github.token }}
+            LATEST_TAG: ${{ needs.detect.outputs.latest }}
+        steps:
+            - name: Open one actionable issue
+              run: |
+                  set -euo pipefail
+                  title="Autopilot blocked updating to Pterodactyl ${LATEST_TAG}"
+                  existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+                  if [ -z "$existing" ]; then
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "The automatic three-tree merge or validation suite stopped this release. No update was published. Inspect the failed run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+                  fi
