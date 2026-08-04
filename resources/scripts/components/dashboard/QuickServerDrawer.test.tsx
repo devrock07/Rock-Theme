@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import QuickServerDrawer from '@/components/dashboard/QuickServerDrawer';
 import { Server } from '@/api/server/getServer';
 
@@ -60,4 +60,33 @@ test('enables all power actions for an authorized account', () => {
     expect(screen.getByRole('button', { name: 'Start' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Restart' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Stop' })).toBeEnabled();
+});
+
+test('keeps the server group field focused while entering a keyword', () => {
+    const ControlledDrawer = () => {
+        const [group, setGroup] = useState('');
+
+        return (
+            <MemoryRouter>
+                <QuickServerDrawer
+                    server={makeServer({ start: true, restart: true, stop: true })}
+                    stats={null}
+                    group={group}
+                    onGroupChange={setGroup}
+                    onClose={() => undefined}
+                />
+            </MemoryRouter>
+        );
+    };
+
+    render(<ControlledDrawer />);
+    const input = screen.getByRole('textbox', { name: 'Server group' });
+    input.focus();
+
+    for (const value of ['d', 'de', 'dev']) {
+        fireEvent.change(input, { target: { value } });
+        expect(input).toHaveFocus();
+    }
+
+    expect(input).toHaveValue('dev');
 });

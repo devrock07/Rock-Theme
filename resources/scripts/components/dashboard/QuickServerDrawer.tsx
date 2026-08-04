@@ -89,6 +89,8 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState('');
     const closeButton = useRef<HTMLButtonElement>(null);
+    const onCloseRef = useRef(onClose);
+    onCloseRef.current = onClose;
     const allocation = server.allocations.find((candidate) => candidate.isDefault);
     const address = allocation ? `${allocation.alias || ip(allocation.ip)}:${allocation.port}` : '';
     const power = (signal: 'start' | 'restart' | 'stop') => {
@@ -104,13 +106,13 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
         const overflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         closeButton.current?.focus();
-        const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+        const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && onCloseRef.current();
         document.addEventListener('keydown', closeOnEscape);
         return () => {
             document.body.style.overflow = overflow;
             document.removeEventListener('keydown', closeOnEscape);
         };
-    }, [onClose]);
+    }, []);
 
     return (
         <Shell
@@ -155,8 +157,11 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
                     </div>
                 </div>
                 <div className={'drawer-card mt-5'}>
-                    <label className={'text-xs uppercase tracking-widest text-neutral-500'}>Server group</label>
+                    <label htmlFor={'server-group'} className={'text-xs uppercase tracking-widest text-neutral-500'}>
+                        Server group
+                    </label>
                     <input
+                        id={'server-group'}
                         className={'mt-2 w-full rounded border border-neutral-700 px-3 py-2'}
                         style={{ color: 'var(--shell-text)', background: 'var(--shell-panel)' }}
                         value={group}
