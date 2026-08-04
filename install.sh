@@ -1,199 +1,239 @@
 #!/usr/bin/env bash
 
-# ==============================================================================
-# Rock Theme - Universal Panel Manager & Installer Script
-# ==============================================================================
+set -Eeuo pipefail
 
-set -euo pipefail
-
-# ANSI Crimson / Red Theme Palette (No Emojis)
 RED='\033[0;31m'
-DARK_RED='\033[1;31m'
 CRIMSON='\033[38;2;201;79;89m'
 GRAY='\033[0;90m'
 WHITE='\033[1;37m'
 NC='\033[0m'
 
 PANEL_DIR="${PANEL_DIR:-/var/www/pterodactyl}"
-REPO_URL="https://github.com/devrock07/Rock-Theme"
-LATEST_RELEASE_URL="https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz"
-GITHUB_API_URL="https://api.github.com/repos/devrock07/Rock-Theme/releases/latest"
+BACKUP_ROOT="${ROCK_BACKUP_ROOT:-/var/backups/rock-theme}"
+RELEASE_BASE='https://github.com/devrock07/Rock-Theme/releases/latest/download'
+RELEASE_API='https://api.github.com/repos/devrock07/Rock-Theme/releases/latest'
+TEMP_DIR=''
+PANEL_WAS_DOWN=false
 
 banner() {
     echo -e "${CRIMSON}"
-    echo "================================================================================"
-    echo "                      ROCK THEME - PANEL MANAGER                                "
-    echo "================================================================================"
+    echo '================================================================================'
+    echo '                      ROCK THEME - PANEL MANAGER'
+    echo '================================================================================'
     echo -e "${NC}"
 }
 
-check_root() {
-    if [ "$(id -u)" -ne 0 ]; then
-        echo -e "${RED}[ERROR] This script must be run as root (or with sudo).${NC}" >&2
-        exit 1
-    fi
+fail() {
+    echo -e "${RED}[ERROR] $*${NC}" >&2
+    exit 1
 }
 
-check_directory() {
-    if [ ! -d "$PANEL_DIR" ]; then
-        echo -e "${RED}[ERROR] Panel directory not found at $PANEL_DIR${NC}" >&2
-        exit 1
+cleanup() {
+    local status=$?
+    set +e
+
+    if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+        case "$TEMP_DIR" in
+            "${TMPDIR:-/tmp}"/rock-theme.*) rm -rf -- "$TEMP_DIR" ;;
+        esac
     fi
-    cd "$PANEL_DIR"
+
+    if [ "$PANEL_WAS_DOWN" = true ] && [ -f "$PANEL_DIR/artisan" ]; then
+        (cd "$PANEL_DIR" && php artisan up >/dev/null 2>&1) || true
+        echo -e "${GRAY}[RECOVERY] The panel was brought back online after an interrupted operation.${NC}" >&2
+    fi
+
+    return "$status"
 }
 
-get_web_user() {
-    if id "www-data" &>/dev/null; then
-        echo "www-data"
-    elif id "nginx" &>/dev/null; then
-        echo "nginx"
-    elif id "apache" &>/dev/null; then
-        echo "apache"
-    else
-        echo "www-data"
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1"
+}
+
+preflight() {
+    [ "$(id -u)" -eq 0 ] || fail 'Run this manager as root or with sudo.'
+
+    case "$PANEL_DIR" in
+        ''|'/'|'/var'|'/var/www') fail "Unsafe PANEL_DIR: $PANEL_DIR" ;;
+    esac
+
+    [ -d "$PANEL_DIR" ] || fail "Panel directory not found: $PANEL_DIR"
+    [ -f "$PANEL_DIR/artisan" ] || fail "No Pterodactyl installation found in: $PANEL_DIR"
+
+    require_command curl
+    require_command tar
+    require_command sha256sum
+    require_command php
+    require_command composer
+    mkdir -p "$BACKUP_ROOT"
+}
+
+web_user() {
+    for candidate in www-data nginx apache; do
+        if id "$candidate" >/dev/null 2>&1; then
+            echo "$candidate"
+            return
+        fi
+    done
+
+    fail 'Unable to detect the web-server user (www-data, nginx, or apache).'
+}
+
+latest_tag() {
+    curl --fail --location --silent --show-error "$RELEASE_API" |
+        php -r '$data = json_decode(stream_get_contents(STDIN), true); if (!isset($data["tag_name"])) { exit(1); } echo $data["tag_name"];'
+}
+
+prepare_release() {
+    TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/rock-theme.XXXXXX")"
+    echo -e "${GRAY}Downloading the release archive and checksum...${NC}"
+    curl --fail --location --silent --show-error "$RELEASE_BASE/panel.tar.gz" --output "$TEMP_DIR/panel.tar.gz"
+    curl --fail --location --silent --show-error "$RELEASE_BASE/panel.tar.gz.sha256" --output "$TEMP_DIR/panel.tar.gz.sha256"
+
+    (
+        cd "$TEMP_DIR"
+        sha256sum --check --status panel.tar.gz.sha256
+    ) || fail 'Release checksum verification failed. No panel files were changed.'
+
+    tar -tzf "$TEMP_DIR/panel.tar.gz" >/dev/null || fail 'The downloaded release is not a valid gzip archive.'
+    echo -e "${CRIMSON}[VERIFIED] Release checksum and archive structure are valid.${NC}"
+}
+
+backup_panel() {
+    local label="$1"
+    local target="$BACKUP_ROOT/${label}-$(date -u +%Y%m%dT%H%M%SZ).tar.gz"
+    echo -e "${GRAY}Creating safety backup: $target${NC}"
+    tar -C "$PANEL_DIR" -czf "$target" .
+    echo "$target"
+}
+
+backup_original_panel() {
+    local target="$BACKUP_ROOT/original-panel.tar.gz"
+
+    if [ -f "$target" ] || [ -d "$PANEL_DIR/.rock" ]; then
+        backup_panel 'before-install' >/dev/null
+        return
     fi
+
+    echo -e "${GRAY}Saving the original panel for the restore option: $target${NC}"
+    tar -C "$PANEL_DIR" -czf "$target" .
+}
+
+put_panel_down() {
+    (cd "$PANEL_DIR" && php artisan down) || true
+    PANEL_WAS_DOWN=true
+}
+
+bring_panel_up() {
+    (cd "$PANEL_DIR" && php artisan up)
+    PANEL_WAS_DOWN=false
+}
+
+apply_release() {
+    local owner
+    owner="$(web_user)"
+
+    tar -xzf "$TEMP_DIR/panel.tar.gz" -C "$PANEL_DIR"
+    (
+        cd "$PANEL_DIR"
+        composer install --no-dev --optimize-autoloader --no-interaction
+        php artisan migrate --seed --force
+        php artisan optimize:clear
+        php artisan queue:restart || true
+    )
+
+    chown -R "$owner:$owner" "$PANEL_DIR"
+    find "$PANEL_DIR/storage" "$PANEL_DIR/bootstrap/cache" -type d -exec chmod 755 {} +
+    find "$PANEL_DIR/storage" "$PANEL_DIR/bootstrap/cache" -type f -exec chmod 644 {} +
 }
 
 install_theme() {
     banner
-    echo -e "${CRIMSON}[+] Starting Rock Theme Installation...${NC}"
-    check_directory
+    preflight
+    local release
+    release="$(latest_tag)" || fail 'Unable to resolve the latest Rock Theme release.'
+    echo -e "${WHITE}Installing Rock Theme ${release}.${NC}"
 
-    WEB_USER="$(get_web_user)"
+    prepare_release
+    backup_original_panel
+    put_panel_down
+    apply_release
+    bring_panel_up
 
-    echo -e "${GRAY}[1/7] Putting panel into maintenance mode...${NC}"
-    php artisan down || true
-
-    echo -e "${GRAY}[2/7] Backing up environment configuration...${NC}"
-    if [ -f ".env" ]; then
-        cp .env .env.rock-backup."$(date +%s)"
-    fi
-
-    echo -e "${GRAY}[3/7] Downloading latest Rock Theme release tarball...${NC}"
-    curl -sSL "$LATEST_RELEASE_URL" | tar -xz
-
-    echo -e "${GRAY}[4/7] Installing PHP dependencies and running migrations...${NC}"
-    composer install --no-dev --optimize-autoloader --no-interaction
-    php artisan migrate --seed --force
-
-    echo -e "${GRAY}[5/7] Clearing application view and configuration caches...${NC}"
-    php artisan view:clear
-    php artisan config:clear
-    php artisan route:clear
-    php artisan queue:restart || true
-
-    echo -e "${GRAY}[6/7] Setting file permissions...${NC}"
-    chown -R "$WEB_USER:$WEB_USER" "$PANEL_DIR"
-    chmod -R 755 storage bootstrap/cache
-
-    echo -e "${GRAY}[7/7] Bringing panel back online...${NC}"
-    php artisan up
-
-    echo -e "${CRIMSON}[SUCCESS] Rock Theme installed successfully!${NC}"
+    echo -e "${CRIMSON}[SUCCESS] Rock Theme ${release} is installed.${NC}"
 }
 
 update_theme() {
     banner
-    echo -e "${CRIMSON}[+] Checking for Rock Theme updates...${NC}"
-    check_directory
+    preflight
+    local release
+    release="$(latest_tag)" || fail 'Unable to resolve the latest Rock Theme release.'
+    echo -e "${WHITE}Updating to Rock Theme ${release}.${NC}"
 
-    WEB_USER="$(get_web_user)"
-    
-    LATEST_TAG="$(curl -sSL "$GITHUB_API_URL" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || echo "latest")"
-    echo -e "${WHITE}Latest available release:${NC} ${LATEST_TAG}"
+    prepare_release
+    backup_panel 'before-update' >/dev/null
+    put_panel_down
+    apply_release
+    bring_panel_up
 
-    echo -e "${GRAY}[1/6] Putting panel into maintenance mode...${NC}"
-    php artisan down || true
-
-    echo -e "${GRAY}[2/6] Downloading release update...${NC}"
-    curl -sSL "$LATEST_RELEASE_URL" | tar -xz
-
-    echo -e "${GRAY}[3/6] Running database migrations...${NC}"
-    composer install --no-dev --optimize-autoloader --no-interaction
-    php artisan migrate --force
-
-    echo -e "${GRAY}[4/6] Flushing system caches...${NC}"
-    php artisan view:clear
-    php artisan config:clear
-    php artisan route:clear
-    php artisan queue:restart || true
-
-    echo -e "${GRAY}[5/6] Restoring permissions for $WEB_USER...${NC}"
-    chown -R "$WEB_USER:$WEB_USER" "$PANEL_DIR"
-    chmod -R 755 storage bootstrap/cache
-
-    echo -e "${GRAY}[6/6] Bringing panel back online...${NC}"
-    php artisan up
-
-    echo -e "${CRIMSON}[SUCCESS] Rock Theme updated to $LATEST_TAG successfully!${NC}"
+    echo -e "${CRIMSON}[SUCCESS] Rock Theme ${release} is installed.${NC}"
 }
 
-remove_theme() {
+restore_original() {
     banner
-    echo -e "${RED}[!] Restoring panel to default upstream Pterodactyl build...${NC}"
-    check_directory
+    preflight
+    local original="$BACKUP_ROOT/original-panel.tar.gz"
+    local owner
+    owner="$(web_user)"
 
-    WEB_USER="$(get_web_user)"
+    [ -f "$original" ] || fail "No manager-created pre-theme backup exists at $original. Restore your own backup instead."
+    tar -tzf "$original" >/dev/null || fail 'The pre-theme backup is not a valid gzip archive.'
+    backup_panel 'before-restore' >/dev/null
+    put_panel_down
 
-    echo -e "${GRAY}[1/5] Putting panel into maintenance mode...${NC}"
-    php artisan down || true
+    echo -e "${GRAY}Restoring the original panel files while preserving the current .env and storage directory...${NC}"
+    find "$PANEL_DIR" -mindepth 1 -maxdepth 1 ! -name '.env' ! -name 'storage' -exec rm -rf -- {} +
+    tar -xzf "$original" --exclude='./.env' --exclude='./storage' -C "$PANEL_DIR"
 
-    echo -e "${GRAY}[2/5] Fetching default Pterodactyl Panel core archive...${NC}"
-    PTERO_TAG="$(php -r 'echo json_decode(file_get_contents("composer.json"))->version ?? "1.11.0";' 2>/dev/null || echo "1.15.0")"
-    
-    curl -L "https://github.com/pterodactyl/panel/releases/download/v${PTERO_TAG}/panel.tar.gz" | tar -xz || {
-        echo -e "${RED}[WARN] Could not fetch exact tag v${PTERO_TAG}, falling back to release tag download.${NC}"
-        curl -L "https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz" | tar -xz
-    }
+    (
+        cd "$PANEL_DIR"
+        composer install --no-dev --optimize-autoloader --no-interaction
+        php artisan optimize:clear
+        php artisan queue:restart || true
+    )
+    chown -R "$owner:$owner" "$PANEL_DIR"
+    bring_panel_up
 
-    echo -e "${GRAY}[3/5] Re-optimizing dependencies...${NC}"
-    composer install --no-dev --optimize-autoloader --no-interaction
-    php artisan view:clear
-    php artisan config:clear
-    php artisan route:clear
-    php artisan queue:restart || true
-
-    echo -e "${GRAY}[4/5] Resetting permissions...${NC}"
-    chown -R "$WEB_USER:$WEB_USER" "$PANEL_DIR"
-    chmod -R 755 storage bootstrap/cache
-
-    echo -e "${GRAY}[5/5] Bringing panel back online...${NC}"
-    php artisan up
-
-    echo -e "${CRIMSON}[SUCCESS] Rock Theme removed and stock panel restored.${NC}"
+    echo -e "${CRIMSON}[SUCCESS] The pre-theme panel files were restored. Database migrations were intentionally left intact.${NC}"
 }
 
 show_menu() {
-    check_root
     banner
-    echo -e "${WHITE}Select an action to perform:${NC}"
-    echo ""
-    echo -e "  ${CRIMSON}[1]${NC} Install Rock Theme (Latest Release)"
-    echo -e "  ${CRIMSON}[2]${NC} Update Rock Theme (Check & Upgrade)"
-    echo -e "  ${CRIMSON}[3]${NC} Remove Rock Theme (Revert to Default Panel)"
+    preflight
+    echo -e "${WHITE}Select an action:${NC}"
+    echo -e "  ${CRIMSON}[1]${NC} Install latest Rock Theme"
+    echo -e "  ${CRIMSON}[2]${NC} Update to the latest Rock Theme"
+    echo -e "  ${CRIMSON}[3]${NC} Restore manager-created pre-theme backup"
     echo -e "  ${CRIMSON}[4]${NC} Exit"
-    echo ""
-    read -rp "Enter choice [1-4]: " choice
+    read -r -p 'Enter choice [1-4]: ' choice
 
     case "$choice" in
         1) install_theme ;;
         2) update_theme ;;
-        3) remove_theme ;;
-        4) echo -e "${GRAY}Exiting.${NC}"; exit 0 ;;
-        *) echo -e "${RED}[ERROR] Invalid option.${NC}"; exit 1 ;;
+        3) restore_original ;;
+        4) exit 0 ;;
+        *) fail 'Invalid option.' ;;
     esac
 }
 
-# Handle command-line arguments if passed non-interactively
-if [ "${1:-}" = "--install" ] || [ "${1:-}" = "install" ]; then
-    check_root
-    install_theme
-elif [ "${1:-}" = "--update" ] || [ "${1:-}" = "update" ]; then
-    check_root
-    update_theme
-elif [ "${1:-}" = "--remove" ] || [ "${1:-}" = "remove" ]; then
-    check_root
-    remove_theme
-else
-    show_menu
-fi
+case "${1:-}" in
+    install|--install) install_theme ;;
+    update|--update) update_theme ;;
+    restore|--restore|remove|--remove) restore_original ;;
+    '') show_menu ;;
+    *) fail 'Usage: install.sh [install|update|restore]' ;;
+esac

@@ -27,6 +27,12 @@ export interface SiteSettings {
         statusEnabled: boolean;
         statusTitle: string;
         statusMessage: string;
+        statusShowNodes: boolean;
+        statusNodeMode: 'all' | 'operational_only' | 'summary_only';
+        announcementEnabled: boolean;
+        announcementMessage: string;
+        announcementType: 'notice' | 'warning' | 'critical';
+        announcementLink: string;
     };
     recaptcha: {
         enabled: boolean;

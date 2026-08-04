@@ -42,7 +42,12 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:announcement_enabled' => 'required|integer|in:0,1',
             'branding:announcement_message' => 'nullable|string|max:300',
             'branding:announcement_type' => 'required|string|in:notice,warning,critical',
-            'branding:announcement_link' => 'nullable|url|max:500',
+            'branding:announcement_link' => [
+                'nullable',
+                'string',
+                'max:500',
+                'regex:/^(?:https?:\/\/|\/(?!\/))\S+$/i',
+            ],
             'pterodactyl:auth:2fa_required' => 'required|integer|in:0,1,2',
             'app:locale' => ['required', 'string', Rule::in(array_keys($this->getAvailableLanguages()))],
         ];

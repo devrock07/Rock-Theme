@@ -11,7 +11,11 @@ import {
     faExternalLinkAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
-const BannerContainer = styled.div<{ $severity: string }>`
+type AnnouncementType = 'notice' | 'warning' | 'critical';
+
+const DISMISSED_ANNOUNCEMENT_KEY = 'rock:dismissed-announcement';
+
+const BannerContainer = styled.div<{ $severity: AnnouncementType }>`
     width: 100%;
     padding: 0.65rem 1.25rem;
     display: flex;
@@ -21,7 +25,7 @@ const BannerContainer = styled.div<{ $severity: string }>`
     font-size: 0.85rem;
     position: relative;
     z-index: 40;
-    transition: all 0.2s ease-in-out;
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.025);
 
     ${(props) =>
         props.$severity === 'critical'
@@ -37,9 +41,9 @@ const BannerContainer = styled.div<{ $severity: string }>`
         color: #fde047;
     `
             : `
-        background: linear-gradient(90deg, rgba(59, 130, 246, 0.18), rgba(30, 64, 175, 0.25));
-        border-bottom: 1px solid rgba(59, 130, 246, 0.3);
-        color: #93c5fd;
+        background: linear-gradient(90deg, rgba(var(--shell-accent-rgb), 0.2), rgba(var(--shell-accent-rgb), 0.1));
+        border-bottom: 1px solid rgba(var(--shell-accent-rgb), 0.32);
+        color: var(--shell-text);
     `}
 
     .banner-content {
@@ -50,8 +54,10 @@ const BannerContainer = styled.div<{ $severity: string }>`
     }
 
     .banner-text {
+        min-width: 0;
         font-weight: 500;
         line-height: 1.4;
+        overflow-wrap: anywhere;
     }
 
     .banner-link {
@@ -76,29 +82,61 @@ const BannerContainer = styled.div<{ $severity: string }>`
         padding: 0.25rem;
         display: flex;
         align-items: center;
+        justify-content: center;
+        width: 1.8rem;
+        height: 1.8rem;
+        flex: 0 0 auto;
 
         &:hover {
             opacity: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        align-items: flex-start;
+        padding: 0.7rem 0.85rem;
+        font-size: 0.78rem;
+
+        .banner-content {
+            align-items: flex-start;
+            gap: 0.55rem;
+        }
+
+        .banner-link {
+            display: flex;
+            width: max-content;
+            margin: 0.35rem 0 0;
         }
     }
 `;
 
 export const AnnouncementBanner: React.FC = () => {
     const branding = useStoreState((state: ApplicationStore) => state.settings.data?.branding);
-    const [dismissed, setDismissed] = useState<boolean>(() => {
-        return sessionStorage.getItem('rock:announcement-dismissed') === 'true';
-    });
+    const fingerprint = branding
+        ? [branding.announcementType, branding.announcementMessage, branding.announcementLink].join('|')
+        : '';
+    const [dismissedAnnouncement, setDismissedAnnouncement] = useState(
+        () => sessionStorage.getItem(DISMISSED_ANNOUNCEMENT_KEY) || ''
+    );
 
-    if (!branding || !branding.announcementEnabled || !branding.announcementMessage || dismissed) {
+    if (
+        !branding ||
+        !branding.announcementEnabled ||
+        !branding.announcementMessage ||
+        dismissedAnnouncement === fingerprint
+    ) {
         return null;
     }
 
-    const severity = branding.announcementType || 'notice';
+    const severity: AnnouncementType = branding.announcementType || 'notice';
     const icon = severity === 'critical' ? faExclamationTriangle : severity === 'warning' ? faBullhorn : faInfoCircle;
+    const externalLink = /^https?:\/\//i.test(branding.announcementLink);
 
     const handleDismiss = () => {
-        sessionStorage.setItem('rock:announcement-dismissed', 'true');
-        setDismissed(true);
+        sessionStorage.setItem(DISMISSED_ANNOUNCEMENT_KEY, fingerprint);
+        setDismissedAnnouncement(fingerprint);
     };
 
     return (
@@ -110,8 +148,8 @@ export const AnnouncementBanner: React.FC = () => {
                     {branding.announcementLink && (
                         <a
                             href={branding.announcementLink}
-                            target={'_blank'}
-                            rel={'noreferrer'}
+                            target={externalLink ? '_blank' : undefined}
+                            rel={externalLink ? 'noreferrer' : undefined}
                             className={'banner-link'}
                         >
                             Learn details <FontAwesomeIcon icon={faExternalLinkAlt} className={'text-xs'} />
@@ -119,7 +157,12 @@ export const AnnouncementBanner: React.FC = () => {
                     )}
                 </span>
             </div>
-            <button onClick={handleDismiss} className={'dismiss-btn'} title={'Dismiss Announcement'}>
+            <button
+                type={'button'}
+                onClick={handleDismiss}
+                className={'dismiss-btn'}
+                aria-label={'Dismiss announcement'}
+            >
                 <FontAwesomeIcon icon={faTimes} />
             </button>
         </BannerContainer>

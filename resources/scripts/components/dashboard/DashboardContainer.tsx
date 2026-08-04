@@ -307,9 +307,15 @@ export default () => {
                     </div>
                 </DashboardToolbar>
             )}
-            <div className={'flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-3 rounded-xl border border-white/5 bg-black/20 backdrop-blur-md'}>
+            <div
+                className={
+                    'flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-3 rounded-xl border border-white/5 bg-black/20 backdrop-blur-md'
+                }
+            >
                 <div className={'flex flex-wrap items-center gap-2'}>
-                    <span className={'text-xs font-semibold uppercase tracking-wider text-neutral-500 mr-1'}>Filters:</span>
+                    <span className={'text-xs font-semibold uppercase tracking-wider text-neutral-500 mr-1'}>
+                        Filters:
+                    </span>
                     {['All', 'Favorites', ...groups].map((group) => (
                         <button
                             key={group}

@@ -13,6 +13,7 @@ Use **Admin → Settings → Branding** to change:
 -   Login title, subtitle, and image/GIF/video artwork
 -   Console font size and optional scanline treatment
 -   Public status-page visibility, headline, message, node breakdown visibility, and node filter mode
+-   Global announcement message, severity, and optional internal or HTTPS action link
 
 Changes are stored in the panel database and apply to the client, login, and
 admin views.
@@ -46,6 +47,10 @@ BRAND_STATUS_TITLE="Systems operational"
 BRAND_STATUS_MESSAGE="Infrastructure is online and operating normally."
 BRAND_STATUS_SHOW_NODES=true
 BRAND_STATUS_NODE_MODE=all
+BRAND_ANNOUNCEMENT_ENABLED=false
+BRAND_ANNOUNCEMENT_MESSAGE=""
+BRAND_ANNOUNCEMENT_TYPE=notice
+BRAND_ANNOUNCEMENT_LINK=""
 ```
 
 `{username}` in the dashboard subtitle is replaced with the signed-in user's
