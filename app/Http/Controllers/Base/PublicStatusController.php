@@ -20,17 +20,36 @@ class PublicStatusController extends Controller
             $nodes = Node::query()->get();
             $operational = 0;
             $maintenance = 0;
+            $nodeList = [];
+            $showNodes = config('branding.status_show_nodes', true);
+            $mode = config('branding.status_node_mode', 'all');
 
             foreach ($nodes as $node) {
+                $nodeStatus = 'operational';
                 if ($node->maintenance_mode) {
                     ++$maintenance;
-                    continue;
+                    $nodeStatus = 'maintenance';
+                } else {
+                    try {
+                        $repository->setNode($node)->getSystemInformation();
+                        ++$operational;
+                    } catch (\Throwable) {
+                        $nodeStatus = 'unavailable';
+                    }
                 }
-                try {
-                    $repository->setNode($node)->getSystemInformation();
-                    ++$operational;
-                } catch (\Throwable) {
-                    // The total count below records this node as unavailable.
+
+                if ($showNodes && $mode !== 'summary_only') {
+                    if ($mode === 'operational_only' && $nodeStatus !== 'operational') {
+                        continue;
+                    }
+                    $nodeList[] = [
+                        'id' => $node->id,
+                        'name' => $node->name,
+                        'fqdn' => $node->fqdn,
+                        'status' => $nodeStatus,
+                        'maintenance' => (bool) $node->maintenance_mode,
+                        'location_id' => $node->location_id,
+                    ];
                 }
             }
 
@@ -43,6 +62,11 @@ class PublicStatusController extends Controller
                     'operational' => $operational,
                     'maintenance' => $maintenance,
                     'unavailable' => $unavailable,
+                    'items' => $nodeList,
+                ],
+                'settings' => [
+                    'showNodes' => (bool) $showNodes,
+                    'mode' => $mode,
                 ],
                 'checkedAt' => now()->toIso8601String(),
             ];
