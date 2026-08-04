@@ -39,6 +39,10 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:status_message' => 'nullable|string|max:240',
             'branding:status_show_nodes' => 'required|integer|in:0,1',
             'branding:status_node_mode' => 'required|string|in:all,operational_only,summary_only',
+            'branding:announcement_enabled' => 'required|integer|in:0,1',
+            'branding:announcement_message' => 'nullable|string|max:300',
+            'branding:announcement_type' => 'required|string|in:notice,warning,critical',
+            'branding:announcement_link' => 'nullable|url|max:500',
             'pterodactyl:auth:2fa_required' => 'required|integer|in:0,1,2',
             'app:locale' => ['required', 'string', Rule::in(array_keys($this->getAvailableLanguages()))],
         ];
@@ -73,6 +77,10 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:status_message' => 'Status Message',
             'branding:status_show_nodes' => 'Show Node Details',
             'branding:status_node_mode' => 'Node Filter Mode',
+            'branding:announcement_enabled' => 'Announcement Banner',
+            'branding:announcement_message' => 'Announcement Message',
+            'branding:announcement_type' => 'Announcement Severity',
+            'branding:announcement_link' => 'Announcement Action Link',
             'pterodactyl:auth:2fa_required' => 'Require 2-Factor Authentication',
             'app:locale' => 'Default Language',
         ];

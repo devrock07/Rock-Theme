@@ -229,6 +229,38 @@
                         </div>
                     </div>
                     <div class="box-header with-border">
+                        <h3 class="box-title">Announcement Banner</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Banner Status</label>
+                                @php($announcementEnabled = (int) old('branding:announcement_enabled', config('branding.announcement_enabled', false)))
+                                <select class="form-control" name="branding:announcement_enabled">
+                                    <option value="1" @if($announcementEnabled === 1) selected @endif>Active</option>
+                                    <option value="0" @if($announcementEnabled === 0) selected @endif>Disabled</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label class="control-label">Severity Level</label>
+                                @php($announcementType = old('branding:announcement_type', config('branding.announcement_type', 'notice')))
+                                <select class="form-control" name="branding:announcement_type">
+                                    <option value="notice" @if($announcementType === 'notice') selected @endif>Notice (Blue/Accent)</option>
+                                    <option value="warning" @if($announcementType === 'warning') selected @endif>Warning (Amber)</option>
+                                    <option value="critical" @if($announcementType === 'critical') selected @endif>Critical (Crimson Red)</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-5">
+                                <label class="control-label">Announcement Message</label>
+                                <input type="text" class="form-control" name="branding:announcement_message" value="{{ old('branding:announcement_message', config('branding.announcement_message')) }}" placeholder="Scheduled maintenance will occur tonight at 00:00 UTC." maxlength="300" />
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label class="control-label">Action Link (Optional)</label>
+                                <input type="url" class="form-control" name="branding:announcement_link" value="{{ old('branding:announcement_link', config('branding.announcement_link')) }}" placeholder="https://status.example.com or /status" maxlength="500" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-header with-border">
                         <h3 class="box-title">Branding</h3>
                     </div>
                     <div class="box-body">
