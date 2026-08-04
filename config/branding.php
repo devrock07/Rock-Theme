@@ -24,4 +24,7 @@ return [
     'status_enabled' => (bool) env('BRAND_STATUS_ENABLED', true),
     'status_title' => env('BRAND_STATUS_TITLE', 'Systems operational'),
     'status_message' => env('BRAND_STATUS_MESSAGE', 'Infrastructure is online and operating normally.'),
+    'status_show_nodes' => (bool) env('BRAND_STATUS_SHOW_NODES', true),
+    'status_node_mode' => env('BRAND_STATUS_NODE_MODE', 'all'),
 ];
+

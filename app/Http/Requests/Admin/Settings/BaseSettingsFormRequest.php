@@ -37,6 +37,8 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:status_enabled' => 'required|integer|in:0,1',
             'branding:status_title' => 'required|string|max:80',
             'branding:status_message' => 'nullable|string|max:240',
+            'branding:status_show_nodes' => 'required|integer|in:0,1',
+            'branding:status_node_mode' => 'required|string|in:all,operational_only,summary_only',
             'pterodactyl:auth:2fa_required' => 'required|integer|in:0,1,2',
             'app:locale' => ['required', 'string', Rule::in(array_keys($this->getAvailableLanguages()))],
         ];
@@ -69,6 +71,8 @@ class BaseSettingsFormRequest extends AdminFormRequest
             'branding:status_enabled' => 'Public Status Page',
             'branding:status_title' => 'Status Title',
             'branding:status_message' => 'Status Message',
+            'branding:status_show_nodes' => 'Show Node Details',
+            'branding:status_node_mode' => 'Node Filter Mode',
             'pterodactyl:auth:2fa_required' => 'Require 2-Factor Authentication',
             'app:locale' => 'Default Language',
         ];
