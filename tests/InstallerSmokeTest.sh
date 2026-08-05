@@ -4,7 +4,23 @@ set -euo pipefail
 
 root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 workspace="$(mktemp -d "${TMPDIR:-/tmp}/rock-theme-installer-test.XXXXXX")"
-trap 'rm -rf -- "$workspace"' EXIT
+
+cleanup_test() {
+    local status=$?
+    trap - EXIT
+    if [ "$status" -ne 0 ]; then
+        printf '\nInstaller smoke test failed. Captured output:\n' >&2
+        for log in "$workspace"/*.log; do
+            [ -f "$log" ] || continue
+            printf '\n--- %s ---\n' "$(basename "$log")" >&2
+            tail -n 120 "$log" >&2
+        done
+    fi
+    rm -rf -- "$workspace"
+    exit "$status"
+}
+
+trap cleanup_test EXIT
 
 panel="$workspace/panel"
 backups="$workspace/backups"
@@ -112,13 +128,8 @@ run_installer() {
     local output="$1"
     shift
 
-    if command -v script >/dev/null 2>&1; then
-        local command=''
-        printf -v command '%q ' bash "$root/install.sh" update "$@"
-        script -q -e -c "$command" /dev/null >"$output" 2>&1
-    else
-        bash "$root/install.sh" update --no-animation "$@" >"$output" 2>&1
-    fi
+    ROCK_FORCE_ANIMATION=1 MOCK_COMPOSER_FAIL="${MOCK_COMPOSER_FAIL:-0}" \
+        bash "$root/install.sh" update "$@" >"$output" 2>&1
 }
 
 bash -n "$root/install.sh" "$root/release.sh"
