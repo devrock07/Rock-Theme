@@ -20,6 +20,12 @@ jobs:
             - name: Check out source
               uses: actions/checkout@v4
 
+            - name: Validate installer scripts
+              run: |
+                  bash -n install.sh release.sh
+                  bash install.sh --help | grep -q 'Rock Theme installer'
+                  bash tests/InstallerSmokeTest.sh
+
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
