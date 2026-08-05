@@ -119,8 +119,8 @@ const Container = styled.div`
     }
 
     .auth-form input:focus {
-        border-color: rgba(201, 79, 89, 0.65) !important;
-        box-shadow: 0 0 0 3px rgba(201, 79, 89, 0.1) !important;
+        border-color: rgba(var(--shell-accent-rgb), 0.65) !important;
+        box-shadow: 0 0 0 3px rgba(var(--shell-accent-rgb), 0.1) !important;
     }
 
     .auth-form button[type='submit'] {

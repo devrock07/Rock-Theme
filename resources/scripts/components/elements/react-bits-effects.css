@@ -26,7 +26,7 @@
 .rb-shiny-text {
     display: inline-block;
     color: transparent;
-    background: linear-gradient(110deg, #77737f 34%, #fff0ef 49%, #f08a90 54%, #77737f 67%);
+    background: linear-gradient(110deg, #77737f 34%, #fff 49%, var(--shell-accent-bright) 54%, #77737f 67%);
     background-size: 240% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -41,9 +41,16 @@
     pointer-events: none;
     --ambient-x: 72vw;
     --ambient-y: 28vh;
-    background:
-        radial-gradient(360px circle at var(--ambient-x) var(--ambient-y), rgba(240, 138, 144, 0.075), transparent 72%),
-        radial-gradient(760px circle at var(--ambient-x) var(--ambient-y), rgba(111, 18, 31, 0.045), transparent 74%);
+    background: radial-gradient(
+            360px circle at var(--ambient-x) var(--ambient-y),
+            rgba(var(--shell-accent-rgb), 0.075),
+            transparent 72%
+        ),
+        radial-gradient(
+            760px circle at var(--ambient-x) var(--ambient-y),
+            rgba(var(--shell-accent-rgb), 0.045),
+            transparent 74%
+        );
     mix-blend-mode: screen;
     opacity: 0.72;
 }
@@ -65,7 +72,7 @@
     --rb-depth-y: 50%;
     --rb-tilt-x: 0deg;
     --rb-tilt-y: 0deg;
-    --rb-depth-color: rgba(201, 79, 89, 0.1);
+    --rb-depth-color: rgba(var(--shell-accent-rgb), 0.1);
     transform: perspective(900px) rotateX(var(--rb-tilt-x)) rotateY(var(--rb-tilt-y)) translateZ(0);
     transform-style: preserve-3d;
     transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 320ms ease;
@@ -118,8 +125,8 @@
     --rb-glow-x: 50%;
     --rb-glow-y: 50%;
     --rb-glow-angle: 120deg;
-    --rb-glow-color: rgba(240, 138, 144, 0.95);
-    --rb-spotlight-color: rgba(201, 79, 89, 0.12);
+    --rb-glow-color: rgba(var(--shell-accent-rgb), 0.95);
+    --rb-spotlight-color: rgba(var(--shell-accent-rgb), 0.12);
 }
 
 .rb-border-glow::before {

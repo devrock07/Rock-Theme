@@ -10,7 +10,6 @@ return [
     'dashboard_subtitle' => env('BRAND_DASHBOARD_SUBTITLE', 'Welcome back, {username}.'),
     'dashboard_image' => env('BRAND_DASHBOARD_IMAGE', ''),
     'theme_preset' => env('BRAND_THEME_PRESET', 'makima'),
-    'accent' => env('BRAND_ACCENT', '#c94f59'),
     'glass_strength' => (int) env('BRAND_GLASS_STRENGTH', 18),
     'card_radius' => (int) env('BRAND_CARD_RADIUS', 12),
     'motion_enabled' => (bool) env('BRAND_MOTION_ENABLED', true),

@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import NotificationCenter from './NotificationCenter';
 import { setRockNotifications } from './rockNotifications';
+import { markServerNotificationRead } from '@/api/account/rockData';
 
 jest.mock('styled-components/macro', () => ({
     __esModule: true,
@@ -19,8 +20,11 @@ jest.mock('styled-components/macro', () => ({
 
 jest.mock('@/api/account/rockData', () => ({
     clearServerNotifications: jest.fn(() => Promise.resolve()),
+    markServerNotificationRead: jest.fn(() => Promise.resolve()),
     getRockAccountData: jest.fn(() => new Promise(() => undefined)),
 }));
+
+const mockedMarkServerNotificationRead = markServerNotificationRead as jest.Mock;
 
 const notification = {
     id: 'server-recovered',
@@ -29,6 +33,7 @@ const notification = {
     tone: 'success' as const,
     createdAt: Date.now(),
     href: '/',
+    remote: true,
 };
 
 describe('NotificationCenter', () => {
@@ -37,6 +42,7 @@ describe('NotificationCenter', () => {
         document.body.innerHTML = '<div id="modal-portal"></div>';
         Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 390 });
         Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: 844 });
+        jest.clearAllMocks();
         setRockNotifications([notification]);
     });
 
@@ -68,6 +74,20 @@ describe('NotificationCenter', () => {
 
         expect(screen.queryByRole('dialog', { name: 'Notifications' })).not.toBeInTheDocument();
         expect(document.body).not.toHaveStyle({ overflow: 'hidden' });
+    });
+
+    it('marks a remote notification read when it is opened', () => {
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
+        fireEvent.click(screen.getByText('Server recovered'));
+
+        expect(mockedMarkServerNotificationRead).toHaveBeenCalledWith('server-recovered');
+        expect(screen.queryByRole('dialog', { name: 'Notifications' })).not.toBeInTheDocument();
     });
 
     it('anchors the desktop panel to the notification trigger', () => {

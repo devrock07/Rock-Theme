@@ -12,7 +12,7 @@ export interface SiteSettings {
         dashboardTitle: string;
         dashboardSubtitle: string;
         dashboardImage: string;
-        themePreset: 'makima' | 'crimson-glass' | 'pure-black' | 'minimal-light';
+        themePreset: 'makima' | 'blue';
         accent: string;
         glassStrength: number;
         cardRadius: number;

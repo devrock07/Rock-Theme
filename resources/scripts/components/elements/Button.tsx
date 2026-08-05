@@ -51,7 +51,7 @@ const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
         ((!props.isSecondary && !props.color) || props.color === 'primary') &&
         css<Props>`
             ${(props) => !props.isSecondary && tw`bg-primary-500 border-primary-600 border text-primary-50`};
-            background-image: linear-gradient(135deg, rgba(240, 138, 144, 0.18), transparent 48%);
+            background-image: linear-gradient(135deg, rgba(var(--shell-accent-rgb), 0.18), transparent 48%);
 
             &:hover:not(:disabled) {
                 ${tw`bg-primary-600 border-primary-700`};

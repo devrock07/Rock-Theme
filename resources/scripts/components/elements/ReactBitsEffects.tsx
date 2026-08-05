@@ -64,7 +64,7 @@ export const AmbientCursor: React.FC = () => {
 export const TiltSpotlight: React.FC<React.HTMLAttributes<HTMLDivElement> & { spotlightColor?: string }> = ({
     children,
     className = '',
-    spotlightColor = 'rgba(201, 79, 89, 0.1)',
+    spotlightColor = 'rgba(var(--shell-accent-rgb), 0.1)',
     onPointerMove,
     onPointerLeave,
     ...props
@@ -112,8 +112,8 @@ export const BorderGlow: React.FC<
 > = ({
     children,
     className = '',
-    glowColor = 'rgba(240, 138, 144, 0.95)',
-    spotlightColor = 'rgba(201, 79, 89, 0.12)',
+    glowColor = 'rgba(var(--shell-accent-rgb), 0.95)',
+    spotlightColor = 'rgba(var(--shell-accent-rgb), 0.12)',
     onPointerMove,
     ...props
 }) => {

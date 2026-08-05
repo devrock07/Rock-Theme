@@ -7,11 +7,12 @@ import { Link } from 'react-router-dom';
 import {
     clearRockNotifications,
     getRockNotifications,
+    markRockNotificationRead,
     mergeRockNotifications,
     RockNotification,
     setRockNotifications,
 } from './rockNotifications';
-import { clearServerNotifications, getRockAccountData } from '@/api/account/rockData';
+import { clearServerNotifications, getRockAccountData, markServerNotificationRead } from '@/api/account/rockData';
 
 const Center = styled.div`
     position: relative;
@@ -44,8 +45,8 @@ const Center = styled.div`
         padding: 0 0.2rem;
         color: white;
         border-radius: 999px;
-        background: #d95763;
-        box-shadow: 0 0 12px rgba(217, 87, 99, 0.34);
+        background: var(--shell-accent);
+        box-shadow: 0 0 12px rgba(var(--shell-accent-rgb), 0.34);
         font-size: 0.58rem;
     }
 `;
@@ -66,11 +67,12 @@ const NotificationPanel = styled.div`
     max-height: calc(100dvh - 5.75rem);
     overflow: hidden;
     flex-direction: column;
-    border: 1px solid rgba(224, 91, 103, 0.24);
+    border: 1px solid rgba(var(--shell-accent-rgb), 0.24);
     border-radius: 14px;
-    background: linear-gradient(150deg, rgba(28, 17, 21, 0.985), rgba(9, 9, 11, 0.985) 52%);
+    background: linear-gradient(150deg, rgba(var(--shell-accent-rgb), 0.1), transparent 52%),
+        color-mix(in srgb, var(--shell-panel-strong) 98.5%, transparent);
     box-shadow: inset 0 1px 0 rgba(255, 225, 230, 0.055), 0 25px 70px rgba(0, 0, 0, 0.58),
-        0 0 42px rgba(201, 79, 89, 0.07);
+        0 0 42px rgba(var(--shell-accent-rgb), 0.07);
     backdrop-filter: blur(24px) saturate(1.2);
 
     &::before {
@@ -81,7 +83,7 @@ const NotificationPanel = styled.div`
         height: 1px;
         content: '';
         pointer-events: none;
-        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.58), transparent);
+        background: linear-gradient(90deg, transparent, rgba(var(--shell-accent-rgb), 0.58), transparent);
     }
 
     .notification-head {
@@ -92,8 +94,8 @@ const NotificationPanel = styled.div`
         align-items: center;
         justify-content: space-between;
         padding: 0.85rem 1rem;
-        border-bottom: 1px solid rgba(224, 91, 103, 0.14);
-        background: rgba(13, 11, 13, 0.9);
+        border-bottom: 1px solid rgba(var(--shell-accent-rgb), 0.14);
+        background: color-mix(in srgb, var(--shell-panel-strong) 90%, transparent);
         backdrop-filter: blur(18px);
     }
     .notification-head strong {
@@ -121,9 +123,9 @@ const NotificationPanel = styled.div`
         border-radius: 7px;
     }
     .notification-actions button:hover {
-        color: #f6a0a7;
-        border-color: rgba(224, 91, 103, 0.26);
-        background: rgba(201, 79, 89, 0.12);
+        color: var(--shell-accent-bright);
+        border-color: rgba(var(--shell-accent-rgb), 0.26);
+        background: rgba(var(--shell-accent-rgb), 0.12);
     }
     .notification-list {
         min-height: 0;
@@ -261,6 +263,7 @@ export default () => {
             .then((data) => {
                 const remote: RockNotification[] = data.notifications.map((item) => ({
                     ...item,
+                    remote: true,
                     tone: item.type === 'offline' ? 'danger' : item.type === 'recovered' ? 'success' : 'warning',
                 }));
                 setRockNotifications(mergeRockNotifications(remote));
@@ -404,7 +407,13 @@ export default () => {
                                             className={'notification-item'}
                                             data-tone={item.tone}
                                             to={item.href || '/'}
-                                            onClick={() => setOpen(false)}
+                                            onClick={() => {
+                                                markRockNotificationRead(item.id);
+                                                if (item.remote) {
+                                                    markServerNotificationRead(item.id).catch(() => undefined);
+                                                }
+                                                setOpen(false);
+                                            }}
                                         >
                                             <strong>{item.title}</strong>
                                             <small>{item.message}</small>

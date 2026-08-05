@@ -21,14 +21,14 @@ const SubNavigation = styled.div`
 
             &:hover {
                 ${tw`text-neutral-100`};
-                background: rgba(201, 79, 89, 0.07);
+                background: rgba(var(--shell-accent-rgb), 0.07);
             }
 
             &:active,
             &.active {
                 ${tw`text-neutral-100`};
                 box-shadow: inset 0 -2px ${theme`colors.primary.600`.toString()};
-                background: linear-gradient(180deg, rgba(201, 79, 89, 0.1), transparent);
+                background: linear-gradient(180deg, rgba(var(--shell-accent-rgb), 0.1), transparent);
             }
         }
     }

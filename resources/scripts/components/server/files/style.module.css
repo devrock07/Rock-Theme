@@ -27,8 +27,8 @@
     &:hover {
         z-index: 50;
         color: #f4f3f7;
-        border-color: rgba(240, 138, 144, 0.18);
-        background: linear-gradient(110deg, rgba(201, 79, 89, 0.075), rgba(18, 15, 17, 0.94));
+        border-color: rgba(var(--shell-accent-rgb), 0.18);
+        background: linear-gradient(110deg, rgba(var(--shell-accent-rgb), 0.075), var(--shell-panel));
         transform: translateX(2px);
     }
 

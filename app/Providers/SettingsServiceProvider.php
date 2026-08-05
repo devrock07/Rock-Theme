@@ -28,7 +28,6 @@ class SettingsServiceProvider extends ServiceProvider
         'branding:dashboard_subtitle',
         'branding:dashboard_image',
         'branding:theme_preset',
-        'branding:accent',
         'branding:glass_strength',
         'branding:card_radius',
         'branding:motion_enabled',

@@ -15,12 +15,13 @@ export default () => {
 
     useEffect(() => {
         const root = document.documentElement;
-        const accent = branding.accent || '#c94f59';
+        const themePreset = branding.themePreset === 'blue' ? 'blue' : 'makima';
+        const accent = themePreset === 'blue' ? '#5b8cff' : '#c94f59';
         const rgb = hexToRgb(accent);
         const glassStrength = Number.isFinite(branding.glassStrength) ? branding.glassStrength : 18;
         const cardRadius = Number.isFinite(branding.cardRadius) ? branding.cardRadius : 12;
 
-        root.dataset.rockTheme = branding.themePreset || 'makima';
+        root.dataset.rockTheme = themePreset;
         root.dataset.rockMotion = branding.motionEnabled ? 'full' : 'reduced';
         root.style.setProperty('--shell-accent', accent);
         root.style.setProperty('--shell-accent-rgb', rgb.join(', '));
@@ -30,7 +31,7 @@ export default () => {
         root.style.setProperty('--shell-radius', `${Math.min(20, Math.max(6, cardRadius))}px`);
 
         const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-        themeColor?.setAttribute('content', branding.themePreset === 'minimal-light' ? '#e9e6e7' : '#09090a');
+        themeColor?.setAttribute('content', themePreset === 'blue' ? '#070a10' : '#09090a');
 
         return () => {
             delete root.dataset.rockTheme;

@@ -14,13 +14,13 @@ const Card = styled(MagicBentoCard)`
     min-height: 14rem;
     border: 1px solid rgba(255, 255, 255, 0.085);
     border-radius: 12px;
-    background: radial-gradient(circle at 92% 8%, rgba(201, 79, 89, 0.065), transparent 34%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.025), rgba(14, 14, 16, 0.94) 48%, rgba(32, 9, 13, 0.3));
+    background: radial-gradient(circle at 92% 8%, rgba(var(--shell-accent-rgb), 0.065), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.025), var(--shell-panel) 48%, rgba(var(--shell-accent-rgb), 0.08));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 18px 48px rgba(0, 0, 0, 0.12);
     transition: border-color 220ms ease, background 220ms ease, box-shadow 320ms ease;
 
     &:hover {
-        border-color: rgba(240, 138, 144, 0.22);
+        border-color: rgba(var(--shell-accent-rgb), 0.22);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065), 0 24px 58px rgba(0, 0, 0, 0.18);
     }
 
@@ -110,8 +110,8 @@ const Card = styled(MagicBentoCard)`
         transition: border-color 180ms ease, background 180ms ease;
     }
     &:hover .metrics > div {
-        border-color: rgba(240, 138, 144, 0.09);
-        background: rgba(201, 79, 89, 0.025);
+        border-color: rgba(var(--shell-accent-rgb), 0.09);
+        background: rgba(var(--shell-accent-rgb), 0.025);
     }
     .metric-value {
         margin-top: 0.35rem;
@@ -129,8 +129,8 @@ const Card = styled(MagicBentoCard)`
         display: block;
         height: 100%;
         border-radius: inherit;
-        background: #c94f59;
-        box-shadow: 0 0 8px rgba(240, 138, 144, 0.42);
+        background: var(--shell-accent);
+        box-shadow: 0 0 8px rgba(var(--shell-accent-rgb), 0.42);
     }
     .footer {
         display: flex;
@@ -147,10 +147,10 @@ const Card = styled(MagicBentoCard)`
         gap: 0.55rem;
         min-height: 2rem;
         padding: 0 0.75rem;
-        color: #e8c5c8;
-        border: 1px solid rgba(240, 138, 144, 0.24);
+        color: var(--shell-accent-bright);
+        border: 1px solid rgba(var(--shell-accent-rgb), 0.24);
         border-radius: 7px;
-        background: rgba(201, 79, 89, 0.09);
+        background: rgba(var(--shell-accent-rgb), 0.09);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.61rem;
         font-weight: 650;
@@ -160,8 +160,8 @@ const Card = styled(MagicBentoCard)`
     }
     &:hover .manage {
         color: white;
-        border-color: rgba(240, 138, 144, 0.4);
-        background: rgba(201, 79, 89, 0.16);
+        border-color: rgba(var(--shell-accent-rgb), 0.4);
+        background: rgba(var(--shell-accent-rgb), 0.16);
         transform: translateX(2px);
     }
 
@@ -264,7 +264,7 @@ export default ({ server, className, favorite = false, onToggleFavorite, onOpenQ
     return (
         <Card
             className={className}
-            glowColor={'201, 79, 89'}
+            glowColor={'var(--shell-accent-rgb)'}
             particleCount={6}
             enableStars
             enableTilt

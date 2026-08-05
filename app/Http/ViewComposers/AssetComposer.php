@@ -19,6 +19,10 @@ class AssetComposer
      */
     public function compose(View $view): void
     {
+        $themePreset = in_array(config('branding.theme_preset'), ['makima', 'blue'], true)
+            ? config('branding.theme_preset')
+            : 'makima';
+
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Pterodactyl',
@@ -32,8 +36,8 @@ class AssetComposer
                 'dashboardTitle' => config('branding.dashboard_title', 'Your infrastructure, without the noise.'),
                 'dashboardSubtitle' => config('branding.dashboard_subtitle', 'Welcome back, {username}.'),
                 'dashboardImage' => config('branding.dashboard_image', ''),
-                'themePreset' => config('branding.theme_preset', 'makima'),
-                'accent' => config('branding.accent', '#c94f59'),
+                'themePreset' => $themePreset,
+                'accent' => $themePreset === 'blue' ? '#5b8cff' : '#c94f59',
                 'glassStrength' => (int) config('branding.glass_strength', 18),
                 'cardRadius' => (int) config('branding.card_radius', 12),
                 'motionEnabled' => (bool) config('branding.motion_enabled', true),
