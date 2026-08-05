@@ -36,7 +36,7 @@ const Select = styled.select<Props>`
             &:hover:not(:disabled),
             &:focus {
                 ${tw`border-primary-400`};
-                box-shadow: 0 0 0 3px rgba(201, 79, 89, 0.1);
+                box-shadow: 0 0 0 3px rgba(var(--shell-accent-rgb), 0.1);
             }
         `};
 `;

@@ -26,34 +26,21 @@ export default createGlobalStyle`
         --shell-grid: rgba(255, 255, 255, 0.052);
     }
 
-    :root[data-rock-theme='crimson-glass'] {
-        --shell-bg: #0b080a;
-        --shell-panel: #151014;
-        --shell-panel-strong: #1b1217;
-        --shell-border: rgba(255, 225, 230, 0.11);
-        --shell-shadow: 0 28px 80px rgba(44, 4, 13, 0.4);
-    }
-
-    :root[data-rock-theme='pure-black'] {
-        --shell-bg: #030304;
-        --shell-panel: #080809;
-        --shell-panel-strong: #0b0b0c;
-        --shell-panel-soft: #101011;
-        --shell-border: rgba(255, 255, 255, 0.075);
-    }
-
-    :root[data-rock-theme='minimal-light'] {
-        color-scheme: light;
-        --shell-bg: #e9e6e7;
-        --shell-panel: #f8f6f7;
-        --shell-panel-strong: #ffffff;
-        --shell-panel-soft: #dedadc;
-        --shell-border: rgba(40, 22, 28, 0.12);
-        --shell-border-strong: rgba(40, 22, 28, 0.22);
-        --shell-text: #211b1d;
-        --shell-muted: #746b6f;
-        --shell-shadow: 0 22px 60px rgba(55, 35, 42, 0.12);
-        --shell-grid: rgba(40, 22, 28, 0.075);
+    :root[data-rock-theme='blue'] {
+        --shell-bg: #070a10;
+        --shell-panel: #0c111a;
+        --shell-panel-strong: #111a28;
+        --shell-panel-soft: #172235;
+        --shell-border: rgba(169, 198, 255, 0.1);
+        --shell-border-strong: rgba(169, 198, 255, 0.2);
+        --shell-text: #f1f5ff;
+        --shell-muted: #8793aa;
+        --shell-accent: #5b8cff;
+        --shell-accent-rgb: 91, 140, 255;
+        --shell-accent-bright: #9bbcff;
+        --shell-accent-soft: rgba(91, 140, 255, 0.13);
+        --shell-shadow: 0 28px 80px rgba(7, 35, 91, 0.34);
+        --shell-grid: rgba(129, 170, 240, 0.055);
     }
 
     :root[data-rock-motion='reduced'] *,
@@ -159,7 +146,7 @@ export default createGlobalStyle`
 
     ::selection {
         color: white;
-        background: rgba(185, 45, 55, 0.58);
+        background: rgba(var(--shell-accent-rgb), 0.58);
     }
 
     ::placeholder {
@@ -168,7 +155,7 @@ export default createGlobalStyle`
     }
 
     :focus-visible {
-        outline: 2px solid rgba(240, 138, 144, 0.72);
+        outline: 2px solid rgba(var(--shell-accent-rgb), 0.72);
         outline-offset: 2px;
     }
 
@@ -177,44 +164,11 @@ export default createGlobalStyle`
     }
 
     [role='tooltip'] {
-        color: #eadde0;
-        border: 1px solid rgba(240, 138, 144, 0.18);
-        background: rgba(24, 14, 18, 0.96);
+        color: var(--shell-text);
+        border: 1px solid rgba(var(--shell-accent-rgb), 0.18);
+        background: color-mix(in srgb, var(--shell-panel-strong) 96%, transparent);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
         backdrop-filter: blur(14px);
-    }
-
-    :root[data-rock-theme='minimal-light'] .text-neutral-50,
-    :root[data-rock-theme='minimal-light'] .text-neutral-100,
-    :root[data-rock-theme='minimal-light'] .text-neutral-200,
-    :root[data-rock-theme='minimal-light'] .text-neutral-300 {
-        color: var(--shell-text) !important;
-    }
-
-    :root[data-rock-theme='minimal-light'] .text-neutral-400,
-    :root[data-rock-theme='minimal-light'] .text-neutral-500,
-    :root[data-rock-theme='minimal-light'] .text-neutral-600,
-    :root[data-rock-theme='minimal-light'] .text-neutral-700 {
-        color: var(--shell-muted) !important;
-    }
-
-    :root[data-rock-theme='minimal-light'] .bg-neutral-700,
-    :root[data-rock-theme='minimal-light'] .bg-neutral-800,
-    :root[data-rock-theme='minimal-light'] .bg-neutral-900 {
-        background-color: var(--shell-panel) !important;
-    }
-
-    :root[data-rock-theme='minimal-light'] .border-neutral-500,
-    :root[data-rock-theme='minimal-light'] .border-neutral-600,
-    :root[data-rock-theme='minimal-light'] .border-neutral-700,
-    :root[data-rock-theme='minimal-light'] .border-neutral-800,
-    :root[data-rock-theme='minimal-light'] .border-neutral-900 {
-        border-color: var(--shell-border) !important;
-    }
-
-    :root[data-rock-theme='minimal-light'] [role='tooltip'] {
-        color: var(--shell-text);
-        background: var(--shell-panel-strong);
     }
 
     a, button {
@@ -226,7 +180,7 @@ export default createGlobalStyle`
         overflow: hidden;
         --mouse-x: 50%;
         --mouse-y: 50%;
-        --spotlight-color: rgba(201, 79, 89, 0.12);
+        --spotlight-color: rgba(var(--shell-accent-rgb), 0.12);
     }
 
     .spotlight-card::before {
@@ -261,8 +215,8 @@ export default createGlobalStyle`
     }
 
     .activity-feed .rb-fluid-content > div:hover {
-        border-color: rgba(240, 138, 144, 0.12);
-        background: linear-gradient(90deg, rgba(201, 79, 89, 0.055), rgba(255, 255, 255, 0.015));
+        border-color: rgba(var(--shell-accent-rgb), 0.12);
+        background: linear-gradient(90deg, rgba(var(--shell-accent-rgb), 0.055), rgba(255, 255, 255, 0.015));
     }
 
     input[type=number]::-webkit-outer-spin-button,

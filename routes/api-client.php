@@ -23,6 +23,7 @@ Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::get('/rock', [Client\Account\RockPreferencesController::class, 'index']);
     Route::put('/rock', [Client\Account\RockPreferencesController::class, 'update']);
+    Route::patch('/rock/notifications/{notification}/read', [Client\Account\RockPreferencesController::class, 'markNotificationRead']);
     Route::delete('/rock/notifications', [Client\Account\RockPreferencesController::class, 'clearNotifications']);
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {
         Route::get('/', [Client\AccountController::class, 'index'])->name('api:client.account');

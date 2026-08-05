@@ -32,7 +32,7 @@ const checkboxStyle = css<Props>`
 
     &:focus {
         ${tw`outline-none border-primary-300`};
-        box-shadow: 0 0 0 3px rgba(201, 79, 89, 0.14);
+        box-shadow: 0 0 0 3px rgba(var(--shell-accent-rgb), 0.14);
     }
 `;
 

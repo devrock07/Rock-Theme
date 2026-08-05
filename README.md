@@ -16,10 +16,10 @@ mobile navigation surface, with matching behavior across phone and desktop layou
 
 ## Highlights
 
--   Unified dark-red visual system across the client and admin panels
+-   Unified Crimson Red or Midnight Blue visual system across the client and admin panels
 -   Responsive layouts for desktop, tablet, and mobile
 -   Configurable panel name, footer, mark or logo, dashboard copy, and artwork
--   Admin Theme Studio with presets, custom accent, glass, radius, motion,
+-   Admin Theme Studio with curated Crimson Red and Midnight Blue presets, glass, radius, motion,
     login artwork, console appearance, and live preview
 -   Command palette, account-synced favorites and server groups, permission-aware
     quick controls, and durable resource notifications

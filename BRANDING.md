@@ -9,7 +9,7 @@ Use **Admin → Settings → Branding** to change:
 -   Dashboard title and subtitle
 -   Dashboard character or background image
 -   Console image, GIF, or video background and visibility
--   Theme preset, accent color, glass strength, card radius, and motion level
+-   Crimson Red or Blue theme preset, glass strength, card radius, and motion level
 -   Login title, subtitle, and image/GIF/video artwork
 -   Console font size and optional scanline treatment
 -   Public status-page visibility, headline, message, node breakdown visibility, and node filter mode
@@ -31,7 +31,6 @@ BRAND_DASHBOARD_TITLE="Your infrastructure, without the noise."
 BRAND_DASHBOARD_SUBTITLE="Welcome back, {username}."
 BRAND_DASHBOARD_IMAGE=""
 BRAND_THEME_PRESET=makima
-BRAND_ACCENT="#c94f59"
 BRAND_GLASS_STRENGTH=18
 BRAND_CARD_RADIUS=12
 BRAND_MOTION_ENABLED=true
@@ -78,10 +77,10 @@ legible; 12–24% works well for most artwork.
 
 ## Theme Studio and login builder
 
-Theme Studio applies the chosen preset and accent to both the client and admin
-interfaces. Glass strength, corner radius, and motion are global controls. The
-login media field accepts the same local paths and remote image/video formats
-as the console background.
+Theme Studio applies either the default Crimson Red preset (`makima`) or the
+Blue preset (`blue`) to both the client and admin interfaces. Glass strength,
+corner radius, and motion are global controls. The login media field accepts
+the same local paths and remote image/video formats as the console background.
 
 ## Dashboard tools
 

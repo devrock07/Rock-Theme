@@ -15,17 +15,17 @@ export const DropdownButtonRow = styled.button<{ danger?: boolean }>`
 
     &:hover {
         color: ${(props) => (props.danger ? '#ff8d98' : '#ffd6da')};
-        background: ${(props) => (props.danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(201, 79, 89, 0.15)')};
+        background: ${(props) => (props.danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(var(--shell-accent-rgb), 0.15)')};
     }
 `;
 
 const Menu = styled.div`
     ${tw`absolute p-2 rounded shadow-lg z-50`};
-    border: 1px solid rgba(240, 138, 144, 0.28);
-    background: radial-gradient(circle at 92% 6%, rgba(201, 79, 89, 0.18), transparent 42%),
+    border: 1px solid rgba(var(--shell-accent-rgb), 0.28);
+    background: radial-gradient(circle at 92% 6%, rgba(var(--shell-accent-rgb), 0.18), transparent 42%),
         linear-gradient(145deg, rgba(31, 17, 22, 0.98), rgba(15, 11, 14, 0.99));
     color: #c9b7bc;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48), 0 0 28px rgba(201, 79, 89, 0.1),
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48), 0 0 28px rgba(var(--shell-accent-rgb), 0.1),
         inset 0 1px 0 rgba(255, 214, 218, 0.06);
     backdrop-filter: blur(18px);
 `;

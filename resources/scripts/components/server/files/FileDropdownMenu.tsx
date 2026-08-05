@@ -45,7 +45,7 @@ const StyledRow = styled.button<{ $danger?: boolean }>`
     &:hover,
     &:focus-visible {
         color: ${(props) => (props.$danger ? '#ff8d98' : '#ffd6da')};
-        background: ${(props) => (props.$danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(201, 79, 89, 0.15)')};
+        background: ${(props) => (props.$danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(var(--shell-accent-rgb), 0.15)')};
         transform: translateX(2px);
         outline: none;
     }

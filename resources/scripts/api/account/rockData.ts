@@ -25,3 +25,6 @@ export const saveServerPreferences = (serverPreferences: Record<string, ServerPr
 
 export const clearServerNotifications = (): Promise<void> =>
     http.delete('/api/client/account/rock/notifications').then(() => undefined);
+
+export const markServerNotificationRead = (id: string): Promise<void> =>
+    http.patch(`/api/client/account/rock/notifications/${encodeURIComponent(id)}/read`).then(() => undefined);

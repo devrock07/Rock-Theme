@@ -1,5 +1,7 @@
+@php($adminTheme = in_array(config('branding.theme_preset'), ['makima', 'blue'], true) ? config('branding.theme_preset') : 'makima')
+@php($adminAccent = $adminTheme === 'blue' ? '#5b8cff' : '#c94f59')
 <!DOCTYPE html>
-<html data-rock-theme="{{ config('branding.theme_preset', 'makima') }}" data-rock-motion="{{ config('branding.motion_enabled', true) ? 'full' : 'reduced' }}">
+<html data-rock-theme="{{ $adminTheme }}" data-rock-motion="{{ config('branding.motion_enabled', true) ? 'full' : 'reduced' }}">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,12 +16,12 @@
         <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#c94f59">
         <link rel="shortcut icon" href="/favicons/favicon.ico?v=rock-red-2">
         <meta name="msapplication-config" content="/favicons/browserconfig.xml?v=rock-red-2">
-        <meta name="theme-color" content="#09090a">
+        <meta name="theme-color" content="{{ $adminTheme === 'blue' ? '#070a10' : '#09090a' }}">
         <style>
             :root {
-                --admin-accent: {{ config('branding.accent', '#c94f59') }};
-                --admin-accent-bright: color-mix(in srgb, {{ config('branding.accent', '#c94f59') }} 62%, white);
-                --admin-accent-soft: color-mix(in srgb, {{ config('branding.accent', '#c94f59') }} 12%, transparent);
+                --admin-accent: {{ $adminAccent }};
+                --admin-accent-bright: color-mix(in srgb, {{ $adminAccent }} 62%, white);
+                --admin-accent-soft: color-mix(in srgb, {{ $adminAccent }} 12%, transparent);
                 --admin-radius: {{ (int) config('branding.card_radius', 12) }}px;
                 --admin-glass: {{ (int) config('branding.glass_strength', 18) }}px;
             }

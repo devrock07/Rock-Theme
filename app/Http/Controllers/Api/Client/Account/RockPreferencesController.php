@@ -24,6 +24,7 @@ class RockPreferencesController extends ClientApiController
             if (Schema::hasTable('rock_notifications')) {
                 $notifications = DB::table('rock_notifications')
                     ->where('user_id', $request->user()->id)
+                    ->whereNull('read_at')
                     ->latest()->limit(30)->get()
                     ->map(fn ($item) => [
                         'id' => (string) $item->id,
@@ -75,10 +76,34 @@ class RockPreferencesController extends ClientApiController
     {
         try {
             if (Schema::hasTable('rock_notifications')) {
-                DB::table('rock_notifications')->where('user_id', $request->user()->id)->delete();
+                DB::table('rock_notifications')
+                    ->where('user_id', $request->user()->id)
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now(), 'updated_at' => now()]);
             }
         } catch (\Throwable) {
             // Clearing the local notification store must not fail with the remote store.
+        }
+
+        return response()->json([], 204);
+    }
+
+    public function markNotificationRead(Request $request, string $notification): JsonResponse
+    {
+        if (!ctype_digit($notification)) {
+            return response()->json([], 204);
+        }
+
+        try {
+            if (Schema::hasTable('rock_notifications')) {
+                DB::table('rock_notifications')
+                    ->where('id', $notification)
+                    ->where('user_id', $request->user()->id)
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now(), 'updated_at' => now()]);
+            }
+        } catch (\Throwable) {
+            // The browser keeps a local read marker and can retry later.
         }
 
         return response()->json([], 204);

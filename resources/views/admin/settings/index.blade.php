@@ -86,28 +86,23 @@
                     </div>
                     <div class="box-body">
                         <div class="row">
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label class="control-label">Preset</label>
                                 @php($themePreset = old('branding:theme_preset', config('branding.theme_preset', 'makima')))
+                                @php($themePreset = in_array($themePreset, ['makima', 'blue'], true) ? $themePreset : 'makima')
                                 <select class="form-control" id="theme-preset" name="branding:theme_preset">
-                                    <option value="makima" @if($themePreset === 'makima') selected @endif>Makima Red</option>
-                                    <option value="crimson-glass" @if($themePreset === 'crimson-glass') selected @endif>Crimson Glass</option>
-                                    <option value="pure-black" @if($themePreset === 'pure-black') selected @endif>Pure Black</option>
-                                    <option value="minimal-light" @if($themePreset === 'minimal-light') selected @endif>Minimal Light</option>
+                                    <option value="makima" @if($themePreset === 'makima') selected @endif>Crimson Red</option>
+                                    <option value="blue" @if($themePreset === 'blue') selected @endif>Midnight Blue</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-3">
-                                <label class="control-label">Accent</label>
-                                <input type="color" class="form-control" id="theme-accent" name="branding:accent" value="{{ old('branding:accent', config('branding.accent', '#c94f59')) }}" />
-                            </div>
-                            <div class="form-group col-md-2">
                                 <label class="control-label">Glass</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="theme-glass" name="branding:glass_strength" value="{{ old('branding:glass_strength', config('branding.glass_strength', 18)) }}" min="0" max="30" />
                                     <span class="input-group-addon">px</span>
                                 </div>
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-3">
                                 <label class="control-label">Radius</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="theme-radius" name="branding:card_radius" value="{{ old('branding:card_radius', config('branding.card_radius', 12)) }}" min="6" max="20" />
@@ -303,7 +298,6 @@
     <script>
         (() => {
             const preset = document.getElementById('theme-preset');
-            const accent = document.getElementById('theme-accent');
             const glass = document.getElementById('theme-glass');
             const radius = document.getElementById('theme-radius');
             const motion = document.getElementById('theme-motion');
@@ -311,9 +305,7 @@
             const chip = document.getElementById('theme-preview-chip');
             const presets = {
                 'makima': ['#c94f59', '#0d0d0f'],
-                'crimson-glass': ['#e35d6a', '#171015'],
-                'pure-black': ['#cf4f5a', '#050506'],
-                'minimal-light': ['#b93445', '#ebe7e8'],
+                'blue': ['#5b8cff', '#09111e'],
             };
             const hexToRgb = (value) => {
                 const match = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(value);
@@ -321,11 +313,11 @@
             };
             const render = () => {
                 const colors = presets[preset.value] || presets.makima;
-                const rgb = hexToRgb(accent.value);
+                const rgb = hexToRgb(colors[0]);
                 const bright = rgb.map((channel) => Math.round(channel + (255 - channel) * .38)).join(', ');
                 document.documentElement.dataset.rockTheme = preset.value;
                 document.documentElement.dataset.rockMotion = motion.value === '1' ? 'full' : 'reduced';
-                document.documentElement.style.setProperty('--admin-accent', accent.value);
+                document.documentElement.style.setProperty('--admin-accent', colors[0]);
                 document.documentElement.style.setProperty('--admin-accent-bright', `rgb(${bright})`);
                 document.documentElement.style.setProperty('--admin-accent-soft', `rgba(${rgb.join(', ')}, .12)`);
                 document.documentElement.style.setProperty('--admin-accent-border', `rgba(${rgb.join(', ')}, .34)`);
@@ -333,16 +325,12 @@
                 document.documentElement.style.setProperty('--admin-glass', `${glass.value}px`);
                 preview.style.borderRadius = `${radius.value}px`;
                 preview.style.backdropFilter = `blur(${glass.value}px)`;
-                preview.style.background = `linear-gradient(135deg, ${accent.value}24, ${colors[1]})`;
-                chip.style.color = accent.value;
-                chip.style.borderColor = `${accent.value}66`;
-                chip.style.background = `${accent.value}22`;
+                preview.style.background = `linear-gradient(135deg, ${colors[0]}24, ${colors[1]})`;
+                chip.style.color = colors[0];
+                chip.style.borderColor = `${colors[0]}66`;
+                chip.style.background = `${colors[0]}22`;
             };
-            preset && preset.addEventListener('change', () => {
-                accent.value = (presets[preset.value] || presets.makima)[0];
-                render();
-            });
-            [preset, accent, glass, radius, motion].forEach((input) => input && input.addEventListener('input', render));
+            [preset, glass, radius, motion].forEach((input) => input && input.addEventListener('input', render));
             render();
         })();
     </script>

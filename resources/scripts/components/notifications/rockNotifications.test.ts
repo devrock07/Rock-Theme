@@ -1,5 +1,6 @@
 import {
     getRockNotifications,
+    markRockNotificationRead,
     mergeRockNotifications,
     pushRockNotification,
     setRockNotifications,
@@ -72,5 +73,22 @@ describe('rock notifications', () => {
 
         expect(getRockNotifications()).toHaveLength(30);
         expect(getRockNotifications()[0].title).toBe('Newest');
+    });
+
+    it('keeps a read notification hidden after the server sends it again', () => {
+        const remote = {
+            id: '42',
+            title: 'Server recovered',
+            message: 'The server is responding again.',
+            createdAt: 100,
+            tone: 'success' as const,
+            remote: true,
+        };
+        setRockNotifications([remote]);
+
+        markRockNotificationRead(remote.id);
+
+        expect(getRockNotifications()).toEqual([]);
+        expect(mergeRockNotifications([remote])).toEqual([]);
     });
 });

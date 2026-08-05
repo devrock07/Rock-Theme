@@ -14,7 +14,7 @@ type CardProps = React.HTMLAttributes<HTMLDivElement> & {
 export const MagicBentoCard: React.FC<CardProps> = ({
     children,
     className = '',
-    glowColor = '201, 79, 89',
+    glowColor = 'var(--shell-accent-rgb)',
     particleCount = 7,
     enableStars = true,
     enableTilt = true,

@@ -65,7 +65,7 @@ const ModalContainer = styled.div<{ alignTop?: boolean }>`
         height: 1px;
         content: '';
         pointer-events: none;
-        background: linear-gradient(90deg, transparent, rgba(240, 138, 144, 0.72), transparent);
+        background: linear-gradient(90deg, transparent, rgba(var(--shell-accent-rgb), 0.72), transparent);
     }
 
     & > .close-icon {

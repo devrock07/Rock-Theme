@@ -43,7 +43,7 @@ const CommandResult = styled(Link)`
     &:hover {
         color: var(--shell-text);
         border-color: var(--shell-border);
-        background: rgba(201, 79, 89, 0.07);
+        background: rgba(var(--shell-accent-rgb), 0.07);
     }
 `;
 

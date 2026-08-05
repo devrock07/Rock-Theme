@@ -23,7 +23,7 @@ const Shell = styled(FluidGlass)`
     .box-heading {
         padding: 0.85rem 1rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.065);
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.022), rgba(201, 79, 89, 0.04));
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.022), rgba(var(--shell-accent-rgb), 0.04));
     }
 
     .box-heading p {

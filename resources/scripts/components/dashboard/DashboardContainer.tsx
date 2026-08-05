@@ -29,7 +29,7 @@ const DashboardHero = styled.section`
     padding: 3.5rem 2rem 2.35rem;
     overflow: hidden;
     border-bottom: 1px solid var(--shell-border);
-    background: linear-gradient(105deg, rgba(9, 9, 10, 0.86), rgba(38, 12, 17, 0.62), rgba(8, 8, 9, 0.48));
+    background: linear-gradient(105deg, var(--shell-bg), rgba(var(--shell-accent-rgb), 0.14), var(--shell-panel));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), inset 0 -30px 90px rgba(0, 0, 0, 0.12);
 
     .hero-art {
@@ -59,7 +59,7 @@ const DashboardHero = styled.section`
         left: -1.15rem;
         width: 1px;
         content: '';
-        background: linear-gradient(180deg, transparent, rgba(240, 138, 144, 0.48), transparent);
+        background: linear-gradient(180deg, transparent, rgba(var(--shell-accent-rgb), 0.48), transparent);
     }
 
     &::before {
@@ -71,7 +71,7 @@ const DashboardHero = styled.section`
         content: '';
         pointer-events: none;
         border-radius: 50%;
-        background: rgba(153, 27, 39, 0.24);
+        background: rgba(var(--shell-accent-rgb), 0.2);
         filter: blur(100px);
     }
 
