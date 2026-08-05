@@ -50,6 +50,10 @@ configure_terminal() {
         fi
     fi
 
+    if [ "${ROCK_FORCE_ANIMATION:-0}" = '1' ]; then
+        ANIMATE=true
+    fi
+
     charmap="$(locale charmap 2>/dev/null || true)"
     if [[ "$charmap" =~ ^UTF-?8$ ]]; then
         ICON_ACTIVE='◆'
