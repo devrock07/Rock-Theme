@@ -57,6 +57,11 @@ manager-created pre-theme backup interactively:
 bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh)
 ```
 
+The manager opens with a Rock-chan terminal boot screen and shows an animated,
+elapsed-time stage indicator while downloads, backups, Composer, migrations,
+permissions, and cache operations are running. If a stage fails, its latest
+output is printed immediately and the panel recovery guard still runs.
+
 The script presents a menu with three options:
 1. **Install Theme** – Verifies the latest release checksum, saves the original panel, and installs the compiled theme.
 2. **Update Theme** – Creates a safety backup and installs the latest verified release.
@@ -64,6 +69,14 @@ The script presents a menu with three options:
 
 Failed downloads never touch the panel. If an operation fails after maintenance
 mode begins, the manager automatically brings the panel back online.
+
+You can also run an action directly or switch to plain or verbose output:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) update
+bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) install --no-animation
+bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) update --verbose
+```
 
 ### Manual Installation
 
