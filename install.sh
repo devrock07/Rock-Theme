@@ -18,7 +18,6 @@ ACTION=''
 
 RED=''
 CRIMSON=''
-CRIMSON_BRIGHT=''
 GREEN=''
 AMBER=''
 GRAY=''
@@ -37,7 +36,6 @@ configure_terminal() {
         if [ -z "${NO_COLOR+x}" ]; then
             RED=$'\033[0;31m'
             CRIMSON=$'\033[38;2;201;79;89m'
-            CRIMSON_BRIGHT=$'\033[38;2;240;138;144m'
             GREEN=$'\033[38;2;114;214;165m'
             AMBER=$'\033[38;2;233;185;110m'
             GRAY=$'\033[0;90m'
@@ -119,36 +117,13 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-boot_sequence() {
-    [ "$ANIMATE" = true ] || return 0
-
-    local message
-    for message in 'LINKING PANEL CORE' 'LOADING CRIMSON SYSTEM' 'ROCK-CHAN ONLINE'; do
-        printf '\r\033[2K  %b%s%b  %s' "$CRIMSON" "$ICON_ACTIVE" "$NC" "$message"
-        sleep 0.14
-    done
-    clear_line
-}
-
 banner() {
     [ "$BANNER_SHOWN" = false ] || return 0
     BANNER_SHOWN=true
 
-    printf '\n%b' "$CRIMSON"
-    printf '       ____  ____  ________ __   ________  __________  ______\n'
-    printf '      / __ \\/ __ \\/ ____/ //_/  /_  __/ / / / ____/  |/  / ____/\n'
-    printf '     / /_/ / / / / /   / ,<      / / / /_/ / __/ / /|_/ / __/   \n'
-    printf '    / _, _/ /_/ / /___/ /| |    / / / __  / /___/ /  / / /___   \n'
-    printf '   /_/ |_|\\____/\\____/_/ |_|   /_/ /_/ /_/_____/_/  /_/_____/   \n'
-    printf '%b\n' "$NC"
-    printf '%b          .-""""-.%b\n' "$CRIMSON_BRIGHT" "$NC"
-    printf '%b         / /|  |\\ \\%b      %bROCK-CHAN // PANEL UNIT%b\n' "$CRIMSON_BRIGHT" "$NC" "$WHITE" "$NC"
-    printf '%b        |  (o)(o)  |%b      %bverified deploy system%b\n' "$CRIMSON_BRIGHT" "$NC" "$GRAY" "$NC"
-    printf '%b        |     ^    |%b\n' "$CRIMSON_BRIGHT" "$NC"
-    printf '%b        |   \\___/  |%b      %bgithub.com/%s%b\n' "$CRIMSON_BRIGHT" "$NC" "$GRAY" "$REPOSITORY" "$NC"
-    printf '%b         \\   ---  /%b\n' "$CRIMSON_BRIGHT" "$NC"
-    printf '%b          `-.__.-`%b\n\n' "$CRIMSON_BRIGHT" "$NC"
-    boot_sequence
+    printf '\n  %bROCK THEME%b\n' "$WHITE" "$NC"
+    printf '  %bPterodactyl panel manager%b\n' "$GRAY" "$NC"
+    printf '  %b----------------------------------------%b\n\n' "$CRIMSON" "$NC"
 }
 
 run_step() {
@@ -450,12 +425,12 @@ restore_original() {
 
 show_menu() {
     banner
-    printf '%b  SELECT OPERATION%b\n' "$WHITE" "$NC"
-    printf '  %b[1]%b  Install the latest verified release\n' "$CRIMSON" "$NC"
-    printf '  %b[2]%b  Update and create a rollback snapshot\n' "$CRIMSON" "$NC"
-    printf '  %b[3]%b  Restore the manager-created original backup\n' "$CRIMSON" "$NC"
-    printf '  %b[4]%b  Exit\n\n' "$CRIMSON" "$NC"
-    printf '  %b>%b ' "$CRIMSON" "$NC"
+    printf '  %bACTION%b\n\n' "$WHITE" "$NC"
+    printf '  %b01%b  Install latest release\n' "$CRIMSON" "$NC"
+    printf '  %b02%b  Update with rollback snapshot\n' "$CRIMSON" "$NC"
+    printf '  %b03%b  Restore original panel\n' "$CRIMSON" "$NC"
+    printf '  %b04%b  Exit\n\n' "$CRIMSON" "$NC"
+    printf '  %bSelect [1-4]:%b ' "$GRAY" "$NC"
     read -r choice
 
     case "$choice" in

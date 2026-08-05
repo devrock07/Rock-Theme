@@ -136,7 +136,7 @@ bash -n "$root/install.sh" "$root/release.sh"
 bash "$root/install.sh" --help | grep -q 'Rock Theme installer'
 run_installer "$success_output"
 
-grep -q 'ROCK-CHAN // PANEL UNIT' "$success_output"
+grep -q 'ROCK THEME' "$success_output"
 grep -q 'DEPLOYMENT COMPLETE' "$success_output"
 grep -q '\[14/14\]' "$success_output"
 [ -f "$panel/rock-theme-installed" ]
