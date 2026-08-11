@@ -1,4 +1,5 @@
 import React, { createRef } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Fade from '@/components/elements/Fade';
@@ -20,7 +21,8 @@ export const DropdownButtonRow = styled.button<{ danger?: boolean }>`
 `;
 
 const Menu = styled.div`
-    ${tw`absolute p-2 rounded shadow-lg z-50`};
+    ${tw`fixed p-2 rounded shadow-lg`};
+    z-index: 10000;
     border: 1px solid rgba(var(--shell-accent-rgb), 0.28);
     background: radial-gradient(circle at 92% 6%, rgba(var(--shell-accent-rgb), 0.18), transparent 42%),
         linear-gradient(145deg, rgba(31, 17, 22, 0.98), rgba(15, 11, 14, 0.99));
@@ -55,15 +57,25 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         if (this.state.visible && !prevState.visible && menu && root) {
             document.addEventListener('click', this.windowListener);
             document.addEventListener('contextmenu', this.contextMenuListener);
+            window.addEventListener('resize', this.closeMenu);
+            window.addEventListener('scroll', this.closeMenu, true);
 
             const rootRect = root.getBoundingClientRect();
-            const relativeX = this.state.posX - rootRect.left;
             const viewportPadding = 8;
-            const minimumLeft = viewportPadding - rootRect.left;
-            const maximumLeft = window.innerWidth - viewportPadding - rootRect.left - menu.clientWidth;
-            const left = Math.min(maximumLeft, Math.max(minimumLeft, Math.round(relativeX - menu.clientWidth)));
+            const maximumLeft = Math.max(viewportPadding, window.innerWidth - viewportPadding - menu.clientWidth);
+            const left = Math.min(
+                maximumLeft,
+                Math.max(viewportPadding, Math.round(this.state.posX - menu.clientWidth))
+            );
+            const below = rootRect.bottom + 4;
+            const above = rootRect.top - menu.clientHeight - 4;
+            const top =
+                below + menu.clientHeight <= window.innerHeight - viewportPadding
+                    ? below
+                    : Math.max(viewportPadding, above);
+
             menu.style.left = `${left}px`;
-            menu.style.top = `${Math.round(rootRect.height + 4)}px`;
+            menu.style.top = `${Math.round(top)}px`;
         }
 
         if (!this.state.visible && prevState.visible) {
@@ -74,10 +86,15 @@ class DropdownMenu extends React.PureComponent<Props, State> {
     removeListeners = () => {
         document.removeEventListener('click', this.windowListener);
         document.removeEventListener('contextmenu', this.contextMenuListener);
+        window.removeEventListener('resize', this.closeMenu);
+        window.removeEventListener('scroll', this.closeMenu, true);
     };
+
+    closeMenu = () => this.setState({ visible: false });
 
     onClickHandler = (e: React.MouseEvent<any, MouseEvent>) => {
         e.preventDefault();
+        e.stopPropagation();
         this.triggerMenu(e.clientX);
     };
 
@@ -106,24 +123,27 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         }));
 
     render() {
+        const portalTarget = typeof document !== 'undefined' ? document.body : null;
+
         return (
-            <div
-                ref={this.root}
-                style={{ position: 'relative', display: 'inline-block', zIndex: this.state.visible ? 60 : 'auto' }}
-            >
+            <div ref={this.root} style={{ position: 'relative', display: 'inline-block' }}>
                 {this.props.renderToggle(this.onClickHandler)}
-                <Fade timeout={150} in={this.state.visible} unmountOnExit>
-                    <Menu
-                        ref={this.menu}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            this.setState({ visible: false });
-                        }}
-                        style={{ width: '12rem' }}
-                    >
-                        {this.props.children}
-                    </Menu>
-                </Fade>
+                {portalTarget &&
+                    createPortal(
+                        <Fade timeout={150} in={this.state.visible} unmountOnExit>
+                            <Menu
+                                ref={this.menu}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    this.setState({ visible: false });
+                                }}
+                                style={{ width: '12rem' }}
+                            >
+                                {this.props.children}
+                            </Menu>
+                        </Fade>,
+                        portalTarget
+                    )}
             </div>
         );
     }
