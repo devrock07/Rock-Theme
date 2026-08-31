@@ -42,6 +42,7 @@ describe('NotificationCenter', () => {
         document.body.innerHTML = '<div id="modal-portal"></div>';
         Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 390 });
         Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: 844 });
+        Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined });
         jest.clearAllMocks();
         setRockNotifications([notification]);
     });
@@ -58,7 +59,7 @@ describe('NotificationCenter', () => {
         const dialog = screen.getByRole('dialog', { name: 'Notifications' });
         expect(document.getElementById('modal-portal')).toContainElement(dialog);
         expect(dialog).toHaveAttribute('aria-modal', 'true');
-        expect(dialog).toHaveStyle({ left: '12px', right: '12px' });
+        expect(dialog).toHaveStyle({ left: '12px', right: 'auto', width: '366px' });
         expect(screen.getByText('Server recovered')).toBeVisible();
     });
 
@@ -117,5 +118,35 @@ describe('NotificationCenter', () => {
         const dialog = screen.getByRole('dialog', { name: 'Notifications' });
         expect(dialog).not.toHaveAttribute('aria-modal');
         expect(dialog).toHaveStyle({ top: '74px', right: '80px' });
+    });
+
+    it('stays inside the Android visual viewport when browser chrome moves it', () => {
+        const visualViewport = {
+            width: 360,
+            height: 400,
+            offsetLeft: 5,
+            offsetTop: 20,
+            addEventListener: jest.fn(),
+            removeEventListener: jest.fn(),
+        };
+        Object.defineProperty(window, 'visualViewport', { configurable: true, value: visualViewport });
+
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        const trigger = screen.getByRole('button', { name: 'Notifications' });
+        trigger.getBoundingClientRect = () => ({ bottom: 60 } as DOMRect);
+        fireEvent.click(trigger);
+
+        expect(screen.getByRole('dialog', { name: 'Notifications' })).toHaveStyle({
+            top: '70px',
+            left: '17px',
+            width: '336px',
+            maxHeight: '338px',
+        });
+        expect(visualViewport.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
     });
 });

@@ -21,7 +21,8 @@ const NetworkContainer = () => {
     const setServerFromState = ServerContext.useStoreActions((actions) => actions.server.setServerFromState);
 
     const { clearFlashes, clearAndAddHttpError } = useFlashKey('server:network');
-    const { data, error, mutate } = getServerAllocations();
+    const { data, error, isValidating, mutate } = getServerAllocations();
+    const visibleAllocations = data || (error ? allocations : undefined);
 
     useEffect(() => {
         mutate(allocations);
@@ -44,19 +45,27 @@ const NetworkContainer = () => {
         createServerAllocation(uuid)
             .then((allocation) => {
                 setServerFromState((s) => ({ ...s, allocations: s.allocations.concat(allocation) }));
-                return mutate(data?.concat(allocation), false);
+                return mutate((visibleAllocations || []).concat(allocation), false);
             })
             .catch((error) => clearAndAddHttpError(error))
-            .then(() => setLoading(false));
+            .finally(() => setLoading(false));
     };
 
     return (
         <ServerContentBlock showFlashKey={'server:network'} title={'Network'}>
-            {!data ? (
+            {!visibleAllocations ? (
                 <Spinner size={'large'} centered />
             ) : (
                 <>
-                    {data.map((allocation) => (
+                    {error && (
+                        <div css={tw`mb-4 flex flex-wrap items-center justify-between gap-3`}>
+                            <p css={tw`text-sm text-neutral-300`}>Showing the last known network configuration.</p>
+                            <Button disabled={isValidating} isLoading={isValidating} onClick={() => mutate()}>
+                                Retry
+                            </Button>
+                        </div>
+                    )}
+                    {visibleAllocations.map((allocation) => (
                         <AllocationRow key={`${allocation.ip}:${allocation.port}`} allocation={allocation} />
                     ))}
                     {allocationLimit > 0 && (
@@ -64,10 +73,10 @@ const NetworkContainer = () => {
                             <SpinnerOverlay visible={loading} />
                             <div css={tw`mt-6 sm:flex items-center justify-end`}>
                                 <p css={tw`text-sm text-neutral-300 mb-4 sm:mr-6 sm:mb-0`}>
-                                    You are currently using {data.length} of {allocationLimit} allowed allocations for
-                                    this server.
+                                    You are currently using {visibleAllocations.length} of {allocationLimit} allowed
+                                    allocations for this server.
                                 </p>
-                                {allocationLimit > data.length && (
+                                {allocationLimit > visibleAllocations.length && (
                                     <Button css={tw`w-full sm:w-auto`} color={'primary'} onClick={onCreateAllocation}>
                                         Create Allocation
                                     </Button>

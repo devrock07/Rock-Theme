@@ -67,9 +67,16 @@ body {
     pointer-events: none;
     --admin-cursor-x: 72vw;
     --admin-cursor-y: 28vh;
-    background:
-        radial-gradient(360px circle at var(--admin-cursor-x) var(--admin-cursor-y), rgba(var(--admin-accent-bright-rgb), 0.07), transparent 72%),
-        radial-gradient(760px circle at var(--admin-cursor-x) var(--admin-cursor-y), rgba(var(--admin-accent-deep-rgb), 0.045), transparent 74%);
+    background: radial-gradient(
+            360px circle at var(--admin-cursor-x) var(--admin-cursor-y),
+            rgba(var(--admin-accent-bright-rgb), 0.07),
+            transparent 72%
+        ),
+        radial-gradient(
+            760px circle at var(--admin-cursor-x) var(--admin-cursor-y),
+            rgba(var(--admin-accent-deep-rgb), 0.045),
+            transparent 74%
+        );
     mix-blend-mode: screen;
     opacity: 0.72;
 }
@@ -301,6 +308,13 @@ body {
     background: transparent !important;
 }
 
+@media screen and (min-width: 768px) {
+    .fixed .content-wrapper,
+    .fixed .right-side {
+        padding-top: 58px !important;
+    }
+}
+
 .content-header,
 .content {
     max-width: 1440px;
@@ -432,8 +446,7 @@ body {
 
 .small-box {
     text-align: left;
-    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease,
-        box-shadow 220ms ease;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, box-shadow 220ms ease;
 }
 
 .small-box::before,
@@ -586,6 +599,8 @@ body {
     display: inline-block;
     width: 6px;
     height: 6px;
+    flex: none;
+    aspect-ratio: 1 / 1;
     margin-right: 8px;
     border-radius: 50%;
     background: var(--admin-success);
@@ -1164,6 +1179,21 @@ input[type='radio'] {
 }
 
 @media (max-width: 767px) {
+    .main-header {
+        max-height: 116px;
+    }
+
+    .fixed .content-wrapper,
+    .fixed .right-side {
+        padding-top: 116px !important;
+    }
+
+    .skin-blue .main-sidebar {
+        top: 116px;
+        height: calc(100dvh - 116px);
+        overflow-y: auto;
+    }
+
     .skin-blue .main-header .logo {
         width: 100%;
     }

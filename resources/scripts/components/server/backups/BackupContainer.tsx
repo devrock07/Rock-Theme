@@ -10,11 +10,13 @@ import getServerBackups, { Context as ServerBackupContext } from '@/api/swr/getS
 import { ServerContext } from '@/state/server';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import Pagination from '@/components/elements/Pagination';
+import { ServerError } from '@/components/elements/ScreenBlock';
+import { httpErrorToHuman } from '@/api/http';
 
 const BackupContainer = () => {
     const { page, setPage } = useContext(ServerBackupContext);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
-    const { data: backups, error, isValidating } = getServerBackups();
+    const { data: backups, error, isValidating, mutate } = getServerBackups();
 
     const backupLimit = ServerContext.useStoreState((state) => state.server.data!.featureLimits.backups);
 
@@ -28,8 +30,16 @@ const BackupContainer = () => {
         clearAndAddHttpError({ error, key: 'backups' });
     }, [error]);
 
-    if (!backups || (error && isValidating)) {
+    if (!backups && error) {
+        return <ServerError message={httpErrorToHuman(error)} onRetry={() => mutate()} />;
+    }
+
+    if (!backups && isValidating) {
         return <Spinner size={'large'} centered />;
+    }
+
+    if (!backups) {
+        return <ServerError message={'Backups could not be loaded.'} onRetry={() => mutate()} />;
     }
 
     return (

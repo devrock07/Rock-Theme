@@ -223,20 +223,32 @@ const NotificationPanel = styled.div`
 interface PanelPosition {
     top: number;
     right: number;
+    left?: number;
+    width?: number;
     mobile: boolean;
     maxHeight: number;
 }
 
 const getPanelPosition = (trigger?: HTMLButtonElement | null): PanelPosition => {
-    const mobile = window.innerWidth <= 700;
+    const viewport = window.visualViewport;
+    const viewportWidth = viewport?.width ?? window.innerWidth;
+    const viewportHeight = viewport?.height ?? window.innerHeight;
+    const viewportLeft = viewport?.offsetLeft ?? 0;
+    const viewportTop = viewport?.offsetTop ?? 0;
+    const mobile = viewportWidth <= 700;
     const rect = trigger?.getBoundingClientRect();
-    const top = Math.max(12, (rect?.bottom || 64) + 10);
+    const top = Math.max(viewportTop + 12, (rect?.bottom ?? viewportTop + 64) + 10);
+    const availableHeight = Math.max(0, viewportTop + viewportHeight - top - (mobile ? 12 : 16));
 
     return {
         top,
-        right: mobile ? 12 : Math.max(12, window.innerWidth - (rect?.right || window.innerWidth - 12)),
+        right: mobile
+            ? Math.max(0, window.innerWidth - (viewportLeft + viewportWidth) + 12)
+            : Math.max(12, window.innerWidth - (rect?.right ?? viewportLeft + viewportWidth - 12)),
+        left: mobile ? viewportLeft + 12 : undefined,
+        width: mobile ? Math.max(0, viewportWidth - 24) : undefined,
         mobile,
-        maxHeight: Math.max(220, window.innerHeight - top - (mobile ? 12 : 16)),
+        maxHeight: availableHeight,
     };
 };
 
@@ -309,11 +321,13 @@ export default () => {
         window.addEventListener('resize', updatePosition);
         window.addEventListener('scroll', updatePosition, true);
         window.visualViewport?.addEventListener('resize', updatePosition);
+        window.visualViewport?.addEventListener('scroll', updatePosition);
 
         return () => {
             window.removeEventListener('resize', updatePosition);
             window.removeEventListener('scroll', updatePosition, true);
             window.visualViewport?.removeEventListener('resize', updatePosition);
+            window.visualViewport?.removeEventListener('scroll', updatePosition);
         };
     }, [open]);
 
@@ -359,8 +373,9 @@ export default () => {
                                 panelPosition.mobile
                                     ? {
                                           top: panelPosition.top,
-                                          right: 12,
-                                          left: 12,
+                                          right: 'auto',
+                                          left: panelPosition.left,
+                                          width: panelPosition.width,
                                           maxHeight: panelPosition.maxHeight,
                                       }
                                     : {

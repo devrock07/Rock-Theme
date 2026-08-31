@@ -21,34 +21,54 @@ export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { clearFlashes, addError } = useFlash();
     const [loading, setLoading] = useState(true);
+    const [loadFailed, setLoadFailed] = useState(false);
+    const [reload, setReload] = useState(0);
     const [visible, setVisible] = useState(false);
 
     const schedules = ServerContext.useStoreState((state) => state.schedules.data);
     const setSchedules = ServerContext.useStoreActions((actions) => actions.schedules.setSchedules);
 
     useEffect(() => {
+        let active = true;
+
+        setLoading(true);
+        setLoadFailed(false);
         clearFlashes('schedules');
         getServerSchedules(uuid)
-            .then((schedules) => setSchedules(schedules))
+            .then((schedules) => active && setSchedules(schedules))
             .catch((error) => {
+                if (!active) return;
+                setLoadFailed(true);
                 addError({ message: httpErrorToHuman(error), key: 'schedules' });
                 console.error(error);
             })
-            .then(() => setLoading(false));
-    }, []);
+            .finally(() => active && setLoading(false));
+
+        return () => {
+            active = false;
+        };
+    }, [uuid, reload]);
 
     return (
         <ServerContentBlock title={'Schedules'}>
             <FlashMessageRender byKey={'schedules'} css={tw`mb-4`} />
+            {loadFailed && (
+                <div css={tw`mb-4 flex flex-wrap items-center justify-between gap-3`}>
+                    <p css={tw`text-sm text-neutral-300`}>Schedules could not be loaded.</p>
+                    <Button.Text disabled={loading} onClick={() => setReload((value) => value + 1)}>
+                        Retry
+                    </Button.Text>
+                </div>
+            )}
             {!schedules.length && loading ? (
                 <Spinner size={'large'} centered />
             ) : (
                 <>
-                    {schedules.length === 0 ? (
+                    {schedules.length === 0 && !loadFailed ? (
                         <p css={tw`text-sm text-center text-neutral-300`}>
                             There are no schedules configured for this server.
                         </p>
-                    ) : (
+                    ) : schedules.length > 0 ? (
                         schedules.map((schedule) => (
                             <GreyRowBox
                                 as={'a'}
@@ -63,7 +83,7 @@ export default () => {
                                 <ScheduleRow schedule={schedule} />
                             </GreyRowBox>
                         ))
-                    )}
+                    ) : null}
                     <Can action={'schedule.create'}>
                         <div css={tw`mt-8 flex justify-end`}>
                             <EditScheduleModal visible={visible} onModalDismissed={() => setVisible(false)} />

@@ -19,18 +19,21 @@ export default ({ subuser }: { subuser: Subuser }) => {
     const { addError, clearFlashes } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
 
     const doDeletion = () => {
+        let deleted = false;
+
         setLoading(true);
         clearFlashes('users');
         deleteSubuser(uuid, subuser.uuid)
             .then(() => {
-                setLoading(false);
-                removeSubuser(subuser.uuid);
+                deleted = true;
             })
             .catch((error) => {
                 console.error(error);
                 addError({ key: 'users', message: httpErrorToHuman(error) });
                 setShowConfirmation(false);
-            });
+            })
+            .finally(() => setLoading(false))
+            .then(() => deleted && removeSubuser(subuser.uuid));
     };
 
     return (

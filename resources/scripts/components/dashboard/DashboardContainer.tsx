@@ -125,6 +125,8 @@ const DashboardHero = styled.section`
     .hero-dot {
         width: 0.38rem;
         height: 0.38rem;
+        flex: none;
+        aspect-ratio: 1 / 1;
         color: var(--shell-success);
     }
 
@@ -220,9 +222,13 @@ export default () => {
     const preferencesReady = useRef(false);
     const saveTimer = useRef<number>();
     const { data: accountData } = useSWR('/api/client/account/rock', getRockAccountData);
-    const { data: servers, error } = useSWR<PaginatedResult<Server>>(
-        ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
-        () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
+    const {
+        data: servers,
+        error,
+        isValidating,
+        mutate,
+    } = useSWR<PaginatedResult<Server>>(['/api/client/servers', showOnlyAdmin && rootAdmin, page], () =>
+        getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
     );
 
     useEffect(() => setPage(1), [showOnlyAdmin]);
@@ -331,7 +337,19 @@ export default () => {
                     ))}
                 </div>
             </div>
-            {!servers ? (
+            {!servers && error ? (
+                <div css={tw`rounded-xl border border-neutral-700 bg-neutral-900/70 px-5 py-10 text-center`}>
+                    <p css={tw`text-sm text-neutral-300`}>Could not load your servers.</p>
+                    <button
+                        type={'button'}
+                        disabled={isValidating}
+                        css={tw`mt-4 rounded border border-red-500 px-4 py-2 text-sm text-red-200 disabled:opacity-50`}
+                        onClick={() => mutate()}
+                    >
+                        {isValidating ? 'Retrying…' : 'Retry'}
+                    </button>
+                </div>
+            ) : !servers ? (
                 <ServerGrid>
                     {Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />

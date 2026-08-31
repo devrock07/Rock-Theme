@@ -5,6 +5,10 @@
 .panel {
     @apply relative bg-gray-600 rounded max-w-xl w-full mx-auto shadow-lg text-left;
     @apply ring-4 ring-gray-800 ring-opacity-80;
+    display: flex;
+    max-height: calc(100dvh - 2rem);
+    overflow: hidden;
+    flex-direction: column;
 }
 
 .title {
@@ -16,7 +20,8 @@
 }
 
 .dialog_icon {
-    @apply flex items-center justify-center w-10 h-10 rounded-full mr-4;
+    @apply flex flex-none items-center justify-center w-10 h-10 rounded-full mr-4;
+    aspect-ratio: 1 / 1;
 
     &.danger {
         @apply bg-red-500 text-red-50;

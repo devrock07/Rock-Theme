@@ -11,8 +11,10 @@ const http: AxiosInstance = axios.create({
     },
 });
 
+export const shouldTrackProgress = (url?: string): boolean => !!url && !/\/resources(?:[/?#]|$)/.test(url);
+
 http.interceptors.request.use((req) => {
-    if (!req.url?.endsWith('/resources')) {
+    if (shouldTrackProgress(req.url)) {
         store.getActions().progress.startContinuous();
     }
 
@@ -21,14 +23,16 @@ http.interceptors.request.use((req) => {
 
 http.interceptors.response.use(
     (resp) => {
-        if (!resp.request?.url?.endsWith('/resources')) {
+        if (shouldTrackProgress(resp.config.url)) {
             store.getActions().progress.setComplete();
         }
 
         return resp;
     },
     (error) => {
-        store.getActions().progress.setComplete();
+        if (shouldTrackProgress(error.config?.url)) {
+            store.getActions().progress.setComplete();
+        }
 
         throw error;
     }

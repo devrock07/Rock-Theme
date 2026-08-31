@@ -14,18 +14,31 @@ import GreyRowBox from '@/components/elements/GreyRowBox';
 import { Dialog } from '@/components/elements/dialog';
 import { useFlashKey } from '@/plugins/useFlash';
 import Code from '@/components/elements/Code';
+import Button from '@/components/elements/Button';
 
 export default () => {
     const [deleteIdentifier, setDeleteIdentifier] = useState('');
     const [keys, setKeys] = useState<ApiKey[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadFailed, setLoadFailed] = useState(false);
     const { clearAndAddHttpError } = useFlashKey('account');
 
-    useEffect(() => {
+    const loadKeys = () => {
+        setLoading(true);
+        setLoadFailed(false);
+        clearAndAddHttpError();
+
         getApiKeys()
             .then((keys) => setKeys(keys))
-            .then(() => setLoading(false))
-            .catch((error) => clearAndAddHttpError(error));
+            .catch((error) => {
+                setLoadFailed(true);
+                clearAndAddHttpError(error);
+            })
+            .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        loadKeys();
     }, []);
 
     const doDeletion = (identifier: string) => {
@@ -35,7 +48,7 @@ export default () => {
         deleteApiKey(identifier)
             .then(() => setKeys((s) => [...(s || []).filter((key) => key.identifier !== identifier)]))
             .catch((error) => clearAndAddHttpError(error))
-            .then(() => {
+            .finally(() => {
                 setLoading(false);
                 setDeleteIdentifier('');
             });
@@ -60,9 +73,20 @@ export default () => {
                         All requests using the <Code>{deleteIdentifier}</Code> key will be invalidated.
                     </Dialog.Confirm>
                     {keys.length === 0 ? (
-                        <p css={tw`text-center text-sm`}>
-                            {loading ? 'Loading...' : 'No API keys exist for this account.'}
-                        </p>
+                        <div css={tw`text-center`}>
+                            <p css={tw`text-sm`}>
+                                {loading
+                                    ? 'Loading...'
+                                    : loadFailed
+                                    ? 'API keys could not be loaded.'
+                                    : 'No API keys exist for this account.'}
+                            </p>
+                            {loadFailed && (
+                                <Button size={'xsmall'} isSecondary css={tw`mt-3`} onClick={loadKeys}>
+                                    Retry
+                                </Button>
+                            )}
+                        </div>
                     ) : (
                         keys.map((key, index) => (
                             <GreyRowBox

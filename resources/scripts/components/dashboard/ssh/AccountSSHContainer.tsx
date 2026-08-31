@@ -15,7 +15,7 @@ import DeleteSSHKeyButton from '@/components/dashboard/ssh/DeleteSSHKeyButton';
 
 export default () => {
     const { clearAndAddHttpError } = useFlashKey('account');
-    const { data, isValidating, error } = useSSHKeys({
+    const { data, isValidating, error, mutate } = useSSHKeys({
         revalidateOnMount: true,
         revalidateOnFocus: false,
     });
@@ -34,9 +34,25 @@ export default () => {
                 <ContentBox title={'SSH Keys'} css={tw`flex-1 overflow-hidden mt-8 md:mt-0 md:ml-8`}>
                     <SpinnerOverlay visible={!data && isValidating} />
                     {!data || !data.length ? (
-                        <p css={tw`text-center text-sm`}>
-                            {!data ? 'Loading...' : 'No SSH Keys exist for this account.'}
-                        </p>
+                        <div css={tw`text-center text-sm`}>
+                            <p>
+                                {!data && error
+                                    ? 'Could not load your SSH keys.'
+                                    : !data
+                                    ? 'Loading...'
+                                    : 'No SSH Keys exist for this account.'}
+                            </p>
+                            {!data && error && (
+                                <button
+                                    type={'button'}
+                                    disabled={isValidating}
+                                    css={tw`mt-3 rounded border border-red-500 px-3 py-2 text-xs text-red-200 disabled:opacity-50`}
+                                    onClick={() => mutate()}
+                                >
+                                    {isValidating ? 'Retrying…' : 'Retry'}
+                                </button>
+                            )}
+                        </div>
                     ) : (
                         data.map((key, index) => (
                             <GreyRowBox
