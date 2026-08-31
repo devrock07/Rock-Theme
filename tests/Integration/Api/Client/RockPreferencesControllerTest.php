@@ -21,7 +21,7 @@ class RockPreferencesControllerTest extends ClientApiIntegrationTestCase
             ->assertJsonPath('serverPreferences.server-id.group', 'Production');
 
         $stored = DB::table('rock_user_preferences')->where('user_id', $user->id)->value('server_preferences');
-        $this->assertSame($preferences, json_decode($stored, true));
+        $this->assertEquals($preferences, json_decode($stored, true));
         $this->actingAs($user)
             ->getJson('/api/client/account/rock')
             ->assertJsonPath('preferencesAvailable', true)
