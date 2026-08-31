@@ -37,7 +37,9 @@ class RockPreferencesControllerTest extends ClientApiIntegrationTestCase
             ->andReturn(false);
 
         $this->actingAs($user)
-            ->putJson('/api/client/account/rock', ['server_preferences' => []])
+            ->putJson('/api/client/account/rock', [
+                'server_preferences' => ['server-id' => ['favorite' => true, 'group' => 'Test']],
+            ])
             ->assertStatus(503)
             ->assertHeader('Retry-After', '5');
     }
