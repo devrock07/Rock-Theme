@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog as HDialog } from '@headlessui/react';
 import { Button } from '@/components/elements/button/index';
 import { XIcon } from '@heroicons/react/solid';
@@ -7,27 +7,22 @@ import { DialogContext, IconPosition, RenderDialogProps, styles } from './';
 
 const variants = {
     open: {
-        scale: 1,
+        y: 0,
         opacity: 1,
         transition: {
-            type: 'spring',
-            damping: 15,
-            stiffness: 300,
+            type: 'tween',
+            ease: 'easeOut',
             duration: 0.15,
         },
     },
     closed: {
-        scale: 0.75,
+        y: 6,
         opacity: 0,
         transition: {
-            type: 'easeIn',
+            type: 'tween',
+            ease: 'easeIn',
             duration: 0.15,
         },
-    },
-    bounce: {
-        scale: 0.95,
-        opacity: 1,
-        transition: { type: 'linear', duration: 0.075 },
     },
 };
 
@@ -40,17 +35,9 @@ export default ({
     preventExternalClose,
     children,
 }: RenderDialogProps) => {
-    const container = useRef<HTMLDivElement>(null);
     const [icon, setIcon] = useState<React.ReactNode>();
     const [footer, setFooter] = useState<React.ReactNode>();
     const [iconPosition, setIconPosition] = useState<IconPosition>('title');
-    const [down, setDown] = useState(false);
-
-    const onContainerClick = (down: boolean, e: React.MouseEvent<HTMLDivElement>): void => {
-        if (e.target instanceof HTMLElement && container.current?.isSameNode(e.target)) {
-            setDown(down);
-        }
-    };
 
     const onDialogClose = (): void => {
         if (!preventExternalClose) {
@@ -72,25 +59,20 @@ export default ({
                         open={open}
                         onClose={onDialogClose}
                     >
-                        <div className={'fixed inset-0 bg-gray-900/50 z-40'} />
-                        <div className={'fixed inset-0 overflow-y-auto z-50'}>
-                            <div
-                                ref={container}
-                                className={styles.container}
-                                onMouseDown={onContainerClick.bind(this, true)}
-                                onMouseUp={onContainerClick.bind(this, false)}
-                            >
+                        <div className={'fixed inset-0 bg-gray-900/50'} style={{ zIndex: 900 }} />
+                        <div className={'fixed inset-0 overflow-y-auto'} style={{ zIndex: 910 }}>
+                            <div className={styles.container}>
                                 <HDialog.Panel
                                     as={motion.div}
                                     initial={'closed'}
-                                    animate={down ? 'bounce' : 'open'}
+                                    animate={'open'}
                                     exit={'closed'}
                                     variants={variants}
                                     className={styles.panel}
                                 >
-                                    <div className={'flex p-6 pb-0 overflow-y-auto'}>
+                                    <div className={'flex flex-1 min-h-0 p-6 pb-0 overflow-y-auto'}>
                                         {iconPosition === 'container' && icon}
-                                        <div className={'flex-1 max-h-[70vh] min-w-0'}>
+                                        <div className={'flex-1 min-w-0'}>
                                             <div className={'flex items-center'}>
                                                 {iconPosition !== 'container' && icon}
                                                 <div>

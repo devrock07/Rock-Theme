@@ -7,8 +7,11 @@ interface State {
     hasError: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-class ErrorBoundary extends React.Component<{}, State> {
+interface Props {
+    resetKey?: React.Key;
+}
+
+class ErrorBoundary extends React.Component<Props, State> {
     state: State = {
         hasError: false,
     };
@@ -19,6 +22,12 @@ class ErrorBoundary extends React.Component<{}, State> {
 
     componentDidCatch(error: Error) {
         console.error(error);
+    }
+
+    componentDidUpdate(previousProps: Props) {
+        if (this.state.hasError && previousProps.resetKey !== this.props.resetKey) {
+            this.setState({ hasError: false });
+        }
     }
 
     render() {

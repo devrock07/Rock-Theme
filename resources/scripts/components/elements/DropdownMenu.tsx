@@ -59,20 +59,25 @@ class DropdownMenu extends React.PureComponent<Props, State> {
             document.addEventListener('contextmenu', this.contextMenuListener);
             window.addEventListener('resize', this.closeMenu);
             window.addEventListener('scroll', this.closeMenu, true);
+            window.visualViewport?.addEventListener('resize', this.closeMenu);
+            window.visualViewport?.addEventListener('scroll', this.closeMenu);
 
             const rootRect = root.getBoundingClientRect();
             const viewportPadding = 8;
-            const maximumLeft = Math.max(viewportPadding, window.innerWidth - viewportPadding - menu.clientWidth);
-            const left = Math.min(
-                maximumLeft,
-                Math.max(viewportPadding, Math.round(this.state.posX - menu.clientWidth))
-            );
+            const viewport = window.visualViewport;
+            const viewportLeft = viewport?.offsetLeft ?? 0;
+            const viewportTop = viewport?.offsetTop ?? 0;
+            const viewportRight = viewportLeft + (viewport?.width ?? window.innerWidth);
+            const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+            const minimumLeft = viewportLeft + viewportPadding;
+            const minimumTop = viewportTop + viewportPadding;
+            const maximumLeft = Math.max(minimumLeft, viewportRight - viewportPadding - menu.clientWidth);
+            const anchorX = this.state.posX > 0 ? this.state.posX : rootRect.right;
+            const left = Math.min(maximumLeft, Math.max(minimumLeft, Math.round(anchorX - menu.clientWidth)));
             const below = rootRect.bottom + 4;
             const above = rootRect.top - menu.clientHeight - 4;
             const top =
-                below + menu.clientHeight <= window.innerHeight - viewportPadding
-                    ? below
-                    : Math.max(viewportPadding, above);
+                below + menu.clientHeight <= viewportBottom - viewportPadding ? below : Math.max(minimumTop, above);
 
             menu.style.left = `${left}px`;
             menu.style.top = `${Math.round(top)}px`;
@@ -88,6 +93,8 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         document.removeEventListener('contextmenu', this.contextMenuListener);
         window.removeEventListener('resize', this.closeMenu);
         window.removeEventListener('scroll', this.closeMenu, true);
+        window.visualViewport?.removeEventListener('resize', this.closeMenu);
+        window.visualViewport?.removeEventListener('scroll', this.closeMenu);
     };
 
     closeMenu = () => this.setState({ visible: false });
@@ -124,6 +131,8 @@ class DropdownMenu extends React.PureComponent<Props, State> {
 
     render() {
         const portalTarget = typeof document !== 'undefined' ? document.body : null;
+        const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+        const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
 
         return (
             <div ref={this.root} style={{ position: 'relative', display: 'inline-block' }}>
@@ -137,7 +146,13 @@ class DropdownMenu extends React.PureComponent<Props, State> {
                                     e.stopPropagation();
                                     this.setState({ visible: false });
                                 }}
-                                style={{ width: '12rem' }}
+                                style={{
+                                    width: '12rem',
+                                    maxWidth: Math.max(0, viewportWidth - 16),
+                                    maxHeight: Math.max(0, viewportHeight - 16),
+                                    overflowY: 'auto',
+                                    overscrollBehavior: 'contain',
+                                }}
                             >
                                 {this.props.children}
                             </Menu>

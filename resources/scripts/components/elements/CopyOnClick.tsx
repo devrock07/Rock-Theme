@@ -48,7 +48,10 @@ const CopyOnClick = ({ text, showInNotification = true, children }: CopyOnClickP
             {copied && (
                 <Portal>
                     <Fade in appear timeout={250} key={copied ? 'visible' : 'invisible'}>
-                        <div className={'fixed z-50 bottom-0 right-0 m-4'}>
+                        <div
+                            className={'fixed bottom-0 right-0 m-4'}
+                            style={{ zIndex: 950, bottom: 'var(--rock-mobile-nav-clearance, 0px)' }}
+                        >
                             <div className={'rounded-md py-3 px-4 text-gray-200 bg-neutral-600/95 shadow'}>
                                 <p>
                                     {showInNotification

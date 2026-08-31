@@ -24,6 +24,8 @@ const MATCH_ERRORS = [
 const JavaVersionModalFeature = () => {
     const [visible, setVisible] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [startupLoading, setStartupLoading] = useState(false);
+    const [startupError, setStartupError] = useState(false);
     const [selectedVersion, setSelectedVersion] = useState('');
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -31,15 +33,42 @@ const JavaVersionModalFeature = () => {
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { instance } = ServerContext.useStoreState((state) => state.socket);
 
-    const { data, isValidating, mutate } = getServerStartup(uuid, null, { revalidateOnMount: false });
+    const {
+        data,
+        error: startupRequestError,
+        isValidating,
+        mutate,
+    } = getServerStartup(uuid, null, {
+        revalidateOnMount: false,
+    });
+
+    const loadStartup = () => {
+        setStartupLoading(true);
+        setStartupError(false);
+        clearFlashes('feature:javaVersion');
+        mutate()
+            .then((value) => {
+                setSelectedVersion(Object.values(value?.dockerImages || [])[0] || '');
+            })
+            .catch((error) => {
+                setStartupError(true);
+                clearAndAddHttpError({ key: 'feature:javaVersion', error });
+            })
+            .finally(() => setStartupLoading(false));
+    };
 
     useEffect(() => {
-        if (!visible) return;
-
-        mutate().then((value) => {
-            setSelectedVersion(Object.values(value?.dockerImages || [])[0] || '');
-        });
+        if (visible) loadStartup();
     }, [visible]);
+
+    useEffect(() => {
+        if (startupRequestError) {
+            setStartupError(true);
+            clearAndAddHttpError({ key: 'feature:javaVersion', error: startupRequestError });
+        } else if (data) {
+            setStartupError(false);
+        }
+    }, [startupRequestError, data]);
 
     useWebsocketEvent(SocketEvent.CONSOLE_OUTPUT, (data) => {
         if (status === 'running') return;
@@ -61,7 +90,7 @@ const JavaVersionModalFeature = () => {
                 setVisible(false);
             })
             .catch((error) => clearAndAddHttpError({ key: 'feature:javaVersion', error }))
-            .then(() => setLoading(false));
+            .finally(() => setLoading(false));
     };
 
     useEffect(() => {
@@ -85,7 +114,7 @@ const JavaVersionModalFeature = () => {
             </p>
             <Can action={'startup.docker-image'}>
                 <div css={tw`mt-4`}>
-                    <InputSpinner visible={!data || isValidating}>
+                    <InputSpinner visible={startupLoading || isValidating}>
                         <Select disabled={!data} onChange={(e) => setSelectedVersion(e.target.value)}>
                             {!data ? (
                                 <option disabled />
@@ -98,6 +127,11 @@ const JavaVersionModalFeature = () => {
                             )}
                         </Select>
                     </InputSpinner>
+                    {startupError && !data && (
+                        <Button isSecondary size={'small'} onClick={loadStartup} css={tw`mt-3`}>
+                            Retry loading versions
+                        </Button>
+                    )}
                 </div>
             </Can>
             <div css={tw`mt-8 flex flex-col sm:flex-row justify-end sm:space-x-4 space-y-4 sm:space-y-0`}>
@@ -105,7 +139,11 @@ const JavaVersionModalFeature = () => {
                     Cancel
                 </Button>
                 <Can action={'startup.docker-image'}>
-                    <Button onClick={updateJava} css={tw`w-full sm:w-auto`}>
+                    <Button
+                        disabled={!selectedVersion || startupLoading || isValidating}
+                        onClick={updateJava}
+                        css={tw`w-full sm:w-auto`}
+                    >
                         Update Docker Image
                     </Button>
                 </Can>

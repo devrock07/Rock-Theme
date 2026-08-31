@@ -11,9 +11,13 @@ interface Props {
     isBlue?: boolean;
 }
 
+interface SuspenseProps extends Props {
+    resetKey?: React.Key;
+}
+
 interface Spinner extends React.FC<Props> {
     Size: Record<'SMALL' | 'BASE' | 'LARGE', SpinnerSize>;
-    Suspense: React.FC<Props>;
+    Suspense: React.FC<SuspenseProps>;
 }
 
 const spin = keyframes`
@@ -22,7 +26,10 @@ const spin = keyframes`
 
 // noinspection CssOverwrittenProperties
 const SpinnerComponent = styled.div<Props>`
-    ${tw`w-8 h-8`};
+    ${tw`w-8 h-8 flex-none`};
+    display: inline-block;
+    box-sizing: border-box;
+    aspect-ratio: 1 / 1;
     border-width: 3px;
     border-radius: 50%;
     animation: ${spin} 1s cubic-bezier(0.55, 0.25, 0.25, 0.7) infinite;
@@ -44,11 +51,11 @@ const SpinnerComponent = styled.div<Props>`
 
 const Spinner: Spinner = ({ centered, ...props }) =>
     centered ? (
-        <div css={[tw`flex justify-center items-center`, props.size === 'large' ? tw`m-20` : tw`m-6`]}>
-            <SpinnerComponent {...props} />
+        <div css={[tw`flex justify-center items-center w-full min-w-0`, props.size === 'large' ? tw`my-20` : tw`my-6`]}>
+            <SpinnerComponent role={'status'} aria-label={'Loading'} {...props} />
         </div>
     ) : (
-        <SpinnerComponent {...props} />
+        <SpinnerComponent role={'status'} aria-label={'Loading'} {...props} />
     );
 Spinner.displayName = 'Spinner';
 
@@ -58,9 +65,9 @@ Spinner.Size = {
     LARGE: 'large',
 };
 
-Spinner.Suspense = ({ children, centered = true, size = Spinner.Size.LARGE, ...props }) => (
+Spinner.Suspense = ({ children, centered = true, size = Spinner.Size.LARGE, resetKey, ...props }) => (
     <Suspense fallback={<Spinner centered={centered} size={size} {...props} />}>
-        <ErrorBoundary>{children}</ErrorBoundary>
+        <ErrorBoundary resetKey={resetKey}>{children}</ErrorBoundary>
     </Suspense>
 );
 Spinner.Suspense.displayName = 'Spinner.Suspense';

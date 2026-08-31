@@ -21,14 +21,16 @@ export interface ModalProps extends RequiredModalProps {
 }
 
 export const ModalMask = styled.div`
-    ${tw`fixed z-50 overflow-auto flex w-full inset-0`};
+    ${tw`fixed overflow-auto flex w-full inset-0`};
+    z-index: 900;
     background: rgba(3, 3, 4, 0.78);
     backdrop-filter: blur(12px) saturate(0.9);
 `;
 
 const ModalContainer = styled.div<{ alignTop?: boolean }>`
     max-width: 95%;
-    max-height: calc(100vh - 8rem);
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     ${breakpoint('md')`max-width: 75%`};
     ${breakpoint('lg')`max-width: 50%`};
 
@@ -96,7 +98,7 @@ const Modal: React.FC<ModalProps> = ({
     const [render, setRender] = useState(visible);
 
     const isDismissable = useMemo(() => {
-        return (dismissable || true) && !(showSpinnerOverlay || false);
+        return (dismissable ?? true) && !showSpinnerOverlay;
     }, [dismissable, showSpinnerOverlay]);
 
     useEffect(() => {
@@ -115,7 +117,7 @@ const Modal: React.FC<ModalProps> = ({
     useEffect(() => setRender(visible), [visible]);
 
     return (
-        <Fade in={render} timeout={150} appear={appear || true} unmountOnExit onExited={() => onDismissed()}>
+        <Fade in={render} timeout={150} appear={appear ?? false} unmountOnExit onExited={() => onDismissed()}>
             <ModalMask
                 onClick={(e) => e.stopPropagation()}
                 onContextMenu={(e) => e.stopPropagation()}
@@ -169,9 +171,9 @@ const Modal: React.FC<ModalProps> = ({
 };
 
 const PortaledModal: React.FC<ModalProps> = ({ children, ...props }) => {
-    const element = useRef(document.getElementById('modal-portal'));
+    const element = useRef(document.getElementById('modal-portal') || document.body);
 
-    return createPortal(<Modal {...props}>{children}</Modal>, element.current!);
+    return createPortal(<Modal {...props}>{children}</Modal>, element.current);
 };
 
 export default PortaledModal;

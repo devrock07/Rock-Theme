@@ -42,6 +42,7 @@ const Card = styled(MagicBentoCard)`
     }
     .card-actions {
         display: flex;
+        flex: none;
         align-items: center;
         gap: 0.4rem;
     }
@@ -49,7 +50,9 @@ const Card = styled(MagicBentoCard)`
         display: grid;
         width: 2rem;
         height: 2rem;
+        flex: none;
         place-items: center;
+        aspect-ratio: 1 / 1;
         color: #77737f;
         border: 1px solid var(--shell-border);
         border-radius: 8px;
@@ -72,6 +75,7 @@ const Card = styled(MagicBentoCard)`
 
     .status {
         display: inline-flex;
+        flex: none;
         align-items: center;
         gap: 0.4rem;
         color: var(--status-color);
@@ -84,15 +88,44 @@ const Card = styled(MagicBentoCard)`
     .status svg {
         width: 0.38rem;
         height: 0.38rem;
+        flex: none;
+        aspect-ratio: 1 / 1;
         filter: drop-shadow(0 0 5px var(--status-color));
     }
     .allocation {
         display: flex;
+        min-width: 0;
         align-items: center;
         gap: 0.45rem;
         margin-top: 0.5rem;
         color: var(--shell-muted);
         font-size: 0.72rem;
+    }
+    .allocation svg {
+        flex: none;
+    }
+    .allocation span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .telemetry-state {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+    .telemetry-retry {
+        padding: 0.3rem 0.65rem;
+        color: var(--shell-accent-bright);
+        border: 1px solid rgba(var(--shell-accent-rgb), 0.24);
+        border-radius: 6px;
+        background: rgba(var(--shell-accent-rgb), 0.08);
+    }
+    .telemetry-retry:hover {
+        border-color: rgba(var(--shell-accent-rgb), 0.4);
+        background: rgba(var(--shell-accent-rgb), 0.14);
     }
     .metrics {
         display: grid;
@@ -187,6 +220,38 @@ const Card = styled(MagicBentoCard)`
             font-size: 0.73rem;
         }
     }
+
+    @media (max-width: 380px) {
+        .card-link {
+            padding: 0.9rem;
+        }
+
+        .metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.45rem;
+        }
+
+        .metrics > div:last-child {
+            grid-column: 1 / -1;
+        }
+
+        .metric-value {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .footer {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .manage {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 `;
 
 type Timer = ReturnType<typeof setInterval>;
@@ -201,22 +266,53 @@ interface Props {
 
 export default ({ server, className, favorite = false, onToggleFavorite, onOpenQuick }: Props) => {
     const interval = useRef<Timer>(null) as React.MutableRefObject<Timer>;
+    const mounted = useRef(true);
     const previousStatus = useRef<string>();
     const lastHighCpuAlert = useRef(0);
     const [stats, setStats] = useState<ServerStats | null>(null);
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [statsError, setStatsError] = useState(false);
     const isSuspended = stats?.isSuspended || server.status === 'suspended';
 
-    const getStats = () =>
-        getServerResourceUsage(server.uuid)
-            .then(setStats)
-            .catch((error) => console.error(error));
+    const getStats = (showLoading = false) => {
+        if (showLoading) {
+            setStatsLoading(true);
+        }
+
+        return getServerResourceUsage(server.uuid)
+            .then((stats) => {
+                if (!mounted.current) return;
+                setStats(stats);
+                setStatsError(false);
+            })
+            .catch((error) => {
+                if (!mounted.current) return;
+                console.error(error);
+                setStatsError(true);
+            })
+            .finally(() => {
+                if (showLoading && mounted.current) {
+                    setStatsLoading(false);
+                }
+            });
+    };
+
+    useEffect(
+        () => () => {
+            mounted.current = false;
+        },
+        []
+    );
 
     useEffect(() => {
+        let active = true;
+
         if (isSuspended || server.isNodeUnderMaintenance) return;
-        getStats().then(() => {
-            interval.current = setInterval(getStats, 30000);
+        getStats(true).then(() => {
+            if (active) interval.current = setInterval(() => getStats(), 30000);
         });
         return () => {
+            active = false;
             interval.current && clearInterval(interval.current);
         };
     }, [isSuspended, server.isNodeUnderMaintenance]);
@@ -273,7 +369,7 @@ export default ({ server, className, favorite = false, onToggleFavorite, onOpenQ
             style={{ '--status-color': color } as React.CSSProperties}
         >
             <div className={'card-link'}>
-                <div className={'flex items-start justify-between gap-4'}>
+                <div className={'flex min-w-0 items-start justify-between gap-4'}>
                     <div className={'min-w-0'}>
                         <Link className={'server-title'} to={`/server/${server.id}`}>
                             <h3 className={'text-lg font-medium truncate'}>{server.name}</h3>
@@ -297,15 +393,30 @@ export default ({ server, className, favorite = false, onToggleFavorite, onOpenQ
                     {server.allocations
                         .filter((allocation) => allocation.isDefault)
                         .map((allocation) => (
-                            <React.Fragment key={allocation.ip + allocation.port}>
+                            <span key={allocation.ip + allocation.port}>
                                 {allocation.alias || ip(allocation.ip)}:{allocation.port}
-                            </React.Fragment>
+                            </span>
                         ))}
                 </div>
                 {!stats || isSuspended || server.isNodeUnderMaintenance ? (
                     <div className={'flex flex-1 items-center justify-center'}>
                         {!stats && !isSuspended && !server.isNodeUnderMaintenance ? (
-                            <Spinner size={'small'} />
+                            statsLoading ? (
+                                <Spinner size={'small'} />
+                            ) : (
+                                <div className={'telemetry-state'}>
+                                    <p className={'micro'}>
+                                        {statsError ? 'Telemetry unavailable' : 'Telemetry has not loaded'}
+                                    </p>
+                                    <button
+                                        type={'button'}
+                                        className={'micro telemetry-retry'}
+                                        onClick={() => getStats(true)}
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            )
                         ) : (
                             <p className={'micro'}>Telemetry unavailable</p>
                         )}

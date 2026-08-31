@@ -32,6 +32,8 @@ export default () => {
 
     const id = ServerContext.useStoreState((state) => state.server.data?.id);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
+    const identifier = ServerContext.useStoreState((state) => state.server.data?.identifier);
+    const deprecatedUuidShort = ServerContext.useStoreState((state) => state.server.data?.__deprecatedUuidShort);
     const serverName = ServerContext.useStoreState((state) => state.server.data?.name);
     const allocation = ServerContext.useStoreState((state) =>
         state.server.data?.allocations.find((candidate) => candidate.isDefault)
@@ -41,6 +43,8 @@ export default () => {
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
     const clearServerState = ServerContext.useStoreActions((actions) => actions.clearServerState);
+    const routeResetKey = `${match.params.id}:${location.pathname}:${location.search}`;
+    const isCurrentServer = [id, uuid, identifier, deprecatedUuidShort].some((value) => value === match.params.id);
 
     const to = (value: string, url = false) => {
         if (value === '/') {
@@ -57,14 +61,19 @@ export default () => {
     );
 
     useEffect(() => {
+        let active = true;
+
         setError('');
 
         getServer(match.params.id).catch((error) => {
+            if (!active) return;
+
             console.error(error);
             setError(httpErrorToHuman(error));
         });
 
         return () => {
+            active = false;
             clearServerState();
         };
     }, [match.params.id]);
@@ -72,7 +81,7 @@ export default () => {
     return (
         <React.Fragment key={'server-router'}>
             <NavigationBar />
-            {!uuid || !id ? (
+            {!uuid || !id || !isCurrentServer ? (
                 error ? (
                     <ServerError message={error} />
                 ) : (
@@ -134,12 +143,12 @@ export default () => {
                     {inConflictState && (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
                         <ConflictStateRenderer />
                     ) : (
-                        <ErrorBoundary>
+                        <ErrorBoundary resetKey={routeResetKey}>
                             <TransitionRouter>
                                 <Switch location={location}>
                                     {routes.server.map(({ path, permission, component: Component }) => (
                                         <PermissionRoute key={path} permission={permission} path={to(path)} exact>
-                                            <Spinner.Suspense>
+                                            <Spinner.Suspense resetKey={routeResetKey}>
                                                 <Component />
                                             </Spinner.Suspense>
                                         </PermissionRoute>

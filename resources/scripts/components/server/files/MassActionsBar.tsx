@@ -11,6 +11,25 @@ import deleteFiles from '@/api/server/files/deleteFiles';
 import RenameFileModal from '@/components/server/files/RenameFileModal';
 import Portal from '@/components/elements/Portal';
 import { Dialog } from '@/components/elements/dialog';
+import styled from 'styled-components/macro';
+
+const ActionDock = styled.div`
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    pointer-events: none;
+
+    @media (max-width: 700px) {
+        bottom: calc(var(--rock-mobile-nav-clearance, 0px) + 0.5rem);
+        margin-bottom: 0;
+    }
+`;
 
 const MassActionsBar = () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -93,7 +112,7 @@ const MassActionsBar = () => {
                     />
                 )}
                 <Portal>
-                    <div className={'pointer-events-none fixed bottom-0 mb-6 flex justify-center w-full z-50'}>
+                    <ActionDock>
                         <Fade timeout={75} in={selectedFiles.length > 0} unmountOnExit>
                             <div css={tw`flex items-center space-x-4 pointer-events-auto rounded p-4 bg-black/50`}>
                                 <Button onClick={() => setShowMove(true)}>Move</Button>
@@ -103,7 +122,7 @@ const MassActionsBar = () => {
                                 </Button.Danger>
                             </div>
                         </Fade>
-                    </div>
+                    </ActionDock>
                 </Portal>
             </div>
         </>

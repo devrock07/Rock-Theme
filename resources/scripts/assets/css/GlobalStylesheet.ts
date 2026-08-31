@@ -101,7 +101,7 @@ export default createGlobalStyle`
     .rock-page {
         position: relative;
         min-height: calc(100vh - 10rem);
-        animation: rock-page-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        animation: rock-page-in 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
     }
 
     .rock-footer p {
@@ -263,12 +263,21 @@ export default createGlobalStyle`
     @media (max-width: 640px) {
         .rock-page {
             min-height: calc(100vh - 8rem);
-            padding-bottom: 4.5rem;
         }
 
         .rock-footer p {
             padding: 0.35rem 0.65rem;
             backdrop-filter: none;
+        }
+    }
+
+    @media (max-width: 700px) {
+        :root {
+            --rock-mobile-nav-clearance: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        .rock-footer {
+            padding-bottom: calc(var(--rock-mobile-nav-clearance) + 0.75rem);
         }
     }
 

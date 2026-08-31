@@ -24,15 +24,29 @@ const ConfigureTwoFactorForm = ({ onTokens }: Props) => {
     const [value, setValue] = useState('');
     const [password, setPassword] = useState('');
     const [token, setToken] = useState<TwoFactorTokenData | null>(null);
+    const [tokenLoading, setTokenLoading] = useState(true);
+    const [tokenFailed, setTokenFailed] = useState(false);
     const { clearAndAddHttpError } = useFlashKey('account:two-step');
     const updateUserData = useStoreActions((actions: Actions<ApplicationStore>) => actions.user.updateUserData);
 
     const { close, setProps } = useContext(DialogWrapperContext);
 
-    useEffect(() => {
+    const loadToken = () => {
+        setTokenLoading(true);
+        setTokenFailed(false);
+        clearAndAddHttpError();
+
         getTwoFactorTokenData()
             .then(setToken)
-            .catch((error) => clearAndAddHttpError(error));
+            .catch((error) => {
+                setTokenFailed(true);
+                clearAndAddHttpError(error);
+            })
+            .finally(() => setTokenLoading(false));
+    };
+
+    useEffect(() => {
+        loadToken();
     }, []);
 
     useEffect(() => {
@@ -40,6 +54,8 @@ const ConfigureTwoFactorForm = ({ onTokens }: Props) => {
     }, [submitting]);
 
     const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        let recoveryTokens: string[] | undefined;
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -50,27 +66,33 @@ const ConfigureTwoFactorForm = ({ onTokens }: Props) => {
         enableAccountTwoFactor(value, password)
             .then((tokens) => {
                 updateUserData({ useTotp: true });
-                onTokens(tokens);
+                recoveryTokens = tokens;
             })
-            .catch((error) => {
-                clearAndAddHttpError(error);
-                setSubmitting(false);
-            });
+            .catch((error) => clearAndAddHttpError(error))
+            .finally(() => setSubmitting(false))
+            .then(() => recoveryTokens && onTokens(recoveryTokens));
     };
 
     return (
         <form id={'enable-totp-form'} onSubmit={submit}>
             <FlashMessageRender byKey={'account:two-step'} className={'mt-4'} />
             <div className={'flex items-center justify-center w-56 h-56 p-2 bg-gray-50 shadow mx-auto mt-6'}>
-                {!token ? (
+                {tokenLoading ? (
                     <Spinner />
-                ) : (
+                ) : token ? (
                     <QRCode renderAs={'svg'} value={token.image_url_data} css={tw`w-full h-full shadow-none`} />
+                ) : (
+                    <div css={tw`px-4 text-center`}>
+                        <p css={tw`text-sm text-neutral-700 mb-3`}>The QR code could not be loaded.</p>
+                        <Button.Text type={'button'} onClick={loadToken}>
+                            Retry
+                        </Button.Text>
+                    </div>
                 )}
             </div>
             <CopyOnClick text={token?.secret}>
                 <p className={'font-mono text-sm text-gray-100 text-center mt-2'}>
-                    {token?.secret.match(/.{1,4}/g)!.join(' ') || 'Loading...'}
+                    {token?.secret.match(/.{1,4}/g)?.join(' ') || (tokenLoading ? 'Loading...' : 'Unavailable')}
                 </p>
             </CopyOnClick>
             <p id={'totp-code-description'} className={'mt-6'}>
@@ -105,7 +127,9 @@ const ConfigureTwoFactorForm = ({ onTokens }: Props) => {
                     disabled={password.length > 0 && value.length === 6}
                     content={
                         !token
-                            ? 'Waiting for QR code to load...'
+                            ? tokenFailed
+                                ? 'The QR code could not be loaded. Retry before continuing.'
+                                : 'Waiting for QR code to load...'
                             : 'You must enter the 6-digit code and your password to continue.'
                     }
                     delay={100}

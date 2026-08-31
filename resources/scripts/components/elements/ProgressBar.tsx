@@ -5,14 +5,20 @@ import { randomInt } from '@/helpers';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 
-const BarFill = styled.div<{ style?: { top?: string } }>`
+const Track = styled.div`
+    ${tw`fixed top-0 left-0 w-full pointer-events-none`};
+    z-index: 20000;
+    height: 2px;
+`;
+
+const BarFill = styled.div`
     ${tw`h-full bg-red-600`};
-    transition: 250ms ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: width 250ms ease-in-out;
     margin-top: 0 !important;
     box-shadow: 0 -2px 10px 2px hsl(9.090909090909092, 98.29787234042554%, 53.92156862745098%);
-    position: fixed;
-    top: 3.5rem;
-    height: 2px;
 `;
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -33,40 +39,38 @@ export default () => {
     }, []);
 
     useEffect(() => {
-        setVisible((progress || 0) > 0);
+        setVisible(progress !== undefined && progress > 0);
 
         if (progress === 100) {
+            timeout.current && clearTimeout(timeout.current);
             timeout.current = setTimeout(() => setProgress(undefined), 500);
+        } else if (timeout.current) {
+            clearTimeout(timeout.current);
         }
+
+        return () => timeout.current && clearTimeout(timeout.current);
     }, [progress]);
 
     useEffect(() => {
-        if (!continuous) {
-            interval.current && clearInterval(interval.current);
-            return;
-        }
-
-        if (!progress || progress === 0) {
+        if (continuous && (!progress || progress === 0)) {
             setProgress(randomInt(20, 30));
         }
     }, [continuous]);
 
     useEffect(() => {
-        if (continuous) {
-            interval.current && clearInterval(interval.current);
-            if ((progress || 0) >= 90) {
-                setProgress(90);
-            } else {
-                interval.current = setTimeout(() => setProgress((progress || 0) + randomInt(1, 5)), 500);
-            }
-        }
+        interval.current && clearTimeout(interval.current);
+        if (!continuous || !progress || progress >= 90) return;
+
+        interval.current = setTimeout(() => setProgress(Math.min(90, progress + randomInt(1, 5))), 500);
+
+        return () => interval.current && clearTimeout(interval.current);
     }, [progress, continuous]);
 
     return (
-        <div css={tw`w-full fixed`} style={{ height: '2px' }}>
+        <Track aria-hidden={'true'}>
             <CSSTransition timeout={150} appear in={visible} unmountOnExit classNames={'fade'}>
                 <BarFill style={{ width: progress === undefined ? '100%' : `${progress}%` }} />
             </CSSTransition>
-        </div>
+        </Track>
     );
 };

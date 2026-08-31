@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import getServerSchedule from '@/api/server/schedules/getServerSchedule';
 import Spinner from '@/components/elements/Spinner';
@@ -49,7 +49,9 @@ export default () => {
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const [isLoading, setIsLoading] = useState(true);
+    const [loadFailed, setLoadFailed] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const loadGeneration = useRef(0);
 
     const schedule = ServerContext.useStoreState(
         (st) => st.schedules.data.find((s) => s.id === Number(scheduleId)),
@@ -57,20 +59,37 @@ export default () => {
     );
     const appendSchedule = ServerContext.useStoreActions((actions) => actions.schedules.appendSchedule);
 
+    const loadSchedule = useCallback(() => {
+        const generation = ++loadGeneration.current;
+        setIsLoading(true);
+        setLoadFailed(false);
+        clearFlashes('schedules');
+        getServerSchedule(uuid, Number(scheduleId))
+            .then((schedule) => {
+                if (loadGeneration.current === generation) appendSchedule(schedule);
+            })
+            .catch((error) => {
+                if (loadGeneration.current !== generation) return;
+                console.error(error);
+                setLoadFailed(true);
+                clearAndAddHttpError({ error, key: 'schedules' });
+            })
+            .finally(() => {
+                if (loadGeneration.current === generation) setIsLoading(false);
+            });
+    }, [scheduleId, uuid]);
+
     useEffect(() => {
         if (schedule?.id === Number(scheduleId)) {
             setIsLoading(false);
+            setLoadFailed(false);
             return;
         }
 
-        clearFlashes('schedules');
-        getServerSchedule(uuid, Number(scheduleId))
-            .then((schedule) => appendSchedule(schedule))
-            .catch((error) => {
-                console.error(error);
-                clearAndAddHttpError({ error, key: 'schedules' });
-            })
-            .then(() => setIsLoading(false));
+        loadSchedule();
+        return () => {
+            loadGeneration.current += 1;
+        };
     }, [scheduleId]);
 
     const toggleEditModal = useCallback(() => {
@@ -80,7 +99,16 @@ export default () => {
     return (
         <PageContentBlock title={'Schedules'}>
             <FlashMessageRender byKey={'schedules'} css={tw`mb-4`} />
-            {!schedule || isLoading ? (
+            {isLoading ? (
+                <Spinner size={'large'} centered />
+            ) : !schedule && loadFailed ? (
+                <div css={tw`rounded bg-neutral-800 p-8 text-center`}>
+                    <p css={tw`text-sm text-neutral-300`}>Could not load this schedule.</p>
+                    <Button.Text css={tw`mt-4`} onClick={loadSchedule}>
+                        Retry
+                    </Button.Text>
+                </div>
+            ) : !schedule ? (
                 <Spinner size={'large'} centered />
             ) : (
                 <>

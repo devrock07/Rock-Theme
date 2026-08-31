@@ -12,11 +12,14 @@ export type ServerStatus = 'offline' | 'starting' | 'stopping' | 'running' | nul
 
 interface ServerDataStore {
     data?: Server;
+    requestedServerId?: string;
+    requestSequence: number;
     inConflictState: Computed<ServerDataStore, boolean>;
     isInstalling: Computed<ServerDataStore, boolean>;
     permissions: string[];
 
     getServer: Thunk<ServerDataStore, string, Record<string, unknown>, ServerStore, Promise<void>>;
+    beginServerRequest: Action<ServerDataStore, string>;
     setServer: Action<ServerDataStore, Server>;
     setServerFromState: Action<ServerDataStore, (s: Server) => Server>;
     setPermissions: Action<ServerDataStore, string[]>;
@@ -24,6 +27,7 @@ interface ServerDataStore {
 
 const server: ServerDataStore = {
     permissions: [],
+    requestSequence: 0,
 
     inConflictState: computed((state) => {
         if (!state.data) {
@@ -37,11 +41,20 @@ const server: ServerDataStore = {
         return state.data?.status === 'installing' || state.data?.status === 'install_failed';
     }),
 
-    getServer: thunk(async (actions, payload) => {
+    getServer: thunk(async (actions, payload, { getState }) => {
+        actions.beginServerRequest(payload);
+        const requestSequence = getState().requestSequence;
         const [server, permissions] = await getServer(payload);
+
+        if (getState().requestedServerId !== payload || getState().requestSequence !== requestSequence) return;
 
         actions.setServer(server);
         actions.setPermissions(permissions);
+    }),
+
+    beginServerRequest: action((state, payload) => {
+        state.requestedServerId = payload;
+        state.requestSequence += 1;
     }),
 
     setServer: action((state, payload) => {
@@ -98,6 +111,8 @@ export const ServerContext = createContextStore<ServerStore>(
         schedules,
         clearServerState: action((state) => {
             state.server.data = undefined;
+            state.server.requestedServerId = undefined;
+            state.server.requestSequence += 1;
             state.server.permissions = [];
             state.databases.data = [];
             state.subusers.data = [];

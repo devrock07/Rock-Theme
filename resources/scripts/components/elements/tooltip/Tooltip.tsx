@@ -17,6 +17,7 @@ import {
 } from '@floating-ui/react-dom-interactions';
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
+import { createPortal } from 'react-dom';
 
 type Interaction = 'hover' | 'click' | 'focus';
 
@@ -43,7 +44,7 @@ export default ({ children, ...props }: Props) => {
     const arrowEl = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
 
-    const { x, y, reference, floating, middlewareData, strategy, context } = useFloating({
+    const { x, y, reference, floating, middlewareData, strategy, context, placement } = useFloating({
         open,
         strategy: 'fixed',
         placement: props.placement || 'top',
@@ -70,49 +71,56 @@ export default ({ children, ...props }: Props) => {
         useDismiss(context),
     ]);
 
-    const side = arrowSides[(props.placement || 'top').split('-')[0] as Side];
+    const side = arrowSides[placement.split('-')[0] as Side];
     const { x: ax, y: ay } = middlewareData.arrow || {};
 
     if (props.disabled) {
         return children;
     }
 
+    const floatingNode = (
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    initial={{ opacity: 0, y: 2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 2 }}
+                    transition={{ duration: 0.1 }}
+                    {...getFloatingProps({
+                        ref: floating,
+                        className:
+                            'bg-gray-900 text-sm text-gray-200 px-3 py-2 rounded pointer-events-none max-w-[min(24rem,calc(100vw-0.75rem))]',
+                        style: {
+                            position: strategy,
+                            top: `${y ?? 0}px`,
+                            left: `${x ?? 0}px`,
+                            zIndex: 20010,
+                        },
+                    })}
+                >
+                    {props.content}
+                    {props.arrow && (
+                        <div
+                            ref={arrowEl}
+                            style={{
+                                transform: `translate(${Math.round(ax || 0)}px, ${Math.round(
+                                    ay || 0
+                                )}px) rotate(45deg)`,
+                            }}
+                            className={classNames('absolute bg-gray-900 w-3 h-3', side)}
+                        />
+                    )}
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+
     return (
         <>
             {cloneElement(children, getReferenceProps({ ref: reference, ...children.props }))}
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.85 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ type: 'spring', damping: 20, stiffness: 300, duration: 0.075 }}
-                        {...getFloatingProps({
-                            ref: floating,
-                            className:
-                                'bg-gray-900 text-sm text-gray-200 px-3 py-2 rounded pointer-events-none max-w-[24rem]',
-                            style: {
-                                position: strategy,
-                                top: `${y || 0}px`,
-                                left: `${x || 0}px`,
-                            },
-                        })}
-                    >
-                        {props.content}
-                        {props.arrow && (
-                            <div
-                                ref={arrowEl}
-                                style={{
-                                    transform: `translate(${Math.round(ax || 0)}px, ${Math.round(
-                                        ay || 0
-                                    )}px) rotate(45deg)`,
-                                }}
-                                className={classNames('absolute bg-gray-900 w-3 h-3', side)}
-                            />
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {typeof document === 'undefined'
+                ? floatingNode
+                : createPortal(floatingNode, document.getElementById('modal-portal') || document.body)}
         </>
     );
 };

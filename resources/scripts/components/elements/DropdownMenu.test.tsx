@@ -21,6 +21,10 @@ jest.mock('@/components/elements/Fade', () => ({
 }));
 
 describe('DropdownMenu', () => {
+    beforeEach(() => {
+        Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined });
+    });
+
     it('renders the menu outside clipping containers and closes on an outside click', () => {
         const { container } = render(
             <div style={{ overflow: 'hidden' }}>
@@ -37,5 +41,32 @@ describe('DropdownMenu', () => {
 
         fireEvent.click(document.body);
         expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
+    });
+
+    it('limits the menu to the current visual viewport', () => {
+        Object.defineProperty(window, 'visualViewport', {
+            configurable: true,
+            value: {
+                width: 320,
+                height: 280,
+                offsetLeft: 0,
+                offsetTop: 0,
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn(),
+            },
+        });
+
+        render(
+            <DropdownMenu renderToggle={(onClick) => <button onClick={onClick}>Actions</button>}>
+                <button>Download</button>
+            </DropdownMenu>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Actions' }));
+
+        expect(screen.getByRole('button', { name: 'Download' }).parentElement).toHaveStyle({
+            maxWidth: '304px',
+            maxHeight: '264px',
+            overflowY: 'auto',
+        });
     });
 });

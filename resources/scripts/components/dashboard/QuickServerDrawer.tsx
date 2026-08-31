@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components/macro';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -114,7 +115,7 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
         };
     }, []);
 
-    return (
+    return createPortal(
         <Shell
             role={'dialog'}
             aria-modal={'true'}
@@ -207,6 +208,7 @@ export default ({ server, stats, group, onGroupChange, onClose }: Props) => {
                     Open full server <FontAwesomeIcon icon={faArrowRight} className={'ml-2'} />
                 </Link>
             </aside>
-        </Shell>
+        </Shell>,
+        document.getElementById('modal-portal') || document.body
     );
 };

@@ -138,6 +138,8 @@ You should have received a copy of the GNU General Public License along with Noo
 .server-state-dot {
     width: 0.38rem;
     height: 0.38rem;
+    flex: none;
+    aspect-ratio: 1 / 1;
     border-radius: 999px;
     background: var(--shell-danger);
 }

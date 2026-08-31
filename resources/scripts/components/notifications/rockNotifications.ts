@@ -23,7 +23,7 @@ const normalizeNotification = (value: unknown): RockNotification | null => {
         id: String(item.id),
         title: String(item.title),
         message: String(item.message),
-        createdAt: item.createdAt || Date.now(),
+        createdAt: item.createdAt ?? Date.now(),
         tone: tones.includes(item.tone as RockNotification['tone']) ? (item.tone as RockNotification['tone']) : 'info',
         href: typeof item.href === 'string' && item.href.startsWith('/') ? item.href : undefined,
     };
