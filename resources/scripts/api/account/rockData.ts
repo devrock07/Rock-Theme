@@ -7,6 +7,8 @@ export interface ServerPreference {
 
 export interface RockAccountData {
     serverPreferences: Record<string, ServerPreference>;
+    preferencesAvailable: boolean;
+    notificationsAvailable: boolean;
     notifications: Array<{
         id: string;
         type: string;

@@ -118,7 +118,10 @@ export const ServerContext = createContextStore<ServerStore>(
             state.subusers.data = [];
             state.files.directory = '/';
             state.files.selectedFiles = [];
+            Object.values(state.files.uploads).forEach((upload) => upload.abort.abort());
+            state.files.uploads = {};
             state.schedules.data = [];
+            state.status.value = null;
 
             if (state.socket.instance) {
                 state.socket.instance.removeAllListeners();

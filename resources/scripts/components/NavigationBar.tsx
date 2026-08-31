@@ -13,6 +13,7 @@ import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import Avatar from '@/components/Avatar';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
+import useFlash from '@/plugins/useFlash';
 
 const RightNavigation = styled.div`
     flex: 0 0 auto;
@@ -217,6 +218,7 @@ export default () => {
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data!.rootAdmin);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const location = useLocation();
+    const { clearAndAddHttpError } = useFlash();
 
     useEffect(() => {
         document.getElementById('sidebar')?.classList.remove('active-nav');
@@ -224,10 +226,15 @@ export default () => {
 
     const onTriggerLogout = () => {
         setIsLoggingOut(true);
-        http.post('/auth/logout').finally(() => {
-            // @ts-expect-error this is valid
-            window.location = '/';
-        });
+        http.post('/auth/logout')
+            .then(() => {
+                // @ts-expect-error this is valid
+                window.location = '/';
+            })
+            .catch((error) => {
+                setIsLoggingOut(false);
+                clearAndAddHttpError({ error });
+            });
     };
 
     return (

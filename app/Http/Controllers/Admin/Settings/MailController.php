@@ -5,6 +5,7 @@ namespace Pterodactyl\Http\Controllers\Admin\Settings;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Console\Kernel;
 use Pterodactyl\Notifications\MailTested;
 use Illuminate\Support\Facades\Notification;
@@ -58,17 +59,23 @@ class MailController extends Controller
             $values['mail:mailers:smtp:password'] = '';
         }
 
-        foreach ($values as $key => $value) {
-            if (in_array($key, SettingsServiceProvider::getEncryptedKeys()) && !empty($value)) {
-                $value = $this->encrypter->encrypt($value);
-            }
+        DB::transaction(function () use ($values) {
+            foreach ($values as $key => $value) {
+                if (in_array($key, SettingsServiceProvider::getEncryptedKeys()) && !empty($value)) {
+                    $value = $this->encrypter->encrypt($value);
+                }
 
-            $this->settings->set('settings::' . $key, $value);
+                $this->settings->set('settings::' . $key, $value);
+            }
+        });
+
+        try {
+            $queueRestarted = $this->kernel->call('queue:restart') === 0;
+        } catch (\Throwable) {
+            $queueRestarted = false;
         }
 
-        $this->kernel->call('queue:restart');
-
-        return response('', 204);
+        return response('', 204)->header('X-Rock-Queue-Restart', $queueRestarted ? 'ok' : 'failed');
     }
 
     /**

@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ServerEggVariable } from '@/api/server/types';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import { usePermissions } from '@/plugins/usePermissions';
@@ -23,33 +23,108 @@ const VariableBox = ({ variable }: Props) => {
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const [loading, setLoading] = useState(false);
+    const [unsynced, setUnsynced] = useState(false);
+    const [value, setValue] = useState(() => variable.serverValue ?? variable.defaultValue ?? '');
+    const mounted = useRef(false);
+    const requestGeneration = useRef(0);
+    const hasLocalChange = useRef(false);
+    const queuedWrite = useRef<{ value: string; generation: number } | null>(null);
+    const writeInFlight = useRef(false);
     const [canEdit] = usePermissions(['startup.update']);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { mutate } = getServerStartup(uuid);
 
-    const setVariableValue = debounce((value: string) => {
-        setLoading(true);
-        clearFlashes(FLASH_KEY);
+    const persistVariable = useCallback(
+        async (nextValue: string, generation: number) => {
+            queuedWrite.current = { value: nextValue, generation };
+            if (writeInFlight.current) return;
 
-        updateStartupVariable(uuid, variable.envVariable, value)
-            .then(([response, invocation]) =>
-                mutate(
-                    (data) => ({
-                        ...data,
-                        invocation,
-                        variables: (data.variables || []).map((v) =>
-                            v.envVariable === response.envVariable ? response : v
-                        ),
-                    }),
-                    false
-                )
-            )
-            .catch((error) => {
-                console.error(error);
-                clearAndAddHttpError({ error, key: FLASH_KEY });
-            })
-            .then(() => setLoading(false));
-    }, 500);
+            writeInFlight.current = true;
+            while (queuedWrite.current) {
+                const write = queuedWrite.current;
+                queuedWrite.current = null;
+                clearFlashes(FLASH_KEY);
+
+                try {
+                    const [response, invocation] = await updateStartupVariable(uuid, variable.envVariable, write.value);
+
+                    if (mounted.current && write.generation === requestGeneration.current) {
+                        await mutate(
+                            (data) => ({
+                                ...data,
+                                invocation,
+                                variables: (data.variables || []).map((item) =>
+                                    item.envVariable === response.envVariable ? response : item
+                                ),
+                            }),
+                            false
+                        );
+                        hasLocalChange.current = false;
+                        setUnsynced(false);
+                    }
+                } catch (error) {
+                    if (mounted.current && write.generation === requestGeneration.current) {
+                        console.error(error);
+                        clearAndAddHttpError({ error, key: FLASH_KEY });
+                        setUnsynced(true);
+                    }
+                }
+            }
+
+            writeInFlight.current = false;
+            if (mounted.current && !queuedWrite.current) setLoading(false);
+        },
+        [FLASH_KEY, clearAndAddHttpError, clearFlashes, mutate, uuid, variable.envVariable]
+    );
+    const persistVariableRef = useRef(persistVariable);
+    persistVariableRef.current = persistVariable;
+
+    const setVariableValue = useMemo(
+        () =>
+            debounce((nextValue: string, generation: number) => {
+                void persistVariableRef.current(nextValue, generation);
+            }, 500),
+        []
+    );
+
+    const updateValue = useCallback(
+        (nextValue: string) => {
+            const generation = ++requestGeneration.current;
+
+            hasLocalChange.current = true;
+            setUnsynced(false);
+            setValue(nextValue);
+            setLoading(true);
+            setVariableValue(nextValue, generation);
+        },
+        [setVariableValue]
+    );
+
+    const retryLatestValue = useCallback(() => {
+        const generation = ++requestGeneration.current;
+
+        hasLocalChange.current = true;
+        setUnsynced(false);
+        setLoading(true);
+        void persistVariable(value, generation);
+    }, [persistVariable, value]);
+
+    useEffect(() => {
+        if (!hasLocalChange.current) {
+            setValue(variable.serverValue ?? variable.defaultValue ?? '');
+            setUnsynced(false);
+        }
+    }, [variable.defaultValue, variable.serverValue]);
+
+    useEffect(() => {
+        mounted.current = true;
+
+        return () => {
+            setVariableValue.flush();
+            mounted.current = false;
+            requestGeneration.current += 1;
+        };
+    }, [setVariableValue]);
 
     const useSwitch = variable.rules.some(
         (v) => v === 'boolean' || v === 'in:0,1' || v === 'in:1,0' || v === 'in:true,false' || v === 'in:false,true'
@@ -69,22 +144,36 @@ const VariableBox = ({ variable }: Props) => {
             }
         >
             <FlashMessageRender byKey={FLASH_KEY} className='mb-2 md:mb-4' />
+            {unsynced && (
+                <div className='mb-3 flex items-center justify-between gap-3 text-xs text-red-300' role='status'>
+                    <span>Not saved</span>
+                    <button
+                        type='button'
+                        className='rounded border border-primary-500/40 px-2 py-1 text-primary-300 hover:bg-primary-900/40'
+                        onClick={retryLatestValue}
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
             <InputSpinner visible={loading}>
                 {useSwitch ? (
                     <>
                         <Switch
                             readOnly={!canEdit || !variable.isEditable}
                             name={variable.envVariable}
-                            defaultChecked={
-                                isStringSwitch ? variable.serverValue === 'true' : variable.serverValue === '1'
-                            }
-                            onChange={() => {
+                            checked={isStringSwitch ? value === 'true' : value === '1'}
+                            onChange={(event) => {
                                 if (canEdit && variable.isEditable) {
-                                    if (isStringSwitch) {
-                                        setVariableValue(variable.serverValue === 'true' ? 'false' : 'true');
-                                    } else {
-                                        setVariableValue(variable.serverValue === '1' ? '0' : '1');
-                                    }
+                                    updateValue(
+                                        isStringSwitch
+                                            ? event.currentTarget.checked
+                                                ? 'true'
+                                                : 'false'
+                                            : event.currentTarget.checked
+                                            ? '1'
+                                            : '0'
+                                    );
                                 }
                             }}
                         />
@@ -94,9 +183,9 @@ const VariableBox = ({ variable }: Props) => {
                         {selectValues.length > 0 ? (
                             <>
                                 <Select
-                                    onChange={(e) => setVariableValue(e.target.value)}
+                                    onChange={(e) => updateValue(e.target.value)}
                                     name={variable.envVariable}
-                                    defaultValue={variable.serverValue ?? variable.defaultValue}
+                                    value={value}
                                     disabled={!canEdit || !variable.isEditable}
                                 >
                                     {selectValues.map((selectValue) => (
@@ -112,14 +201,14 @@ const VariableBox = ({ variable }: Props) => {
                         ) : (
                             <>
                                 <Input
-                                    onKeyUp={(e) => {
+                                    onChange={(e) => {
                                         if (canEdit && variable.isEditable) {
-                                            setVariableValue(e.currentTarget.value);
+                                            updateValue(e.currentTarget.value);
                                         }
                                     }}
                                     readOnly={!canEdit || !variable.isEditable}
                                     name={variable.envVariable}
-                                    defaultValue={variable.serverValue ?? ''}
+                                    value={value}
                                     placeholder={variable.defaultValue}
                                 />
                             </>

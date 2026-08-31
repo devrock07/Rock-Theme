@@ -253,3 +253,19 @@
         transform: none;
     }
 }
+
+:root[data-rock-motion='reduced'] .rb-split-word,
+:root[data-rock-motion='reduced'] .rb-shiny-text,
+:root[data-rock-motion='reduced'] .rb-border-glow::before {
+    animation: none;
+}
+
+:root[data-rock-motion='reduced'] .rb-depth-card {
+    transform: none;
+    transition: none;
+}
+
+:root[data-rock-motion='reduced'] .rb-split-word {
+    opacity: 1;
+    transform: none;
+}

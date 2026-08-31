@@ -7,7 +7,6 @@ import { useChart, useChartTickLabel } from '@/components/server/console/chart';
 import { hexToRgba } from '@/lib/helpers';
 import { bytesToString } from '@/lib/formatters';
 import { CloudDownloadIcon, CloudUploadIcon } from '@heroicons/react/solid';
-import { theme } from 'twin.macro';
 import ChartBlock from '@/components/server/console/ChartBlock';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import { unstable_batchedUpdates } from 'react-dom';
@@ -20,6 +19,9 @@ export default () => {
     const previous = useRef<Record<'tx' | 'rx', number>>({ tx: -1, rx: -1 });
     const [current, setCurrent] = useState({ cpu: 0, memory: 0, tx: 0, rx: 0 });
     const [range, setRange] = useState<'live' | '1h' | '24h'>('live');
+    const [historyState, setHistoryState] = useState<'idle' | 'loading' | 'error'>('idle');
+    const [historyRetry, setHistoryRetry] = useState(0);
+    const historyRequest = useRef(0);
     const historyKey = `rock:telemetry:${serverId}`;
     const history = useRef<Array<{ t: number; cpu: number; memory: number; tx: number; rx: number }>>([]);
     const lastStored = useRef(0);
@@ -40,15 +42,12 @@ export default () => {
                 },
             },
         },
-        callback(opts, index) {
+        callback(opts, index, palette) {
             return {
                 ...opts,
                 label: !index ? 'Network In' : 'Network Out',
-                borderColor: !index ? theme('colors.primary.300') : theme('colors.primary.500'),
-                backgroundColor: hexToRgba(
-                    !index ? theme('colors.primary.700') : theme('colors.primary.800'),
-                    !index ? 0.38 : 0.28
-                ),
+                borderColor: !index ? palette[300] : palette[500],
+                backgroundColor: hexToRgba(!index ? palette[700] : palette[800], !index ? 0.38 : 0.28),
             };
         },
     });
@@ -64,9 +63,17 @@ export default () => {
     }, [historyKey]);
 
     useEffect(() => {
-        if (range === 'live') return;
+        const request = ++historyRequest.current;
+        if (range === 'live') {
+            setHistoryState('idle');
+            return;
+        }
+
+        setHistoryState('loading');
         getTelemetryHistory(serverId, range)
             .then((remote) => {
+                if (request !== historyRequest.current) return;
+
                 const since = Date.now() - (range === '1h' ? 3600000 : 86400000);
                 const points = remote.length ? remote : history.current.filter((point) => point.t >= since);
                 const sampled = points
@@ -75,9 +82,16 @@ export default () => {
                 cpu.replace([sampled.map((point) => point.cpu)]);
                 memory.replace([sampled.map((point) => point.memory)]);
                 network.replace([sampled.map((point) => point.tx), sampled.map((point) => point.rx)]);
+                setHistoryState('idle');
             })
-            .catch(() => undefined);
-    }, [range]);
+            .catch(() => {
+                if (request === historyRequest.current) setHistoryState('error');
+            });
+
+        return () => {
+            if (request === historyRequest.current) historyRequest.current += 1;
+        };
+    }, [historyRetry, range, serverId]);
 
     useEffect(() => {
         if (status === 'offline') {
@@ -125,7 +139,23 @@ export default () => {
     return (
         <>
             <div className={'col-span-full flex items-center justify-between mb-1'}>
-                <p className={'text-2xs uppercase tracking-widest text-neutral-500'}>Resource history</p>
+                <div className={'flex items-center gap-2'}>
+                    <p className={'text-2xs uppercase tracking-widest text-neutral-500'}>Resource history</p>
+                    {historyState === 'loading' && (
+                        <span className={'text-2xs text-neutral-500'} role={'status'}>
+                            Loading…
+                        </span>
+                    )}
+                    {historyState === 'error' && (
+                        <button
+                            type={'button'}
+                            className={'text-2xs text-red-300 hover:text-red-200'}
+                            onClick={() => setHistoryRetry((value) => value + 1)}
+                        >
+                            History unavailable — retry
+                        </button>
+                    )}
+                </div>
                 <div className={'flex gap-1'}>
                     {(['live', '1h', '24h'] as const).map((value) => (
                         <button

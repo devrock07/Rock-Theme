@@ -10,7 +10,7 @@ return [
     | change this value if you are not maintaining your own internal versions.
     */
 
-    'version' => '1.15.0',
+    'version' => '1.15.1',
 
     /*
     |--------------------------------------------------------------------------
@@ -20,7 +20,7 @@ return [
     | change this value if you are not maintaining your own internal versions.
     */
 
-    'fork-version' => '2.0.1',
+    'fork-version' => '2.0.2',
 
     /*
     |--------------------------------------------------------------------------

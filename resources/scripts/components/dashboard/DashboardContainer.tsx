@@ -19,7 +19,16 @@ import { ShinyText, SplitText } from '@/components/elements/ReactBitsEffects';
 import { MagicBentoGrid } from '@/components/elements/reactbits/MagicBento';
 import QuickServerDrawer from '@/components/dashboard/QuickServerDrawer';
 import { ServerStats } from '@/api/server/getServerResourceUsage';
-import { getRockAccountData, saveServerPreferences, ServerPreference } from '@/api/account/rockData';
+import { getRockAccountData, RockAccountData, saveServerPreferences, ServerPreference } from '@/api/account/rockData';
+import {
+    allPreferenceFieldsDirty,
+    DirtyPreferenceFields,
+    hasDirtyPreferenceFields,
+    mergeHydratedServerPreferences,
+    PreferenceSyncStatus,
+    ServerPreferenceSaveQueue,
+    ServerPreferences,
+} from '@/components/dashboard/serverPreferencesSync';
 
 const DashboardHero = styled.section`
     position: relative;
@@ -175,6 +184,55 @@ const DashboardToolbar = styled.div`
     }
 `;
 
+const PreferenceSyncIndicator = styled.div`
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--shell-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+
+    &::before {
+        width: 0.38rem;
+        height: 0.38rem;
+        content: '';
+        border-radius: 999px;
+        background: var(--shell-warning);
+        box-shadow: 0 0 9px color-mix(in srgb, var(--shell-warning) 55%, transparent);
+    }
+
+    &[data-state='saving']::before {
+        background: var(--shell-accent-bright);
+        animation: preference-sync-pulse 1s ease-in-out infinite;
+    }
+
+    &[data-state='loading']::before {
+        background: var(--shell-muted);
+    }
+
+    button {
+        padding: 0.28rem 0.52rem;
+        color: var(--shell-accent-bright);
+        border: 1px solid rgba(var(--shell-accent-rgb), 0.26);
+        border-radius: 6px;
+        background: rgba(var(--shell-accent-rgb), 0.08);
+    }
+
+    button:hover {
+        border-color: rgba(var(--shell-accent-rgb), 0.42);
+        background: rgba(var(--shell-accent-rgb), 0.14);
+    }
+
+    @keyframes preference-sync-pulse {
+        50% {
+            opacity: 0.4;
+        }
+    }
+`;
+
 const ServerGrid = styled(MagicBentoGrid)`
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -212,16 +270,34 @@ export default () => {
     const username = useStoreState((state) => state.user.data!.username);
     const branding = useStoreState((state) => state.settings.data!.branding);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    const preferenceStorageKey = `${uuid}:server_preferences`;
+    const preferenceUnsyncedKey = `${uuid}:server_preferences_unsynced`;
     const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
-    const [preferences, setPreferences] = usePersistedState<Record<string, ServerPreference>>(
-        `${uuid}:server_preferences`,
-        {}
-    );
+    const [preferences, setPreferences] = usePersistedState<Record<string, ServerPreference>>(preferenceStorageKey, {});
     const [activeGroup, setActiveGroup] = useState('All');
     const [quickServer, setQuickServer] = useState<{ server: Server; stats: ServerStats | null } | null>(null);
     const preferencesReady = useRef(false);
-    const saveTimer = useRef<number>();
-    const { data: accountData } = useSWR('/api/client/account/rock', getRockAccountData);
+    const mounted = useRef(true);
+    const preferencesRef = useRef<ServerPreferences>(preferences || {});
+    const initiallyUnsynced = useRef(localStorage.getItem(preferenceUnsyncedKey) === '1');
+    const dirtyPreferenceFields = useRef<DirtyPreferenceFields>(
+        initiallyUnsynced.current ? allPreferenceFieldsDirty(preferencesRef.current) : {}
+    );
+    const [preferenceSyncStatus, setPreferenceSyncStatus] = useState<PreferenceSyncStatus>(
+        initiallyUnsynced.current ? 'unsynced' : 'loading'
+    );
+    const [accountData, setAccountData] = useState<RockAccountData>();
+    const preferenceSaveQueue = useRef<ServerPreferenceSaveQueue>();
+    if (!preferenceSaveQueue.current) {
+        preferenceSaveQueue.current = new ServerPreferenceSaveQueue(saveServerPreferences, (status) => {
+            if (status === 'saved') {
+                localStorage.removeItem(preferenceUnsyncedKey);
+            } else if (status === 'unsynced') {
+                localStorage.setItem(preferenceUnsyncedKey, '1');
+            }
+            if (mounted.current) setPreferenceSyncStatus(status);
+        });
+    }
     const {
         data: servers,
         error,
@@ -230,6 +306,31 @@ export default () => {
     } = useSWR<PaginatedResult<Server>>(['/api/client/servers', showOnlyAdmin && rootAdmin, page], () =>
         getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
     );
+
+    useEffect(() => {
+        let active = true;
+        let retryTimer: number | undefined;
+        const loadPreferences = () => {
+            const retry = () => {
+                if (active) retryTimer = window.setTimeout(loadPreferences, 5000);
+            };
+            getRockAccountData()
+                .then((data) => {
+                    if (!data.preferencesAvailable) {
+                        retry();
+                        return;
+                    }
+                    if (active) setAccountData(data);
+                })
+                .catch(retry);
+        };
+
+        loadPreferences();
+        return () => {
+            active = false;
+            window.clearTimeout(retryTimer);
+        };
+    }, []);
 
     useEffect(() => setPage(1), [showOnlyAdmin]);
     useEffect(() => {
@@ -244,35 +345,71 @@ export default () => {
     }, [error]);
     useEffect(() => {
         if (!accountData || preferencesReady.current) return;
-        const local = preferences || {};
-        const merged = { ...local, ...accountData.serverPreferences };
+        const local = preferencesRef.current;
+        const merged = mergeHydratedServerPreferences(
+            accountData.serverPreferences,
+            local,
+            dirtyPreferenceFields.current
+        );
+        preferencesRef.current = merged;
         setPreferences(merged);
         preferencesReady.current = true;
-        if (Object.keys(local).length && !Object.keys(accountData.serverPreferences).length) {
-            saveServerPreferences(merged).catch(() => undefined);
+        if (
+            hasDirtyPreferenceFields(dirtyPreferenceFields.current) ||
+            (Object.keys(local).length > 0 && Object.keys(accountData.serverPreferences).length === 0)
+        ) {
+            preferenceSaveQueue.current!.enqueue(merged, 0);
+        } else {
+            preferenceSaveQueue.current!.seed(merged);
         }
     }, [accountData]);
     useEffect(() => {
-        if (!preferencesReady.current) return;
-        window.clearTimeout(saveTimer.current);
-        saveTimer.current = window.setTimeout(
-            () => saveServerPreferences(preferences || {}).catch(() => undefined),
-            500
-        );
-        return () => window.clearTimeout(saveTimer.current);
-    }, [preferences]);
+        mounted.current = true;
+        const flushLatest = () => {
+            if (preferencesReady.current) void preferenceSaveQueue.current!.flushLatest(preferencesRef.current);
+        };
+        const flushWhenHidden = () => {
+            if (document.visibilityState === 'hidden') flushLatest();
+        };
+
+        document.addEventListener('visibilitychange', flushWhenHidden);
+        window.addEventListener('pagehide', flushLatest);
+        return () => {
+            mounted.current = false;
+            document.removeEventListener('visibilitychange', flushWhenHidden);
+            window.removeEventListener('pagehide', flushLatest);
+            if (preferencesReady.current) preferenceSaveQueue.current!.dispose(preferencesRef.current);
+        };
+    }, []);
 
     const dashboardSubtitle = branding.dashboardSubtitle.replace(/\{username\}/gi, username);
     const serverPreferences = preferences || {};
-    const updatePreference = (serverId: string, next: Partial<ServerPreference>) =>
-        setPreferences((current) => ({
-            ...(current || {}),
-            [serverId]: {
-                favorite: (current || {})[serverId]?.favorite || false,
-                group: (current || {})[serverId]?.group || '',
-                ...next,
-            },
-        }));
+    const updatePreference = (serverId: string, next: Partial<ServerPreference>) => {
+        const current = preferencesRef.current;
+        const currentPreference = current[serverId] || { favorite: false, group: '' };
+        const updatedPreference = { ...currentPreference, ...next };
+        const dirty = dirtyPreferenceFields.current[serverId] || {};
+        let changed = false;
+
+        if (next.favorite !== undefined && next.favorite !== currentPreference.favorite) {
+            dirty.favorite = true;
+            changed = true;
+        }
+        if (next.group !== undefined && next.group !== currentPreference.group) {
+            dirty.group = true;
+            changed = true;
+        }
+        if (!changed) return;
+
+        dirtyPreferenceFields.current[serverId] = dirty;
+        const updated = { ...current, [serverId]: updatedPreference };
+        preferencesRef.current = updated;
+        localStorage.setItem(preferenceStorageKey, JSON.stringify(updated));
+        localStorage.setItem(preferenceUnsyncedKey, '1');
+        setPreferences(updated);
+        setPreferenceSyncStatus('unsynced');
+        if (preferencesReady.current) preferenceSaveQueue.current!.enqueue(updated);
+    };
     const groups = Array.from(
         new Set((servers?.items || []).map((server) => serverPreferences[server.id]?.group?.trim()).filter(Boolean))
     ) as string[];
@@ -328,7 +465,7 @@ export default () => {
                             onClick={() => setActiveGroup(group)}
                             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                                 activeGroup === group
-                                    ? 'border-red-500/50 text-red-300 bg-red-950/40 shadow-sm shadow-red-950'
+                                    ? 'border-primary-500/50 text-primary-300 bg-primary-900/40 shadow-sm shadow-primary-900'
                                     : 'border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-neutral-300 bg-neutral-900/50'
                             }`}
                         >
@@ -336,6 +473,22 @@ export default () => {
                         </button>
                     ))}
                 </div>
+                {preferenceSyncStatus !== 'saved' && (
+                    <PreferenceSyncIndicator data-state={preferenceSyncStatus} role={'status'} aria-live={'polite'}>
+                        <span>
+                            {preferenceSyncStatus === 'loading'
+                                ? 'Loading preferences'
+                                : preferenceSyncStatus === 'saving'
+                                ? 'Saving preferences'
+                                : 'Preferences not synced'}
+                        </span>
+                        {preferenceSyncStatus === 'unsynced' && preferencesReady.current && (
+                            <button type={'button'} onClick={() => preferenceSaveQueue.current!.retry()}>
+                                Retry
+                            </button>
+                        )}
+                    </PreferenceSyncIndicator>
+                )}
             </div>
             {!servers && error ? (
                 <div css={tw`rounded-xl border border-neutral-700 bg-neutral-900/70 px-5 py-10 text-center`}>

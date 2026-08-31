@@ -18,6 +18,16 @@ export default createGlobalStyle`
         --shell-accent-rgb: 201, 79, 89;
         --shell-accent-bright: #f08a90;
         --shell-accent-soft: rgba(201, 79, 89, 0.12);
+        --rock-primary-50: 255 241 242;
+        --rock-primary-100: 255 228 230;
+        --rock-primary-200: 254 205 211;
+        --rock-primary-300: 253 164 175;
+        --rock-primary-400: 240 138 144;
+        --rock-primary-500: 217 96 105;
+        --rock-primary-600: 201 79 89;
+        --rock-primary-700: 165 47 61;
+        --rock-primary-800: 127 29 45;
+        --rock-primary-900: 84 16 25;
         --shell-success: #72d6a5;
         --shell-warning: #e9b96e;
         --shell-danger: #ed7682;
@@ -39,6 +49,16 @@ export default createGlobalStyle`
         --shell-accent-rgb: 91, 140, 255;
         --shell-accent-bright: #9bbcff;
         --shell-accent-soft: rgba(91, 140, 255, 0.13);
+        --rock-primary-50: 241 246 255;
+        --rock-primary-100: 224 235 255;
+        --rock-primary-200: 195 213 255;
+        --rock-primary-300: 155 188 255;
+        --rock-primary-400: 126 165 255;
+        --rock-primary-500: 91 140 255;
+        --rock-primary-600: 67 112 224;
+        --rock-primary-700: 49 82 176;
+        --rock-primary-800: 31 58 128;
+        --rock-primary-900: 18 37 82;
         --shell-shadow: 0 28px 80px rgba(7, 35, 91, 0.34);
         --shell-grid: rgba(129, 170, 240, 0.055);
     }
@@ -241,7 +261,8 @@ export default createGlobalStyle`
         border-right-width: 4px;
         border-left-width: 4px;
         -webkit-border-radius: 9px 4px;
-        -webkit-box-shadow: inset 0 0 0 1px #4f252a, inset 0 0 0 4px #4f252a;
+        -webkit-box-shadow: inset 0 0 0 1px rgba(var(--shell-accent-rgb), 0.5),
+            inset 0 0 0 4px rgba(var(--shell-accent-rgb), 0.5);
     }
 
     ::-webkit-scrollbar-track-piece {
@@ -282,8 +303,13 @@ export default createGlobalStyle`
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .rock-page {
-            animation: none;
+        *,
+        *::before,
+        *::after {
+            scroll-behavior: auto !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
         }
     }
 `;

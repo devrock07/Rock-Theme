@@ -9,10 +9,12 @@ import {
     PointElement,
 } from 'chart.js';
 import { DeepPartial } from 'ts-essentials';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { deepmerge, deepmergeCustom } from 'deepmerge-ts';
 import { theme } from 'twin.macro';
 import { hexToRgba } from '@/lib/helpers';
+import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 
 ChartJS.register(LineElement, PointElement, Filler, LinearScale);
 
@@ -48,7 +50,7 @@ const options: ChartOptions<'line'> = {
             type: 'linear',
             grid: {
                 display: true,
-                color: hexToRgba(theme('colors.primary.400'), 0.11),
+                color: 'rgba(240, 138, 144, 0.11)',
                 drawBorder: false,
             },
             ticks: {
@@ -78,9 +80,38 @@ function getOptions(opts?: DeepPartial<ChartOptions<'line'>> | undefined): Chart
     return deepmerge(options, opts || {});
 }
 
-type ChartDatasetCallback = (value: ChartDataset<'line'>, index: number) => ChartDataset<'line'>;
+export interface ChartPalette {
+    300: string;
+    400: string;
+    500: string;
+    700: string;
+    800: string;
+}
 
-function getEmptyData(label: string, sets = 1, callback?: ChartDatasetCallback | undefined): ChartData<'line'> {
+const crimsonPalette: ChartPalette = {
+    300: '#fda4af',
+    400: '#f08a90',
+    500: '#d96069',
+    700: '#a52f3d',
+    800: '#7f1d2d',
+};
+
+const bluePalette: ChartPalette = {
+    300: '#9bbcff',
+    400: '#7ea5ff',
+    500: '#5b8cff',
+    700: '#3152b0',
+    800: '#1f3a80',
+};
+
+type ChartDatasetCallback = (value: ChartDataset<'line'>, index: number, palette: ChartPalette) => ChartDataset<'line'>;
+
+function getEmptyData(
+    label: string,
+    sets = 1,
+    callback?: ChartDatasetCallback | undefined,
+    palette: ChartPalette = crimsonPalette
+): ChartData<'line'> {
     const next = callback || ((value) => value);
 
     return {
@@ -95,10 +126,11 @@ function getEmptyData(label: string, sets = 1, callback?: ChartDatasetCallback |
                         fill: true,
                         label,
                         data: Array(20).fill(-5),
-                        borderColor: theme('colors.primary.400'),
-                        backgroundColor: hexToRgba(theme('colors.primary.700'), 0.34),
+                        borderColor: palette[400],
+                        backgroundColor: hexToRgba(palette[700], 0.34),
                     },
-                    index
+                    index,
+                    palette
                 )
             ),
     };
@@ -113,10 +145,29 @@ interface UseChartOptions {
 }
 
 function useChart(label: string, opts?: UseChartOptions) {
+    const blue = useStoreState((state: ApplicationStore) => state.settings.data?.branding.themePreset === 'blue');
+    const palette = blue ? bluePalette : crimsonPalette;
     const options = getOptions(
         typeof opts?.options === 'number' ? { scales: { y: { min: 0, suggestedMax: opts.options } } } : opts?.options
     );
-    const [data, setData] = useState(getEmptyData(label, opts?.sets || 1, opts?.callback));
+    const [data, setData] = useState(getEmptyData(label, opts?.sets || 1, opts?.callback, palette));
+
+    useEffect(() => {
+        setData((state) => ({
+            ...state,
+            datasets: state.datasets.map((dataset, index) =>
+                (opts?.callback || ((value) => value))(
+                    {
+                        ...dataset,
+                        borderColor: palette[400],
+                        backgroundColor: hexToRgba(palette[700], 0.34),
+                    },
+                    index,
+                    palette
+                )
+            ),
+        }));
+    }, [blue]);
 
     const push = (items: number | null | (number | null)[]) =>
         setData((state) =>
@@ -157,7 +208,10 @@ function useChart(label: string, opts?: UseChartOptions) {
         });
 
     const renderedOptions = merge(options, {
-        scales: { x: { max: Math.max(19, data.labels?.length ? data.labels.length - 1 : 19) } },
+        scales: {
+            x: { max: Math.max(19, data.labels?.length ? data.labels.length - 1 : 19) },
+            y: { grid: { color: hexToRgba(palette[400], 0.11) } },
+        },
     });
     return { props: { data, options: renderedOptions }, push, clear, replace };
 }

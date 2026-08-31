@@ -36,92 +36,83 @@ export default ({ backup }: Props) => {
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { mutate } = getServerBackups();
 
-    const doDownload = () => {
+    const doDownload = async () => {
         setLoading(true);
         clearFlashes('backups');
-        getBackupDownloadUrl(uuid, backup.uuid)
-            .then((url) => {
-                const link = document.createElement('a');
-                link.href = url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.download = backup.name;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-            })
-            .catch((error) => {
-                console.error(error);
-                clearAndAddHttpError({ key: 'backups', error });
-            })
-            .then(() => setLoading(false));
+        try {
+            const url = await getBackupDownloadUrl(uuid, backup.uuid);
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.download = backup.name;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error(error);
+            clearAndAddHttpError({ key: 'backups', error });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const doDeletion = () => {
+    const doDeletion = async () => {
         setLoading(true);
         clearFlashes('backups');
-        deleteBackup(uuid, backup.uuid)
-            .then(() =>
-                mutate(
-                    (data) => ({
-                        ...data,
-                        items: data.items.filter((b) => b.uuid !== backup.uuid),
-                        backupCount: data.backupCount - 1,
-                    }),
-                    false
-                )
-            )
-            .catch((error) => {
-                console.error(error);
-                clearAndAddHttpError({ key: 'backups', error });
-                setLoading(false);
-                setModal('');
-            });
+        try {
+            await deleteBackup(uuid, backup.uuid);
+            await mutate(
+                (data) => ({
+                    ...data,
+                    items: data.items.filter((b) => b.uuid !== backup.uuid),
+                    backupCount: data.backupCount - 1,
+                }),
+                false
+            );
+            setModal('');
+        } catch (error) {
+            console.error(error);
+            clearAndAddHttpError({ key: 'backups', error });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const doRestorationAction = () => {
+    const doRestorationAction = async () => {
         setLoading(true);
         clearFlashes('backups');
-        restoreServerBackup(uuid, backup.uuid, truncate)
-            .then(() =>
-                setServerFromState((s) => ({
-                    ...s,
-                    status: 'restoring_backup',
-                }))
-            )
-            .catch((error) => {
-                console.error(error);
-                clearAndAddHttpError({ key: 'backups', error });
-            })
-            .then(() => setLoading(false))
-            .then(() => setModal(''));
+        try {
+            await restoreServerBackup(uuid, backup.uuid, truncate);
+            setServerFromState((s) => ({ ...s, status: 'restoring_backup' }));
+            setModal('');
+        } catch (error) {
+            console.error(error);
+            clearAndAddHttpError({ key: 'backups', error });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const onLockToggle = () => {
+    const onLockToggle = async () => {
         if (backup.isLocked && modal !== 'unlock') {
             return setModal('unlock');
         }
 
-        http.post(`/api/client/servers/${uuid}/backups/${backup.uuid}/lock`)
-            .then(() =>
-                mutate(
-                    (data) => ({
-                        ...data,
-                        items: data.items.map((b) =>
-                            b.uuid !== backup.uuid
-                                ? b
-                                : {
-                                      ...b,
-                                      isLocked: !b.isLocked,
-                                  }
-                        ),
-                    }),
-                    false
-                )
-            )
-            .catch((error) => alert(httpErrorToHuman(error)))
-            .then(() => setModal(''));
+        try {
+            await http.post(`/api/client/servers/${uuid}/backups/${backup.uuid}/lock`);
+            await mutate(
+                (data) => ({
+                    ...data,
+                    items: data.items.map((b) => (b.uuid !== backup.uuid ? b : { ...b, isLocked: !b.isLocked })),
+                }),
+                false
+            );
+            setModal('');
+        } catch (error) {
+            alert(httpErrorToHuman(error));
+        }
     };
 
     return (

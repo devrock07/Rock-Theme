@@ -31,7 +31,8 @@ required.
 
 Open **Actions → Upstream Autopilot → Run workflow**. Leave the tag blank to
 use the latest official stable release, or enter a specific stable tag such as
-`v1.15.0` for a controlled retry.
+`v1.15.1` for a controlled retry. Tags older than the currently supported base
+are rejected, so a manual run cannot accidentally downgrade the panel.
 
 ## Safety model
 

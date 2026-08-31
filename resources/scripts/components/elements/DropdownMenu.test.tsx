@@ -69,4 +69,20 @@ describe('DropdownMenu', () => {
             overflowY: 'auto',
         });
     });
+
+    it('stays open while its own constrained menu scrolls', () => {
+        render(
+            <DropdownMenu renderToggle={(onClick) => <button onClick={onClick}>Actions</button>}>
+                <button>Download</button>
+            </DropdownMenu>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Actions' }));
+
+        const action = screen.getByRole('button', { name: 'Download' });
+        fireEvent.scroll(action.parentElement!);
+        expect(action).toBeInTheDocument();
+
+        fireEvent.scroll(window);
+        expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
+    });
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Modal, { RequiredModalProps } from '@/components/elements/Modal';
 import { Field, Form, Formik, FormikHelpers, useFormikContext } from 'formik';
 import { Actions, useStoreActions, useStoreState } from 'easy-peasy';
@@ -47,20 +47,25 @@ const CommandResult = styled(Link)`
     }
 `;
 
-const SearchWatcher = () => {
-    const { values, submitForm } = useFormikContext<Values>();
+const SearchWatcher = ({ onReset }: { onReset: () => void }) => {
+    const { setSubmitting, submitForm, values } = useFormikContext<Values>();
 
     useEffect(() => {
         if (values.term.length >= 3) {
             submitForm();
+        } else {
+            onReset();
+            setSubmitting(false);
         }
-    }, [values.term]);
+    }, [onReset, setSubmitting, submitForm, values.term]);
 
     return null;
 };
 
 export default ({ ...props }: Props) => {
     const ref = useRef<HTMLInputElement>(null);
+    const mounted = useRef(false);
+    const requestGeneration = useRef(0);
     const isAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const [servers, setServers] = useState<Server[]>([]);
     const commands = [
@@ -74,19 +79,67 @@ export default ({ ...props }: Props) => {
         (actions: Actions<ApplicationStore>) => actions.flashes
     );
 
-    const search = debounce(({ term }: Values, { setSubmitting }: FormikHelpers<Values>) => {
-        clearFlashes('search');
+    const performSearch = useCallback(
+        async ({ term }: Values, { setSubmitting }: FormikHelpers<Values>, generation: number) => {
+            if (!mounted.current || generation !== requestGeneration.current) return;
 
-        // if (ref.current) ref.current.focus();
-        getServers({ query: term, type: isAdmin ? 'admin-all' : undefined })
-            .then((servers) => setServers(servers.items.filter((_, index) => index < 5)))
-            .catch((error) => {
+            try {
+                const response = await getServers({ query: term, type: isAdmin ? 'admin-all' : undefined });
+
+                if (!mounted.current || generation !== requestGeneration.current) return;
+                setServers(response.items.filter((_, index) => index < 5));
+            } catch (error) {
+                if (!mounted.current || generation !== requestGeneration.current) return;
+
                 console.error(error);
                 clearAndAddHttpError({ key: 'search', error });
-            })
-            .then(() => setSubmitting(false))
-            .then(() => ref.current?.focus());
-    }, 500);
+            } finally {
+                if (mounted.current && generation === requestGeneration.current) {
+                    setSubmitting(false);
+                    ref.current?.focus();
+                }
+            }
+        },
+        [clearAndAddHttpError, isAdmin]
+    );
+    const performSearchRef = useRef(performSearch);
+    performSearchRef.current = performSearch;
+
+    const debouncedSearch = useMemo(
+        () =>
+            debounce((values: Values, helpers: FormikHelpers<Values>, generation: number) => {
+                void performSearchRef.current(values, helpers, generation);
+            }, 500),
+        []
+    );
+
+    const search = useCallback(
+        (values: Values, helpers: FormikHelpers<Values>) => {
+            const generation = ++requestGeneration.current;
+
+            clearFlashes('search');
+            setServers((current) => (current.length > 0 ? [] : current));
+            debouncedSearch(values, helpers, generation);
+        },
+        [clearFlashes, debouncedSearch]
+    );
+
+    const resetSearch = useCallback(() => {
+        requestGeneration.current += 1;
+        debouncedSearch.clear();
+        clearFlashes('search');
+        setServers((current) => (current.length > 0 ? [] : current));
+    }, [clearFlashes, debouncedSearch]);
+
+    useEffect(() => {
+        mounted.current = true;
+
+        return () => {
+            mounted.current = false;
+            requestGeneration.current += 1;
+            debouncedSearch.clear();
+        };
+    }, [debouncedSearch]);
 
     useEffect(() => {
         if (props.visible) {
@@ -95,7 +148,20 @@ export default ({ ...props }: Props) => {
     }, [props.visible]);
 
     // Formik does not support an innerRef on custom components.
-    const InputWithRef = (props: any) => <Input autoFocus {...props} ref={ref} />;
+    const InputWithRef = useCallback(
+        ({ onChange, ...inputProps }: React.InputHTMLAttributes<HTMLInputElement>) => (
+            <Input
+                autoFocus
+                {...inputProps}
+                ref={ref}
+                onChange={(event) => {
+                    onChange?.(event);
+                    if (event.currentTarget.value.length < 3) resetSearch();
+                }}
+            />
+        ),
+        [resetSearch]
+    );
 
     return (
         <Formik
@@ -111,7 +177,7 @@ export default ({ ...props }: Props) => {
                             label={'Search term'}
                             description={'Search servers, pages, and actions.'}
                         >
-                            <SearchWatcher />
+                            <SearchWatcher onReset={resetSearch} />
                             <InputSpinner visible={isSubmitting}>
                                 <Field as={InputWithRef} name={'term'} />
                             </InputSpinner>

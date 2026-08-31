@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import getFileContents from '@/api/server/files/getFileContents';
 import { httpErrorToHuman } from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
@@ -30,6 +30,9 @@ export default () => {
     const [content, setContent] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [mode, setMode] = useState('text/plain');
+    const [loadAttempt, setLoadAttempt] = useState(0);
+    const loadGeneration = useRef(0);
+    const editorContent = useRef<{ identity: string; read: () => Promise<string> } | null>(null);
 
     const history = useHistory();
     const { hash } = useLocation();
@@ -40,6 +43,7 @@ export default () => {
     const { addError, clearFlashes } = useFlash();
 
     const filePath = hashToPath(hash);
+    const editorIdentity = `${action}:${filePath}`;
     const directory = action === 'new' ? filePath : dirname(filePath);
     const draftKey = action === 'new' ? getNewFileDraftKey(uuid, directory) : undefined;
     const saveDraft = useCallback(
@@ -55,8 +59,6 @@ export default () => {
         [draftKey]
     );
 
-    let fetchFileContent: null | (() => Promise<string>) = null;
-
     useEffect(() => {
         setDirectory(directory);
     }, [directory, setDirectory]);
@@ -68,21 +70,37 @@ export default () => {
     }, [draftKey]);
 
     useEffect(() => {
-        if (action === 'new') return;
+        const generation = ++loadGeneration.current;
 
         setError('');
+        if (action === 'new') {
+            setLoading(false);
+            return;
+        }
+
+        setContent('');
         setLoading(true);
         getFileContents(uuid, filePath)
-            .then(setContent)
+            .then((content) => {
+                if (loadGeneration.current === generation) setContent(content);
+            })
             .catch((error) => {
+                if (loadGeneration.current !== generation) return;
                 console.error(error);
                 setError(httpErrorToHuman(error));
             })
-            .then(() => setLoading(false));
-    }, [action, uuid, filePath]);
+            .finally(() => {
+                if (loadGeneration.current === generation) setLoading(false);
+            });
+
+        return () => {
+            if (loadGeneration.current === generation) loadGeneration.current += 1;
+        };
+    }, [action, uuid, filePath, loadAttempt]);
 
     const save = async (name?: string) => {
-        if (!fetchFileContent) {
+        const currentEditor = editorContent.current;
+        if (!currentEditor || currentEditor.identity !== editorIdentity) {
             return;
         }
 
@@ -92,7 +110,7 @@ export default () => {
         let redirecting = false;
 
         try {
-            const content = await fetchFileContent();
+            const content = await currentEditor.read();
 
             await saveFileContents(uuid, name || filePath, content);
 
@@ -116,13 +134,13 @@ export default () => {
     };
 
     if (error) {
-        return <ServerError message={error} onBack={() => history.goBack()} />;
+        return <ServerError message={error} onRetry={() => setLoadAttempt((attempt) => attempt + 1)} />;
     }
 
     return (
         <PageContentBlock>
             <FlashMessageRender byKey={'files:view'} css={tw`mb-4`} />
-            <ErrorBoundary>
+            <ErrorBoundary resetKey={`${action}:${filePath}`}>
                 <div css={tw`mb-4`}>
                     <FileManagerBreadcrumbs withinFileEditor isNewFile={action !== 'edit'} />
                 </div>
@@ -153,8 +171,8 @@ export default () => {
                     filename={hash.replace(/^#/, '')}
                     onModeChanged={setMode}
                     initialContent={content}
-                    fetchContent={(value) => {
-                        fetchFileContent = value;
+                    fetchContent={(read) => {
+                        editorContent.current = { identity: editorIdentity, read };
                     }}
                     onContentSaved={() => {
                         if (action !== 'edit') {

@@ -161,7 +161,22 @@
         }
 
         function saveAndTestSettings() {
-            saveSettings().done(testSettings);
+            saveSettings().done(function (_data, _status, jqXHR) {
+                if (jqXHR.getResponseHeader('X-Rock-Queue-Restart') === 'failed') {
+                    showQueueRestartWarning();
+                    return;
+                }
+
+                testSettings();
+            });
+        }
+
+        function showQueueRestartWarning() {
+            swal({
+                title: 'Settings saved',
+                text: 'The queue worker could not be restarted automatically. Run "php artisan queue:restart" and check the application logs.',
+                type: 'warning'
+            });
         }
 
         function showErrorDialog(jqXHR, verb) {
@@ -189,7 +204,12 @@
         $(document).ready(function () {
             $('#testButton').on('click', saveAndTestSettings);
             $('#saveButton').on('click', function () {
-                saveSettings().done(function () {
+                saveSettings().done(function (_data, _status, jqXHR) {
+                    if (jqXHR.getResponseHeader('X-Rock-Queue-Restart') === 'failed') {
+                        showQueueRestartWarning();
+                        return;
+                    }
+
                     swal({
                         title: 'Success',
                         text: 'Mail settings have been updated successfully and the queue worker was restarted to apply these changes.',

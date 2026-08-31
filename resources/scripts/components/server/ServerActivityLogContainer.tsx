@@ -9,7 +9,7 @@ import PaginationFooter from '@/components/elements/table/PaginationFooter';
 import { ActivityLogFilters } from '@/api/account/activity';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
-import { styles as btnStyles } from '@/components/elements/button/index';
+import { Button, styles as btnStyles } from '@/components/elements/button/index';
 import { XCircleIcon } from '@heroicons/react/solid';
 import useLocationHash from '@/plugins/useLocationHash';
 
@@ -18,7 +18,7 @@ export default () => {
     const { clearAndAddHttpError } = useFlashKey('server:activity');
     const [filters, setFilters] = useState<ActivityLogFilters>({ page: 1, sorts: { timestamp: -1 } });
 
-    const { data, isValidating, error } = useActivityLogs(filters, {
+    const { data, isValidating, error, revalidate } = useActivityLogs(filters, {
         revalidateOnMount: true,
         revalidateOnFocus: false,
     });
@@ -45,7 +45,14 @@ export default () => {
                     </Link>
                 </div>
             )}
-            {!data && isValidating ? (
+            {!data && error ? (
+                <div className={'rounded bg-gray-800 px-6 py-8 text-center'}>
+                    <p className={'text-sm text-gray-400'}>Activity logs could not be loaded.</p>
+                    <Button.Text className={'mt-3'} disabled={isValidating} onClick={() => revalidate()}>
+                        {isValidating ? 'Retrying…' : 'Retry'}
+                    </Button.Text>
+                </div>
+            ) : !data ? (
                 <Spinner centered />
             ) : !data?.items.length ? (
                 <p className={'text-sm text-center text-gray-400'}>No activity logs available for this server.</p>

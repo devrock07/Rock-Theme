@@ -2,6 +2,9 @@ import { action, Action } from 'easy-peasy';
 import { cleanDirectoryPath } from '@/helpers';
 
 export interface FileUploadData {
+    name: string;
+    serverUuid: string;
+    directory: string;
     loaded: number;
     readonly abort: AbortController;
     readonly total: number;
@@ -17,8 +20,8 @@ export interface ServerFileStore {
     appendSelectedFile: Action<ServerFileStore, string>;
     removeSelectedFile: Action<ServerFileStore, string>;
 
-    pushFileUpload: Action<ServerFileStore, { name: string; data: FileUploadData }>;
-    setUploadProgress: Action<ServerFileStore, { name: string; loaded: number }>;
+    pushFileUpload: Action<ServerFileStore, { id: string; data: FileUploadData }>;
+    setUploadProgress: Action<ServerFileStore, { id: string; loaded: number }>;
     clearFileUploads: Action<ServerFileStore>;
     removeFileUpload: Action<ServerFileStore, string>;
     cancelFileUpload: Action<ServerFileStore, string>;
@@ -52,12 +55,12 @@ const files: ServerFileStore = {
     }),
 
     pushFileUpload: action((state, payload) => {
-        state.uploads[payload.name] = payload.data;
+        state.uploads[payload.id] = payload.data;
     }),
 
-    setUploadProgress: action((state, { name, loaded }) => {
-        if (state.uploads[name]) {
-            state.uploads[name].loaded = loaded;
+    setUploadProgress: action((state, { id, loaded }) => {
+        if (state.uploads[id]) {
+            state.uploads[id].loaded = loaded;
         }
     }),
 

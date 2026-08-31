@@ -1,9 +1,16 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import NotificationCenter from './NotificationCenter';
-import { setRockNotifications } from './rockNotifications';
-import { markServerNotificationRead } from '@/api/account/rockData';
+import {
+    clearRockNotifications,
+    getRockNotifications,
+    hasPendingRockNotificationClear,
+    initializeRockNotificationScope,
+    markRockNotificationRead,
+    setRockNotifications,
+} from './rockNotifications';
+import { clearServerNotifications, getRockAccountData, markServerNotificationRead } from '@/api/account/rockData';
 
 jest.mock('styled-components/macro', () => ({
     __esModule: true,
@@ -25,6 +32,8 @@ jest.mock('@/api/account/rockData', () => ({
 }));
 
 const mockedMarkServerNotificationRead = markServerNotificationRead as jest.Mock;
+const mockedGetRockAccountData = getRockAccountData as jest.Mock;
+const mockedClearServerNotifications = clearServerNotifications as jest.Mock;
 
 const notification = {
     id: 'server-recovered',
@@ -39,11 +48,13 @@ const notification = {
 describe('NotificationCenter', () => {
     beforeEach(() => {
         localStorage.clear();
+        initializeRockNotificationScope('test-user');
         document.body.innerHTML = '<div id="modal-portal"></div>';
         Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 390 });
         Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: 844 });
         Object.defineProperty(window, 'visualViewport', { configurable: true, value: undefined });
         jest.clearAllMocks();
+        mockedGetRockAccountData.mockImplementation(() => new Promise(() => undefined));
         setRockNotifications([notification]);
     });
 
@@ -148,5 +159,85 @@ describe('NotificationCenter', () => {
             maxHeight: '338px',
         });
         expect(visualViewport.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+    });
+
+    it('removes cached remote notifications after an authoritative empty sync', async () => {
+        mockedGetRockAccountData.mockResolvedValue({
+            serverPreferences: {},
+            notificationsAvailable: true,
+            notifications: [],
+        });
+
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => expect(getRockNotifications()).toEqual([]));
+    });
+
+    it('keeps cached notifications when remote storage is unavailable', async () => {
+        mockedGetRockAccountData.mockResolvedValue({
+            serverPreferences: {},
+            notificationsAvailable: false,
+            notifications: [],
+        });
+
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => expect(mockedGetRockAccountData).toHaveBeenCalled());
+        expect(getRockNotifications()).toEqual([notification]);
+    });
+
+    it('retries a locally read remote notification on the next available sync', async () => {
+        const remote = { ...notification, id: '42' };
+        setRockNotifications([remote]);
+        markRockNotificationRead(remote.id);
+        mockedGetRockAccountData.mockResolvedValue({
+            serverPreferences: {},
+            notificationsAvailable: true,
+            notifications: [
+                {
+                    id: remote.id,
+                    type: 'recovered',
+                    title: remote.title,
+                    message: remote.message,
+                    href: remote.href,
+                    createdAt: new Date(remote.createdAt).toISOString(),
+                },
+            ],
+        });
+
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => expect(mockedMarkServerNotificationRead).toHaveBeenCalledWith(remote.id));
+        expect(getRockNotifications()).toEqual([]);
+    });
+
+    it('retries a pending clear operation on the next available sync', async () => {
+        clearRockNotifications();
+        mockedGetRockAccountData.mockResolvedValue({
+            serverPreferences: {},
+            notificationsAvailable: true,
+            notifications: [],
+        });
+
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        await waitFor(() => expect(mockedClearServerNotifications).toHaveBeenCalled());
+        await waitFor(() => expect(hasPendingRockNotificationClear()).toBe(false));
     });
 });

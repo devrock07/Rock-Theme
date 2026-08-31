@@ -13,14 +13,22 @@ class RockPreferencesController extends ClientApiController
     public function index(Request $request): JsonResponse
     {
         $preferences = null;
+        $preferencesAvailable = false;
         $notifications = collect();
+        $notificationsAvailable = false;
 
         try {
             if (Schema::hasTable('rock_user_preferences')) {
                 $preferences = DB::table('rock_user_preferences')
                     ->where('user_id', $request->user()->id)
                     ->value('server_preferences');
+                $preferencesAvailable = true;
             }
+        } catch (\Throwable) {
+            // The client keeps a local copy of preferences while storage is unavailable.
+        }
+
+        try {
             if (Schema::hasTable('rock_notifications')) {
                 $notifications = DB::table('rock_notifications')
                     ->where('user_id', $request->user()->id)
@@ -35,14 +43,17 @@ class RockPreferencesController extends ClientApiController
                         'readAt' => $item->read_at,
                         'createdAt' => $item->created_at,
                     ]);
+                $notificationsAvailable = true;
             }
         } catch (\Throwable) {
-            // Local preferences and notifications remain available while storage is unavailable.
+            // The availability flag prevents a transient failure from looking like an authoritative empty inbox.
         }
 
         return response()->json([
             'serverPreferences' => $preferences ? json_decode($preferences, true) : new \stdClass(),
+            'preferencesAvailable' => $preferencesAvailable,
             'notifications' => $notifications,
+            'notificationsAvailable' => $notificationsAvailable,
         ]);
     }
 
@@ -55,18 +66,22 @@ class RockPreferencesController extends ClientApiController
         ]);
 
         try {
-            if (Schema::hasTable('rock_user_preferences')) {
-                DB::table('rock_user_preferences')->updateOrInsert(
-                    ['user_id' => $request->user()->id],
-                    [
-                        'server_preferences' => json_encode($data['server_preferences']),
-                        'updated_at' => now(),
-                        'created_at' => now(),
-                    ]
-                );
+            if (!Schema::hasTable('rock_user_preferences')) {
+                return $this->preferenceStorageUnavailable();
             }
+
+            DB::table('rock_user_preferences')->upsert(
+                [[
+                    'user_id' => $request->user()->id,
+                    'server_preferences' => json_encode($data['server_preferences']),
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]],
+                ['user_id'],
+                ['server_preferences', 'updated_at']
+            );
         } catch (\Throwable) {
-            // The client keeps a local copy and will retry on a later change.
+            return $this->preferenceStorageUnavailable();
         }
 
         return response()->json(['serverPreferences' => $data['server_preferences']]);
@@ -75,14 +90,16 @@ class RockPreferencesController extends ClientApiController
     public function clearNotifications(Request $request): JsonResponse
     {
         try {
-            if (Schema::hasTable('rock_notifications')) {
-                DB::table('rock_notifications')
-                    ->where('user_id', $request->user()->id)
-                    ->whereNull('read_at')
-                    ->update(['read_at' => now(), 'updated_at' => now()]);
+            if (!Schema::hasTable('rock_notifications')) {
+                return $this->notificationStorageUnavailable();
             }
+
+            DB::table('rock_notifications')
+                ->where('user_id', $request->user()->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now(), 'updated_at' => now()]);
         } catch (\Throwable) {
-            // Clearing the local notification store must not fail with the remote store.
+            return $this->notificationStorageUnavailable();
         }
 
         return response()->json([], 204);
@@ -95,17 +112,33 @@ class RockPreferencesController extends ClientApiController
         }
 
         try {
-            if (Schema::hasTable('rock_notifications')) {
-                DB::table('rock_notifications')
-                    ->where('id', $notification)
-                    ->where('user_id', $request->user()->id)
-                    ->whereNull('read_at')
-                    ->update(['read_at' => now(), 'updated_at' => now()]);
+            if (!Schema::hasTable('rock_notifications')) {
+                return $this->notificationStorageUnavailable();
             }
+
+            DB::table('rock_notifications')
+                ->where('id', $notification)
+                ->where('user_id', $request->user()->id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now(), 'updated_at' => now()]);
         } catch (\Throwable) {
-            // The browser keeps a local read marker and can retry later.
+            return $this->notificationStorageUnavailable();
         }
 
         return response()->json([], 204);
+    }
+
+    private function notificationStorageUnavailable(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Notification storage is temporarily unavailable. Please retry.',
+        ], 503)->header('Retry-After', '5');
+    }
+
+    private function preferenceStorageUnavailable(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Preference storage is temporarily unavailable. Please retry.',
+        ], 503)->header('Retry-After', '5');
     }
 }

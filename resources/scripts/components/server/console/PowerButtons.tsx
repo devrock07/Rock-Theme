@@ -13,6 +13,8 @@ export default ({ className }: PowerButtonProps) => {
     const [open, setOpen] = useState(false);
     const status = ServerContext.useStoreState((state) => state.status.value);
     const instance = ServerContext.useStoreState((state) => state.socket.instance);
+    const connected = ServerContext.useStoreState((state) => state.socket.connected);
+    const canSend = connected && !!instance && status !== null;
 
     const killable = status === 'stopping';
     const onButtonClick = (
@@ -20,21 +22,21 @@ export default ({ className }: PowerButtonProps) => {
         e: React.MouseEvent<HTMLButtonElement, MouseEvent>
     ): void => {
         e.preventDefault();
+        if (!canSend) return;
+
         if (action === 'kill') {
             return setOpen(true);
         }
 
-        if (instance) {
-            setOpen(false);
-            instance.send('set state', action === 'kill-confirmed' ? 'kill' : action);
-        }
+        setOpen(false);
+        instance.send('set state', action === 'kill-confirmed' ? 'kill' : action);
     };
 
     useEffect(() => {
-        if (status === 'offline') {
+        if (!canSend || status === 'offline') {
             setOpen(false);
         }
-    }, [status]);
+    }, [canSend, status]);
 
     return (
         <div className={className}>
@@ -51,21 +53,25 @@ export default ({ className }: PowerButtonProps) => {
             <Can action={'control.start'}>
                 <Button
                     className={'flex-1'}
-                    disabled={status !== 'offline'}
+                    disabled={!canSend || status !== 'offline'}
                     onClick={onButtonClick.bind(this, 'start')}
                 >
                     Start
                 </Button>
             </Can>
             <Can action={'control.restart'}>
-                <Button.Text className={'flex-1'} disabled={!status} onClick={onButtonClick.bind(this, 'restart')}>
+                <Button.Text
+                    className={'flex-1'}
+                    disabled={!canSend || status !== 'running'}
+                    onClick={onButtonClick.bind(this, 'restart')}
+                >
                     Restart
                 </Button.Text>
             </Can>
             <Can action={'control.stop'}>
                 <Button.Danger
                     className={'flex-1'}
-                    disabled={status === 'offline'}
+                    disabled={!canSend || status === 'offline'}
                     onClick={onButtonClick.bind(this, killable ? 'kill' : 'stop')}
                 >
                     {killable ? 'Kill' : 'Stop'}

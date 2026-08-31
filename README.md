@@ -9,7 +9,7 @@ Rock Theme is a responsive crimson interface for
 server, and administration experiences while keeping the underlying panel
 workflow familiar.
 
-Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.0`.
+Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.1`.
 
 Version 2.0 delivers a viewport-safe notification center and a rebuilt crimson
 mobile navigation surface, with matching behavior across phone and desktop layouts.
@@ -40,7 +40,7 @@ mobile navigation surface, with matching behavior across phone and desktop layou
 
 | Requirement       | Supported version |
 | ----------------- | ----------------- |
-| Pterodactyl Panel | `1.15.0`          |
+| Pterodactyl Panel | `1.15.1`          |
 | PHP               | `8.2` or `8.3`    |
 | Node.js           | `22` or newer     |
 | Yarn              | Classic `1.x`     |
@@ -63,6 +63,7 @@ cache operations are running. If a stage fails, its latest output is printed
 immediately and the panel recovery guard still runs.
 
 The script presents a menu with three options:
+
 1. **Install Theme** – Verifies the latest release checksum, saves the original panel, and installs the compiled theme.
 2. **Update Theme** – Creates a safety backup and installs the latest verified release.
 3. **Restore Backup** – Restores the manager-created pre-theme files while preserving the current `.env` and `storage` directory.
@@ -140,7 +141,7 @@ Upstream release automation is documented in
     Wings, node, and game-server configuration.
 -   Review [SECURITY.md](./SECURITY.md) before reporting a vulnerability.
 
-Please reproduce theme issues on Pterodactyl `1.15.0` and include the browser,
+Please reproduce theme issues on Pterodactyl `1.15.1` and include the browser,
 screen size, affected view, and screenshots.
 
 ## Credits and licenses

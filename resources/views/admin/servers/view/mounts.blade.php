@@ -24,7 +24,7 @@
                     <h3 class="box-title">Available Mounts</h3>
                 </div>
 
-                <div class="box-body table-responsible no-padding">
+                <div class="box-body table-responsive no-padding">
                     <table class="table table-hover">
                         <tr>
                             <th>ID</th>

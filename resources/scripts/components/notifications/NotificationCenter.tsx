@@ -6,9 +6,12 @@ import { faBell, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import {
     clearRockNotifications,
+    getReadRockNotificationIds,
     getRockNotifications,
+    hasPendingRockNotificationClear,
     markRockNotificationRead,
-    mergeRockNotifications,
+    reconcileRockNotifications,
+    resolvePendingRockNotificationClear,
     RockNotification,
     setRockNotifications,
 } from './rockNotifications';
@@ -269,16 +272,32 @@ export default () => {
     const center = useRef<HTMLDivElement>(null);
     const trigger = useRef<HTMLButtonElement>(null);
     const panel = useRef<HTMLDivElement>(null);
+    const syncGeneration = useRef(0);
 
     const sync = useCallback(() => {
+        const generation = ++syncGeneration.current;
+
         return getRockAccountData()
             .then((data) => {
+                if (generation !== syncGeneration.current) return;
+                if (!data.notificationsAvailable) return;
+
+                if (hasPendingRockNotificationClear()) {
+                    setRockNotifications(reconcileRockNotifications([]));
+                    return clearServerNotifications().then(resolvePendingRockNotificationClear);
+                }
+
                 const remote: RockNotification[] = data.notifications.map((item) => ({
                     ...item,
                     remote: true,
                     tone: item.type === 'offline' ? 'danger' : item.type === 'recovered' ? 'success' : 'warning',
                 }));
-                setRockNotifications(mergeRockNotifications(remote));
+                const read = new Set(getReadRockNotificationIds());
+                setRockNotifications(reconcileRockNotifications(remote));
+                remote
+                    .filter((item) => read.has(item.id))
+                    .forEach((item) => markServerNotificationRead(item.id).catch(() => undefined));
+                return undefined;
             })
             .catch(() => undefined);
     }, []);
@@ -288,6 +307,7 @@ export default () => {
         window.addEventListener('rock:notification', refresh);
         window.addEventListener('rock:notifications-cleared', refresh);
         return () => {
+            syncGeneration.current += 1;
             window.removeEventListener('rock:notification', refresh);
             window.removeEventListener('rock:notifications-cleared', refresh);
         };
@@ -396,7 +416,9 @@ export default () => {
                                             type={'button'}
                                             onClick={() => {
                                                 clearRockNotifications();
-                                                clearServerNotifications().catch(() => undefined);
+                                                clearServerNotifications()
+                                                    .then(resolvePendingRockNotificationClear)
+                                                    .catch(() => undefined);
                                             }}
                                             aria-label={'Clear notifications'}
                                         >

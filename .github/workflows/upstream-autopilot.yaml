@@ -6,7 +6,7 @@ on:
     workflow_dispatch:
         inputs:
             upstream_tag:
-                description: Optional Pterodactyl tag (for example v1.15.0)
+                description: Optional Pterodactyl tag (for example v1.15.1)
                 required: false
                 type: string
 
@@ -49,6 +49,10 @@ jobs:
                   fi
                   if ! [[ "$current" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ && "$latest" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                       echo "Invalid upstream version: current=$current latest=$latest" >&2
+                      exit 1
+                  fi
+                  if [ "$current" != "$latest" ] && [ "$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -n 1)" != "$latest" ]; then
+                      echo "Refusing to downgrade the upstream base from $current to $latest." >&2
                       exit 1
                   fi
 
@@ -102,6 +106,7 @@ jobs:
                   branch="automation/pterodactyl-${LATEST_TAG#v}"
                   base_ref="refs/rock-upstream/base"
                   latest_ref="refs/rock-upstream/latest"
+                  protected_paths=(README.md .github/workflows/release.yaml)
 
                   git config user.name "rock-theme-autopilot[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -111,14 +116,37 @@ jobs:
 
                   base_commit="$(git rev-parse "${base_ref}^{commit}")"
                   latest_commit="$(git rev-parse "${latest_ref}^{commit}")"
-                  if ! merge_output="$(git merge-tree --write-tree --merge-base="$base_commit" HEAD "$latest_commit" 2>&1)"; then
+                  theme_commit="$(git rev-parse HEAD)"
+                  merge_status=0
+                  merge_output="$(git merge-tree --write-tree --name-only --merge-base="$base_commit" "$theme_commit" "$latest_commit" 2>&1)" || merge_status=$?
+                  merged_tree="$(printf '%s\n' "$merge_output" | head -n 1)"
+
+                  if ! [[ "$merged_tree" =~ ^[0-9a-f]+$ ]]; then
                       echo "$merge_output" >&2
-                      echo "The upstream release has genuine merge conflicts with Rock Theme." >&2
+                      echo "The upstream merge did not produce a valid tree." >&2
                       exit 1
                   fi
-                  merged_tree="$(printf '%s\n' "$merge_output" | head -n 1)"
+
+                  if [ "$merge_status" -ne 0 ]; then
+                      conflicts="$(printf '%s\n' "$merge_output" | sed -n '2,/^$/p' | sed '/^$/d')"
+                      unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|\.github/workflows/release\.yaml)$' || true)"
+                      if [ -z "$conflicts" ] || [ -n "$unexpected" ]; then
+                          echo "$merge_output" >&2
+                          echo "The upstream release has genuine application conflicts with Rock Theme." >&2
+                          exit 1
+                      fi
+
+                      echo "Keeping fork-owned files while applying upstream application changes:"
+                      printf '  - %s\n' $conflicts
+                  fi
+
                   git checkout -B "$branch"
                   git read-tree --reset -u "$merged_tree"
+                  git restore --source="$theme_commit" --staged --worktree -- "${protected_paths[@]}"
+                  if git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- .; then
+                      echo "Merge markers remain after resolving protected fork files." >&2
+                      exit 1
+                  fi
                   node scripts/update-upstream-metadata.js "$LATEST_TAG" "$THEME_TAG"
                   git add -A
                   git commit -m "chore: update Pterodactyl to ${LATEST_TAG}"
@@ -244,6 +272,7 @@ jobs:
         permissions:
             actions: write
             contents: write
+            issues: write
         env:
             GH_TOKEN: ${{ github.token }}
             CANDIDATE_BRANCH: ${{ needs.prepare.outputs.branch }}
@@ -296,6 +325,10 @@ jobs:
               run: |
                   gh workflow run docker.yaml --ref "$THEME_TAG"
                   git push origin --delete "$CANDIDATE_BRANCH" || true
+                  title="Autopilot blocked updating to Pterodactyl ${LATEST_TAG}"
+                  gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[].number' | while read -r issue; do
+                      [ -n "$issue" ] && gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Resolved by the verified ${THEME_TAG} release."
+                  done
                   {
                       echo "### Published"
                       echo "- Pterodactyl: \`$LATEST_TAG\`"

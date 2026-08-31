@@ -10,9 +10,17 @@ export interface RockNotification {
 
 const STORAGE_KEY = 'rock:notifications';
 const READ_STORAGE_KEY = 'rock:notifications:read';
+const CLEAR_PENDING_STORAGE_KEY = 'rock:notifications:clear-pending';
 const MAX_NOTIFICATIONS = 30;
 const MAX_READ_MARKERS = 120;
 const tones: RockNotification['tone'][] = ['info', 'warning', 'danger', 'success'];
+let storageScope = 'anonymous';
+
+const scopedStorageKey = (key: string) => `${key}:${storageScope}`;
+
+export const initializeRockNotificationScope = (scope?: string) => {
+    storageScope = encodeURIComponent(scope?.trim() || 'anonymous');
+};
 
 const normalizeNotification = (value: unknown): RockNotification | null => {
     if (!value || typeof value !== 'object') return null;
@@ -33,9 +41,9 @@ const normalizeNotification = (value: unknown): RockNotification | null => {
     return normalized;
 };
 
-const getReadNotificationIds = (): string[] => {
+export const getReadRockNotificationIds = (): string[] => {
     try {
-        const stored = JSON.parse(localStorage.getItem(READ_STORAGE_KEY) || '[]');
+        const stored = JSON.parse(localStorage.getItem(scopedStorageKey(READ_STORAGE_KEY)) || '[]');
         return Array.isArray(stored) ? stored.map(String).slice(0, MAX_READ_MARKERS) : [];
     } catch (_) {
         return [];
@@ -43,7 +51,10 @@ const getReadNotificationIds = (): string[] => {
 };
 
 const rememberReadNotificationIds = (ids: string[]) => {
-    localStorage.setItem(READ_STORAGE_KEY, JSON.stringify(Array.from(new Set(ids)).slice(0, MAX_READ_MARKERS)));
+    localStorage.setItem(
+        scopedStorageKey(READ_STORAGE_KEY),
+        JSON.stringify(Array.from(new Set(ids)).slice(0, MAX_READ_MARKERS))
+    );
 };
 
 const uniqueNotifications = (notifications: RockNotification[]) => {
@@ -64,10 +75,10 @@ const timestamp = (value: RockNotification['createdAt']) => {
 
 export const getRockNotifications = (): RockNotification[] => {
     try {
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const stored = JSON.parse(localStorage.getItem(scopedStorageKey(STORAGE_KEY)) || '[]');
         if (!Array.isArray(stored)) return [];
 
-        const read = new Set(getReadNotificationIds());
+        const read = new Set(getReadRockNotificationIds());
 
         return stored
             .map(normalizeNotification)
@@ -78,12 +89,18 @@ export const getRockNotifications = (): RockNotification[] => {
 };
 
 export const mergeRockNotifications = (remote: RockNotification[], local = getRockNotifications()) => {
-    const read = new Set(getReadNotificationIds());
+    const read = new Set(getReadRockNotificationIds());
 
     return uniqueNotifications([...remote, ...local].filter((item) => !read.has(item.id)))
         .sort((left, right) => timestamp(right.createdAt) - timestamp(left.createdAt))
         .slice(0, MAX_NOTIFICATIONS);
 };
+
+export const reconcileRockNotifications = (remote: RockNotification[], local = getRockNotifications()) =>
+    mergeRockNotifications(
+        remote,
+        local.filter((item) => !item.remote)
+    );
 
 export const pushRockNotification = (notification: Omit<RockNotification, 'id' | 'createdAt'>) => {
     const next: RockNotification = {
@@ -91,18 +108,29 @@ export const pushRockNotification = (notification: Omit<RockNotification, 'id' |
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         createdAt: Date.now(),
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mergeRockNotifications([next])));
+    localStorage.setItem(scopedStorageKey(STORAGE_KEY), JSON.stringify(mergeRockNotifications([next])));
     window.dispatchEvent(new CustomEvent('rock:notification', { detail: next }));
 };
 
 export const clearRockNotifications = () => {
-    rememberReadNotificationIds([...getRockNotifications().map((item) => item.id), ...getReadNotificationIds()]);
-    localStorage.setItem(STORAGE_KEY, '[]');
+    rememberReadNotificationIds([...getRockNotifications().map((item) => item.id), ...getReadRockNotificationIds()]);
+    localStorage.setItem(scopedStorageKey(STORAGE_KEY), '[]');
+    localStorage.setItem(scopedStorageKey(CLEAR_PENDING_STORAGE_KEY), '1');
     window.dispatchEvent(new CustomEvent('rock:notifications-cleared'));
 };
 
+export const hasPendingRockNotificationClear = () =>
+    localStorage.getItem(scopedStorageKey(CLEAR_PENDING_STORAGE_KEY)) === '1';
+
+export const resolvePendingRockNotificationClear = () => {
+    localStorage.removeItem(scopedStorageKey(CLEAR_PENDING_STORAGE_KEY));
+};
+
 export const setRockNotifications = (notifications: RockNotification[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(uniqueNotifications(notifications).slice(0, MAX_NOTIFICATIONS)));
+    localStorage.setItem(
+        scopedStorageKey(STORAGE_KEY),
+        JSON.stringify(uniqueNotifications(notifications).slice(0, MAX_NOTIFICATIONS))
+    );
     window.dispatchEvent(new CustomEvent('rock:notification'));
 };
 
@@ -111,7 +139,10 @@ export const removeRockNotification = (id: string) => {
 };
 
 export const markRockNotificationRead = (id: string) => {
-    rememberReadNotificationIds([id, ...getReadNotificationIds()]);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getRockNotifications().filter((item) => item.id !== id)));
+    rememberReadNotificationIds([id, ...getReadRockNotificationIds()]);
+    localStorage.setItem(
+        scopedStorageKey(STORAGE_KEY),
+        JSON.stringify(getRockNotifications().filter((item) => item.id !== id))
+    );
     window.dispatchEvent(new CustomEvent('rock:notification'));
 };
