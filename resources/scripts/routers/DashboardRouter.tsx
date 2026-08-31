@@ -14,6 +14,7 @@ import { faLayerGroup, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import AnnouncementBanner from '@/components/elements/AnnouncementBanner';
 
 export default () => {
     const location = useLocation();
@@ -22,6 +23,9 @@ export default () => {
     return (
         <>
             <NavigationBar />
+            <div className={'content-container'}>
+                <AnnouncementBanner />
+            </div>
             <Sidebar>
                 <div className={'sidebar-section'}>Workspace</div>
                 <NavLink to={'/'} exact>

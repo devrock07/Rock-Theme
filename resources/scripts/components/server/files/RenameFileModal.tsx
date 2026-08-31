@@ -23,7 +23,7 @@ const RenameFileModal = ({ files, useMoveTerminology, ...props }: OwnProps) => {
     const directory = ServerContext.useStoreState((state) => state.files.directory);
     const setSelectedFiles = ServerContext.useStoreActions((actions) => actions.files.setSelectedFiles);
 
-    const submit = ({ name }: FormikValues, { setSubmitting }: FormikHelpers<FormikValues>) => {
+    const submit = async ({ name }: FormikValues, { setSubmitting }: FormikHelpers<FormikValues>) => {
         clearFlashes('files');
 
         const len = name.split('/').length;
@@ -44,15 +44,16 @@ const RenameFileModal = ({ files, useMoveTerminology, ...props }: OwnProps) => {
             data = files.map((f) => ({ from: f, to: name }));
         }
 
-        renameFiles(uuid, directory, data)
-            .then((): Promise<any> => (files.length > 0 ? mutate() : Promise.resolve()))
-            .then(() => setSelectedFiles([]))
-            .catch((error) => {
-                mutate();
-                setSubmitting(false);
-                clearAndAddHttpError({ key: 'files', error });
-            })
-            .then(() => props.onDismissed());
+        try {
+            await renameFiles(uuid, directory, data);
+            setSelectedFiles([]);
+            props.onDismissed();
+            if (files.length > 0) void mutate();
+        } catch (error) {
+            void mutate();
+            setSubmitting(false);
+            clearAndAddHttpError({ key: 'files', error });
+        }
     };
 
     return (

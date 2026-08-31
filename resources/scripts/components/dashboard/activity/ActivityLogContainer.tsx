@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import PaginationFooter from '@/components/elements/table/PaginationFooter';
 import { DesktopComputerIcon, XCircleIcon } from '@heroicons/react/solid';
 import Spinner from '@/components/elements/Spinner';
-import { styles as btnStyles } from '@/components/elements/button/index';
+import { Button, styles as btnStyles } from '@/components/elements/button/index';
 import classNames from 'classnames';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
@@ -18,7 +18,7 @@ export default () => {
     const { hash } = useLocationHash();
     const { clearAndAddHttpError } = useFlashKey('account');
     const [filters, setFilters] = useState<ActivityLogFilters>({ page: 1, sorts: { timestamp: -1 } });
-    const { data, isValidating, error } = useActivityLogs(filters, {
+    const { data, isValidating, error, revalidate } = useActivityLogs(filters, {
         revalidateOnMount: true,
         revalidateOnFocus: false,
     });
@@ -45,11 +45,20 @@ export default () => {
                     </Link>
                 </div>
             )}
-            {!data && isValidating ? (
+            {!data && error ? (
+                <div className={'rounded bg-gray-800 px-6 py-8 text-center'}>
+                    <p className={'text-sm text-gray-400'}>Account activity could not be loaded.</p>
+                    <Button.Text className={'mt-3'} disabled={isValidating} onClick={() => revalidate()}>
+                        {isValidating ? 'Retrying…' : 'Retry'}
+                    </Button.Text>
+                </div>
+            ) : !data ? (
                 <Spinner centered />
+            ) : !data.items.length ? (
+                <p className={'text-sm text-center text-gray-400'}>No account activity is available.</p>
             ) : (
                 <FluidGlass className={'activity-feed'}>
-                    {data?.items.map((activity) => (
+                    {data.items.map((activity) => (
                         <ActivityLogEntry key={activity.id} activity={activity}>
                             {typeof activity.properties.useragent === 'string' && (
                                 <Tooltip content={activity.properties.useragent} placement={'top'}>

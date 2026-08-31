@@ -6,6 +6,7 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
+import useReducedMotion from '@/plugins/useReducedMotion';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
     title?: string;
@@ -44,7 +45,7 @@ const Container = styled.div`
         padding: 2.25rem;
         overflow: hidden;
         border-right: 1px solid var(--shell-border);
-        background: radial-gradient(circle at 70% 100%, rgba(153, 27, 39, 0.26), transparent 15rem),
+        background: radial-gradient(circle at 70% 100%, rgba(var(--shell-accent-rgb), 0.24), transparent 15rem),
             radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.065) 1px, transparent 0), #090909;
         background-size: auto, 24px 24px, auto;
     }
@@ -126,9 +127,9 @@ const Container = styled.div`
     .auth-form button[type='submit'] {
         border: 0;
         border-radius: 8px;
-        background: linear-gradient(135deg, #d35a63, #ae3441);
+        background: linear-gradient(135deg, var(--shell-accent-bright), var(--shell-accent));
         color: white;
-        box-shadow: 0 12px 30px rgba(119, 24, 35, 0.24);
+        box-shadow: 0 12px 30px rgba(var(--shell-accent-rgb), 0.24);
         text-transform: none;
         font-weight: 650;
         letter-spacing: 0;
@@ -138,7 +139,7 @@ const Container = styled.div`
     .auth-form button[type='submit']:hover,
     .auth-form button[type='submit']:focus {
         filter: brightness(1.08);
-        box-shadow: 0 14px 34px rgba(119, 24, 35, 0.32);
+        box-shadow: 0 14px 34px rgba(var(--shell-accent-rgb), 0.32);
         transform: translateY(-1px);
     }
 
@@ -162,6 +163,7 @@ const Container = styled.div`
 export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
+    const reducedMotion = useReducedMotion();
     const loginMedia = branding.loginMedia.trim();
     const isVideo = /\.(mp4|webm|ogg|ogv|mov)(?:[?#].*)?$/i.test(loginMedia);
 
@@ -172,7 +174,8 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
                 <div className={'auth-shell'}>
                     <div className={'auth-brand'}>
                         {!!loginMedia &&
-                            (isVideo ? (
+                            (!isVideo || !reducedMotion) &&
+                            (isVideo && !reducedMotion ? (
                                 <video className={'auth-media'} src={loginMedia} autoPlay muted loop playsInline />
                             ) : (
                                 <span

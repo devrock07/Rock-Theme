@@ -19,6 +19,7 @@ import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
 import NookConfig from '@/config';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
+import useReducedMotion from '@/plugins/useReducedMotion';
 
 import 'xterm/css/xterm.css';
 import styles from './style.module.css';
@@ -72,10 +73,12 @@ export default () => {
     const [history, setHistory] = usePersistedState<string[]>(`${serverId}:command_history`, []);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
+    const reducedMotion = useReducedMotion();
     const consoleBackground = branding.consoleBackground.trim();
     const consoleBackgroundOpacity = Math.min(45, Math.max(5, branding.consoleBackgroundOpacity || 18)) / 100;
     const consoleFontSize = Math.min(18, Math.max(10, branding.consoleFontSize || 12));
     const isVideoBackground = /\.(mp4|webm|ogg|ogv|mov)(?:[?#].*)?$/i.test(consoleBackground);
+    const showConsoleBackground = !!consoleBackground && (!isVideoBackground || !reducedMotion);
     // SearchBarAddon has hardcoded z-index: 999 :(
     const zIndex = `
     .xterm-search-bar__addon {
@@ -214,12 +217,12 @@ export default () => {
     return (
         <div
             className={classNames(styles.terminal, 'relative', {
-                [styles.has_media]: !!consoleBackground,
+                [styles.has_media]: showConsoleBackground,
                 [styles.scanlines]: branding.consoleScanlines,
             })}
             style={{ '--console-media-opacity': consoleBackgroundOpacity } as React.CSSProperties}
         >
-            {!!consoleBackground && (
+            {showConsoleBackground && (
                 <div className={styles.console_media} aria-hidden={'true'}>
                     {isVideoBackground ? (
                         <video

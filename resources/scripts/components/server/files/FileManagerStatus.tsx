@@ -46,16 +46,16 @@ const FileUploadList = () => {
 
     return (
         <div className={'space-y-2 mt-6'}>
-            {uploads.map(([name, file]) => (
-                <div key={name} className={'flex items-center space-x-3 bg-gray-700 p-3 rounded'}>
+            {uploads.map(([id, file]) => (
+                <div key={id} className={'flex items-center space-x-3 bg-gray-700 p-3 rounded'}>
                     <Tooltip content={`${Math.floor(normaliseProgress(file.loaded, file.total))}%`} placement={'left'}>
                         <div className={'flex-shrink-0'}>
                             <Spinner progress={normaliseProgress(file.loaded, file.total)} className={'w-6 h-6'} />
                         </div>
                     </Tooltip>
-                    <Code className={'flex-1 truncate'}>{name}</Code>
+                    <Code className={'flex-1 truncate'}>{file.name}</Code>
                     <button
-                        onClick={cancelFileUpload.bind(this, name)}
+                        onClick={cancelFileUpload.bind(this, id)}
                         className={'text-gray-500 hover:text-gray-200 transition-colors duration-75'}
                     >
                         <XIcon className={'w-5 h-5'} />

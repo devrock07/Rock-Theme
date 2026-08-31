@@ -147,10 +147,19 @@ body {
     text-align: left;
 }
 
+.skin-blue .main-header .logo > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .logo-mark {
     display: inline-flex;
     width: 28px;
+    max-width: 28px;
     height: 28px;
+    flex: 0 0 28px;
     align-items: center;
     justify-content: center;
     color: var(--admin-accent-bright);
@@ -234,6 +243,10 @@ body {
 
 .sidebar-mini.sidebar-collapse .main-header .logo {
     width: 50px;
+    padding-right: 11px;
+    padding-left: 11px;
+    justify-content: center;
+    gap: 0;
 }
 
 .sidebar-mini.sidebar-collapse .logo > span:not(.logo-mark) {

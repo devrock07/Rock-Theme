@@ -17,6 +17,7 @@ import {
     faSignal,
     faTools,
 } from '@fortawesome/free-solid-svg-icons';
+import AnnouncementBanner from '@/components/elements/AnnouncementBanner';
 
 interface NodeItem {
     id: number;
@@ -40,9 +41,17 @@ interface StatusResponse {
     checkedAt: string;
 }
 
+const StatusRoute = styled.div`
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-direction: column;
+`;
+
 const Page = styled.main`
     display: grid;
-    min-height: 100vh;
+    min-height: 0;
+    flex: 1;
     place-items: center;
     padding: 2.5rem 1rem;
     background: radial-gradient(circle at 18% 0%, rgba(var(--shell-accent-rgb), 0.16), transparent 35%),
@@ -210,6 +219,13 @@ const Page = styled.main`
     }
 `;
 
+const StatusLayout: React.FC = ({ children }) => (
+    <StatusRoute>
+        <AnnouncementBanner />
+        <Page>{children}</Page>
+    </StatusRoute>
+);
+
 export default () => {
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
@@ -249,15 +265,15 @@ export default () => {
 
     if (!branding.statusEnabled) {
         return (
-            <Page>
+            <StatusLayout>
                 <section className={'status-shell text-center'}>
                     <h1 className={'text-3xl font-semibold mb-3 text-neutral-100'}>Status Unavailable</h1>
                     <p className={'text-neutral-400 mb-6'}>Public status reporting is currently disabled.</p>
-                    <Link to={'/'} className={'text-red-400 hover:text-red-300 no-underline transition-colors'}>
+                    <Link to={'/'} className={'text-primary-400 hover:text-primary-300 no-underline transition-colors'}>
                         Return to Control Panel
                     </Link>
                 </section>
-            </Page>
+            </StatusLayout>
         );
     }
 
@@ -265,7 +281,7 @@ export default () => {
     const showNodeCards = data?.settings?.showNodes !== false && nodeItems.length > 0;
 
     return (
-        <Page>
+        <StatusLayout>
             <section className={'status-shell'}>
                 <div className={`status-pill ${pillClass}`} aria-live={'polite'}>
                     <FontAwesomeIcon icon={statusIcon} /> {statusLabel}
@@ -290,7 +306,7 @@ export default () => {
 
                 <div className={'status-grid'}>
                     <div className={'status-card'}>
-                        <FontAwesomeIcon icon={faServer} className={'text-red-400 text-lg mb-3'} />
+                        <FontAwesomeIcon icon={faServer} className={'text-primary-400 text-lg mb-3'} />
                         <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>Control Panel</p>
                         <div className={'mt-2'}>
                             <span
@@ -303,7 +319,7 @@ export default () => {
                     </div>
 
                     <div className={'status-card'}>
-                        <FontAwesomeIcon icon={faSignal} className={'text-red-400 text-lg mb-3'} />
+                        <FontAwesomeIcon icon={faSignal} className={'text-primary-400 text-lg mb-3'} />
                         <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>Active Nodes</p>
                         <div className={'mt-2'}>
                             <span className={`badge ${data?.nodes?.unavailable ? 'badge-red' : 'badge-green'}`}>
@@ -316,7 +332,7 @@ export default () => {
                     </div>
 
                     <div className={'status-card'}>
-                        <FontAwesomeIcon icon={faShieldAlt} className={'text-red-400 text-lg mb-3'} />
+                        <FontAwesomeIcon icon={faShieldAlt} className={'text-primary-400 text-lg mb-3'} />
                         <p className={'text-xs font-medium uppercase tracking-wider text-neutral-400'}>
                             Node Maintenance
                         </p>
@@ -382,7 +398,7 @@ export default () => {
                     <Link
                         to={'/'}
                         className={
-                            'inline-flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-300 no-underline transition-colors'
+                            'inline-flex items-center gap-2 text-sm font-medium text-primary-400 hover:text-primary-300 no-underline transition-colors'
                         }
                     >
                         Open Control Panel <FontAwesomeIcon icon={faArrowRight} />
@@ -394,6 +410,6 @@ export default () => {
                     )}
                 </div>
             </section>
-        </Page>
+        </StatusLayout>
     );
 };

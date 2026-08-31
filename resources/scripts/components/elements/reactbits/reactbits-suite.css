@@ -4,9 +4,9 @@
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    background: radial-gradient(ellipse at 18% 30%, rgba(104, 15, 27, 0.22), transparent 42%),
-        radial-gradient(ellipse at 82% 12%, rgba(205, 72, 75, 0.2), transparent 38%),
-        radial-gradient(ellipse at 58% 88%, rgba(116, 20, 31, 0.18), transparent 45%);
+    background: radial-gradient(ellipse at 18% 30%, rgba(var(--shell-accent-rgb), 0.18), transparent 42%),
+        radial-gradient(ellipse at 82% 12%, rgba(var(--shell-accent-rgb), 0.2), transparent 38%),
+        radial-gradient(ellipse at 58% 88%, rgba(var(--shell-accent-rgb), 0.14), transparent 45%);
     opacity: 0.54;
 }
 
@@ -61,7 +61,12 @@
     z-index: 0;
     content: '';
     pointer-events: none;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.028), transparent 38%, rgba(115, 24, 35, 0.025));
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.028),
+        transparent 38%,
+        rgba(var(--shell-accent-rgb), 0.025)
+    );
 }
 
 .magic-bento-card:hover::before,
@@ -107,7 +112,7 @@
         145deg,
         rgba(255, 255, 255, 0.055),
         rgba(255, 255, 255, 0.012) 48%,
-        rgba(76, 16, 24, 0.08)
+        rgba(var(--shell-accent-rgb), 0.08)
     );
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
     backdrop-filter: blur(20px) saturate(1.22);
@@ -115,7 +120,12 @@
 }
 
 .rb-fluid-glass-strong {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(10, 9, 10, 0.72) 52%, rgba(80, 17, 25, 0.13));
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.075),
+        rgba(10, 9, 10, 0.72) 52%,
+        rgba(var(--shell-accent-rgb), 0.13)
+    );
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 28px 80px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(30px) saturate(1.35);
     -webkit-backdrop-filter: blur(30px) saturate(1.35);
@@ -129,7 +139,7 @@
     pointer-events: none;
     background: radial-gradient(
         240px circle at var(--glass-x) var(--glass-y),
-        rgba(255, 224, 224, 0.1),
+        rgba(var(--shell-accent-rgb), 0.1),
         rgba(var(--shell-accent-rgb), 0.045) 36%,
         transparent 68%
     );
@@ -365,4 +375,15 @@
     .rb-fluid-caustic {
         display: none;
     }
+}
+
+:root[data-rock-motion='reduced'] .magic-bento-card::before,
+:root[data-rock-motion='reduced'] .rb-fluid-glass::before,
+:root[data-rock-motion='reduced'] .rb-fluid-caustic {
+    display: none;
+}
+
+:root[data-rock-motion='reduced'] .magic-bento-card,
+:root[data-rock-motion='reduced'] .rb-profile-shell {
+    transform: none !important;
 }

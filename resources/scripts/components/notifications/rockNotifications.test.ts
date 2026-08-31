@@ -1,17 +1,22 @@
 import {
     getRockNotifications,
+    initializeRockNotificationScope,
     markRockNotificationRead,
     mergeRockNotifications,
     pushRockNotification,
+    reconcileRockNotifications,
     setRockNotifications,
 } from './rockNotifications';
 
 describe('rock notifications', () => {
-    beforeEach(() => localStorage.clear());
+    beforeEach(() => {
+        localStorage.clear();
+        initializeRockNotificationScope('test-user');
+    });
 
     it('ignores malformed stored data and unsafe links', () => {
         localStorage.setItem(
-            'rock:notifications',
+            'rock:notifications:test-user',
             JSON.stringify([
                 {
                     id: 'safe',
@@ -90,5 +95,46 @@ describe('rock notifications', () => {
 
         expect(getRockNotifications()).toEqual([]);
         expect(mergeRockNotifications([remote])).toEqual([]);
+    });
+
+    it('replaces the authoritative remote subset while retaining local-only alerts', () => {
+        const staleRemote = {
+            id: 'stale',
+            title: 'Old remote alert',
+            message: 'Already read elsewhere.',
+            createdAt: 100,
+            tone: 'warning' as const,
+            remote: true,
+        };
+        const local = {
+            id: 'local',
+            title: 'Local resource alert',
+            message: 'CPU usage is high.',
+            createdAt: 200,
+            tone: 'warning' as const,
+        };
+
+        expect(reconcileRockNotifications([], [staleRemote, local])).toEqual([local]);
+    });
+
+    it('keeps notifications and read markers isolated between accounts', () => {
+        const alert = {
+            id: 'account-a-alert',
+            title: 'Private alert',
+            message: 'Only account A should see this.',
+            createdAt: 100,
+            tone: 'info' as const,
+        };
+
+        initializeRockNotificationScope('account-a');
+        setRockNotifications([alert]);
+        markRockNotificationRead(alert.id);
+
+        initializeRockNotificationScope('account-b');
+        expect(getRockNotifications()).toEqual([]);
+        expect(mergeRockNotifications([alert])).toEqual([alert]);
+
+        initializeRockNotificationScope('account-a');
+        expect(mergeRockNotifications([alert])).toEqual([]);
     });
 });

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import Avatar from '@/components/Avatar';
 import FluidGlass from '@/components/elements/reactbits/FluidGlass';
+import useReducedMotion from '@/plugins/useReducedMotion';
 import './reactbits-suite.css';
 
 type Props = {
@@ -15,9 +16,10 @@ type Props = {
 
 export default ({ name, title, handle, status, detail, actionText = 'API keys', onActionClick }: Props) => {
     const ref = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
 
     const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
-        if (!ref.current || window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+        if (reducedMotion || !ref.current || window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
         const bounds = ref.current.getBoundingClientRect();
         const x = (event.clientX - bounds.left) / bounds.width - 0.5;
         const y = (event.clientY - bounds.top) / bounds.height - 0.5;

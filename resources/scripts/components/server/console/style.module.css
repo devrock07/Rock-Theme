@@ -107,7 +107,7 @@
         position: absolute;
         inset: 0;
         content: '';
-        background: radial-gradient(circle at 78% 42%, rgba(112, 22, 34, 0.14), transparent 44%),
+        background: radial-gradient(circle at 78% 42%, rgba(var(--shell-accent-rgb), 0.14), transparent 44%),
             linear-gradient(90deg, rgba(4, 4, 5, 0.58), rgba(6, 5, 7, 0.34), rgba(4, 4, 5, 0.5));
         box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.52);
     }
@@ -155,7 +155,7 @@
     border-radius: 15px;
     background: radial-gradient(circle at 76% -18%, rgba(var(--chart-accent), 0.14), transparent 42%),
         linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(14, 12, 14, 0.91) 42%, rgba(8, 8, 9, 0.96)) !important;
-    box-shadow: 0 30px 68px rgba(0, 0, 0, 0.4), 0 8px 0 rgba(43, 12, 18, 0.96), 0 10px 0 rgba(var(--chart-accent), 0.12),
+    box-shadow: 0 30px 68px rgba(0, 0, 0, 0.4), 0 8px 0 rgba(8, 8, 10, 0.96), 0 10px 0 rgba(var(--chart-accent), 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.075), inset 0 -1px 0 rgba(var(--chart-accent), 0.08);
     backdrop-filter: blur(22px) saturate(1.3);
     -webkit-backdrop-filter: blur(22px) saturate(1.3);
@@ -167,9 +167,8 @@
 .chart_container:hover,
 .chart_container:focus-within {
     border-color: rgba(var(--chart-accent), 0.28);
-    box-shadow: 0 38px 88px rgba(0, 0, 0, 0.48), 0 9px 0 rgba(51, 13, 20, 0.98),
-        0 12px 0 rgba(var(--chart-accent), 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        inset 0 -1px 0 rgba(var(--chart-accent), 0.1);
+    box-shadow: 0 38px 88px rgba(0, 0, 0, 0.48), 0 9px 0 rgba(8, 8, 10, 0.98), 0 12px 0 rgba(var(--chart-accent), 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(var(--chart-accent), 0.1);
 }
 
 .chart_tone_rose {
@@ -181,7 +180,7 @@
 }
 
 .chart_tone_ember {
-    --chart-accent: 217, 96, 105;
+    --chart-accent: var(--shell-accent-rgb);
 }
 
 .chart_surface {
@@ -293,9 +292,9 @@
     height: 12px;
     pointer-events: none;
     border-top: 1px solid rgba(var(--chart-accent), 0.24);
-    background: linear-gradient(180deg, rgba(var(--chart-accent), 0.17), rgba(28, 9, 14, 0.92));
+    background: linear-gradient(180deg, rgba(var(--chart-accent), 0.17), rgba(8, 8, 10, 0.92));
     clip-path: polygon(0 0, 100% 0, 97.5% 100%, 2.5% 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 220, 223, 0.07), 0 7px 18px rgba(0, 0, 0, 0.42);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 7px 18px rgba(0, 0, 0, 0.42);
     opacity: 0.82;
     transform: translate3d(0, 8px, -10px) rotateX(-34deg);
     transform-origin: top;

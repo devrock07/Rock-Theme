@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import useReducedMotion from '@/plugins/useReducedMotion';
 import './react-bits-effects.css';
 
 /*
@@ -29,13 +30,12 @@ export const ShinyText: React.FC<{ children: React.ReactNode; className?: string
 
 export const AmbientCursor: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
 
     useEffect(() => {
         const element = ref.current;
-        const motion = window.matchMedia(
-            '(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)'
-        );
-        if (!element || !motion.matches) return;
+        const precisePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+        if (!element || reducedMotion || !precisePointer.matches) return;
 
         let frame = 0;
         let x = window.innerWidth * 0.72;
@@ -56,9 +56,9 @@ export const AmbientCursor: React.FC = () => {
             window.removeEventListener('pointermove', handlePointerMove);
             if (frame) window.cancelAnimationFrame(frame);
         };
-    }, []);
+    }, [reducedMotion]);
 
-    return <div ref={ref} className={'rb-ambient-cursor'} aria-hidden={'true'} />;
+    return reducedMotion ? null : <div ref={ref} className={'rb-ambient-cursor'} aria-hidden={'true'} />;
 };
 
 export const TiltSpotlight: React.FC<React.HTMLAttributes<HTMLDivElement> & { spotlightColor?: string }> = ({
@@ -70,9 +70,10 @@ export const TiltSpotlight: React.FC<React.HTMLAttributes<HTMLDivElement> & { sp
     ...props
 }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
 
     const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
-        if (ref.current) {
+        if (ref.current && !reducedMotion) {
             const bounds = ref.current.getBoundingClientRect();
             const x = event.clientX - bounds.left;
             const y = event.clientY - bounds.top;
@@ -118,9 +119,10 @@ export const BorderGlow: React.FC<
     ...props
 }) => {
     const ref = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
 
     const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
-        if (ref.current) {
+        if (ref.current && !reducedMotion) {
             const bounds = ref.current.getBoundingClientRect();
             const x = event.clientX - bounds.left;
             const y = event.clientY - bounds.top;

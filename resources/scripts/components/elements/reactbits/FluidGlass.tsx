@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import useReducedMotion from '@/plugins/useReducedMotion';
 import './reactbits-suite.css';
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
@@ -7,9 +8,10 @@ type Props = React.HTMLAttributes<HTMLDivElement> & {
 
 export default ({ children, className = '', intensity = 'soft', onPointerMove, ...props }: Props) => {
     const ref = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
 
     const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (event) => {
-        if (ref.current) {
+        if (ref.current && !reducedMotion) {
             const bounds = ref.current.getBoundingClientRect();
             ref.current.style.setProperty('--glass-x', `${event.clientX - bounds.left}px`);
             ref.current.style.setProperty('--glass-y', `${event.clientY - bounds.top}px`);
@@ -24,7 +26,7 @@ export default ({ children, className = '', intensity = 'soft', onPointerMove, .
             onPointerMove={handlePointerMove}
             {...props}
         >
-            <span className={'rb-fluid-caustic'} aria-hidden={'true'} />
+            {!reducedMotion && <span className={'rb-fluid-caustic'} aria-hidden={'true'} />}
             <div className={'rb-fluid-content'}>{children}</div>
         </div>
     );

@@ -25,29 +25,27 @@ export default () => {
 
     const { clearFlashes, addFlash } = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes);
 
-    const submit = (values: Values, { resetForm, setSubmitting }: FormikHelpers<Values>) => {
+    const submit = async (values: Values, { resetForm, setSubmitting }: FormikHelpers<Values>) => {
         clearFlashes('account:email');
 
-        updateEmail({ ...values })
-            .then(() =>
-                addFlash({
-                    type: 'success',
-                    key: 'account:email',
-                    message: 'Your primary email has been updated.',
-                })
-            )
-            .catch((error) =>
-                addFlash({
-                    type: 'error',
-                    key: 'account:email',
-                    title: 'Error',
-                    message: httpErrorToHuman(error),
-                })
-            )
-            .then(() => {
-                resetForm();
-                setSubmitting(false);
+        try {
+            await updateEmail({ ...values });
+            addFlash({
+                type: 'success',
+                key: 'account:email',
+                message: 'Your primary email has been updated.',
             });
+            resetForm({ values: { email: values.email, password: '' } });
+        } catch (error) {
+            addFlash({
+                type: 'error',
+                key: 'account:email',
+                title: 'Error',
+                message: httpErrorToHuman(error),
+            });
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (

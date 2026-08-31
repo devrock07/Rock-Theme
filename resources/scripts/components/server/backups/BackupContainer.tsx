@@ -17,6 +17,8 @@ const BackupContainer = () => {
     const { page, setPage } = useContext(ServerBackupContext);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { data: backups, error, isValidating, mutate } = getServerBackups();
+    const connected = ServerContext.useStoreState((state) => state.socket.connected);
+    const hasPendingBackup = !!backups?.items.some((backup) => backup.completedAt === null);
 
     const backupLimit = ServerContext.useStoreState((state) => state.server.data!.featureLimits.backups);
 
@@ -29,6 +31,17 @@ const BackupContainer = () => {
 
         clearAndAddHttpError({ error, key: 'backups' });
     }, [error]);
+
+    useEffect(() => {
+        if (!hasPendingBackup) return;
+
+        const timer = window.setInterval(() => void mutate().catch(() => undefined), 5000);
+        return () => window.clearInterval(timer);
+    }, [hasPendingBackup, mutate]);
+
+    useEffect(() => {
+        if (connected && hasPendingBackup) void mutate().catch(() => undefined);
+    }, [connected, hasPendingBackup, mutate]);
 
     if (!backups && error) {
         return <ServerError message={httpErrorToHuman(error)} onRetry={() => mutate()} />;

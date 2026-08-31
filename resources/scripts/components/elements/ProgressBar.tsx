@@ -12,13 +12,14 @@ const Track = styled.div`
 `;
 
 const BarFill = styled.div`
-    ${tw`h-full bg-red-600`};
+    ${tw`h-full`};
     position: absolute;
     top: 0;
     left: 0;
     transition: width 250ms ease-in-out;
     margin-top: 0 !important;
-    box-shadow: 0 -2px 10px 2px hsl(9.090909090909092, 98.29787234042554%, 53.92156862745098%);
+    background: var(--shell-accent);
+    box-shadow: 0 -2px 10px 2px rgba(var(--shell-accent-rgb), 0.72);
 `;
 
 type Timer = ReturnType<typeof setTimeout>;

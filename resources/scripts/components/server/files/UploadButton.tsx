@@ -2,7 +2,7 @@ import axios, { AxiosProgressEvent } from 'axios';
 import getFileUploadUrl from '@/api/server/files/getFileUploadUrl';
 import tw from 'twin.macro';
 import { Button } from '@/components/elements/button/index';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { ModalMask } from '@/components/elements/Modal';
 import Fade from '@/components/elements/Fade';
 import useEventListener from '@/plugins/useEventListener';
@@ -24,16 +24,16 @@ function isFileOrDirectory(event: DragEvent): boolean {
 
 export default ({ className }: WithClassname) => {
     const fileUploadInput = useRef<HTMLInputElement>(null);
+    const uploadSequence = useRef(0);
 
     const visible = useSignal(false);
-    const timeouts = useSignal<NodeJS.Timeout[]>([]);
 
     const { mutate } = useFileManagerSwr();
     const { addError, clearAndAddHttpError } = useFlashKey('files');
 
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const directory = ServerContext.useStoreState((state) => state.files.directory);
-    const { clearFileUploads, removeFileUpload, pushFileUpload, setUploadProgress } = ServerContext.useStoreActions(
+    const { removeFileUpload, pushFileUpload, setUploadProgress } = ServerContext.useStoreActions(
         (actions) => actions.files
     );
 
@@ -53,12 +53,8 @@ export default ({ className }: WithClassname) => {
 
     useEventListener('keydown', () => (visible.value = false));
 
-    useEffect(() => {
-        return () => timeouts.value.forEach(clearTimeout);
-    }, []);
-
-    const onUploadProgress = (data: AxiosProgressEvent, name: string) => {
-        setUploadProgress({ name, loaded: data.loaded });
+    const onUploadProgress = (data: AxiosProgressEvent, id: string) => {
+        setUploadProgress({ id, loaded: data.loaded });
     };
 
     const onFileSubmission = (files: FileList) => {
@@ -70,13 +66,14 @@ export default ({ className }: WithClassname) => {
 
         const uploads = list.map((file) => {
             const controller = new AbortController();
+            const id = `${uuid}:${Date.now()}:${uploadSequence.current++}:${Math.random().toString(16).slice(2)}`;
             pushFileUpload({
-                name: file.name,
-                data: { abort: controller, loaded: 0, total: file.size },
+                id,
+                data: { name: file.name, serverUuid: uuid, directory, abort: controller, loaded: 0, total: file.size },
             });
 
-            return () =>
-                getFileUploadUrl(uuid).then((url) =>
+            return getFileUploadUrl(uuid)
+                .then((url) =>
                     axios
                         .post(
                             url,
@@ -85,19 +82,26 @@ export default ({ className }: WithClassname) => {
                                 signal: controller.signal,
                                 headers: { 'Content-Type': 'multipart/form-data' },
                                 params: { directory },
-                                onUploadProgress: (data) => onUploadProgress(data, file.name),
+                                onUploadProgress: (data) => onUploadProgress(data, id),
                             }
                         )
-                        .then(() => timeouts.value.push(setTimeout(() => removeFileUpload(file.name), 500)))
-                );
+                        .then(() => {
+                            window.setTimeout(() => removeFileUpload(id), 500);
+                            return true;
+                        })
+                )
+                .catch((error) => {
+                    removeFileUpload(id);
+                    if (controller.signal.aborted || axios.isCancel(error)) return false;
+
+                    clearAndAddHttpError(error);
+                    return false;
+                });
         });
 
-        Promise.all(uploads.map((fn) => fn()))
-            .then(() => mutate())
-            .catch((error) => {
-                clearFileUploads();
-                clearAndAddHttpError(error);
-            });
+        Promise.all(uploads).then((completed) => {
+            if (completed.some(Boolean)) void mutate().catch(() => undefined);
+        });
     };
 
     return (
@@ -119,9 +123,8 @@ export default ({ className }: WithClassname) => {
                     >
                         <div className={'w-full flex items-center justify-center pointer-events-none'}>
                             <div
-                                className={
-                                    'flex items-center space-x-4 bg-black w-full ring-4 ring-blue-200 ring-opacity-60 rounded p-6 mx-10 max-w-sm'
-                                }
+                                className={'flex items-center space-x-4 bg-black w-full rounded p-6 mx-10 max-w-sm'}
+                                style={{ boxShadow: '0 0 0 4px rgba(var(--shell-accent-rgb), 0.42)' }}
                             >
                                 <CloudUploadIcon className={'w-10 h-10 flex-shrink-0'} />
                                 <p className={'font-header flex-1 text-lg text-neutral-100 text-center'}>
@@ -141,7 +144,7 @@ export default ({ className }: WithClassname) => {
 
                     onFileSubmission(e.currentTarget.files);
                     if (fileUploadInput.current) {
-                        fileUploadInput.current.files = null;
+                        fileUploadInput.current.value = '';
                     }
                 }}
                 multiple

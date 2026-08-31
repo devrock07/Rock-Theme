@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 
@@ -13,7 +13,7 @@ const mixWithWhite = (rgb: number[], amount = 0.38) =>
 export default () => {
     const branding = useStoreState((state: ApplicationStore) => state.settings.data!.branding);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const root = document.documentElement;
         const themePreset = branding.themePreset === 'blue' ? 'blue' : 'makima';
         const accent = themePreset === 'blue' ? '#5b8cff' : '#c94f59';

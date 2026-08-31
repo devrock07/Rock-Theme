@@ -1,5 +1,5 @@
 import TransferListener from '@/components/server/TransferListener';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
 import NavigationBar from '@/components/NavigationBar';
 import TransitionRouter from '@/TransitionRouter';
@@ -22,6 +22,7 @@ import routes from '@/routers/routes';
 import Sidebar from '@/components/Sidebar';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import AnnouncementBanner from '@/components/elements/AnnouncementBanner';
 
 export default () => {
     const match = useRouteMatch<{ id: string }>();
@@ -29,6 +30,8 @@ export default () => {
 
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const [error, setError] = useState('');
+    const [loadAttempt, setLoadAttempt] = useState(0);
+    const loadGeneration = useRef(0);
 
     const id = ServerContext.useStoreState((state) => state.server.data?.id);
     const uuid = ServerContext.useStoreState((state) => state.server.data?.uuid);
@@ -43,7 +46,7 @@ export default () => {
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const getServer = ServerContext.useStoreActions((actions) => actions.server.getServer);
     const clearServerState = ServerContext.useStoreActions((actions) => actions.clearServerState);
-    const routeResetKey = `${match.params.id}:${location.pathname}:${location.search}`;
+    const routeResetKey = `${match.params.id}:${location.pathname}:${location.search}:${location.hash}`;
     const isCurrentServer = [id, uuid, identifier, deprecatedUuidShort].some((value) => value === match.params.id);
 
     const to = (value: string, url = false) => {
@@ -53,37 +56,33 @@ export default () => {
         return `${(url ? match.url : match.path).replace(/\/*$/, '')}/${value.replace(/^\/+/, '')}`;
     };
 
-    useEffect(
-        () => () => {
-            clearServerState();
-        },
-        []
-    );
-
     useEffect(() => {
-        let active = true;
+        const generation = ++loadGeneration.current;
 
         setError('');
 
         getServer(match.params.id).catch((error) => {
-            if (!active) return;
+            if (loadGeneration.current !== generation) return;
 
             console.error(error);
             setError(httpErrorToHuman(error));
         });
 
         return () => {
-            active = false;
+            if (loadGeneration.current === generation) loadGeneration.current += 1;
             clearServerState();
         };
-    }, [match.params.id]);
+    }, [match.params.id, loadAttempt]);
 
     return (
         <React.Fragment key={'server-router'}>
             <NavigationBar />
+            <div className={'content-container'}>
+                <AnnouncementBanner />
+            </div>
             {!uuid || !id || !isCurrentServer ? (
                 error ? (
-                    <ServerError message={error} />
+                    <ServerError message={error} onRetry={() => setLoadAttempt((attempt) => attempt + 1)} />
                 ) : (
                     <Spinner size={'large'} centered />
                 )

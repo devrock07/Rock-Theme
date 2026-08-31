@@ -26,6 +26,10 @@ const rockRed = {
     900: '#541019',
 };
 
+const rockPrimary = Object.fromEntries(
+    Object.keys(rockRed).map((shade) => [shade, `rgb(var(--rock-primary-${shade}) / <alpha-value>)`])
+);
+
 module.exports = {
     content: ['./resources/scripts/**/*.{js,ts,tsx}'],
     theme: {
@@ -37,8 +41,8 @@ module.exports = {
                 black: '#09090a',
                 // "primary" and "neutral" are deprecated, prefer the use of "blue" and "gray"
                 // in new code.
-                primary: rockRed,
-                blue: rockRed,
+                primary: rockPrimary,
+                blue: rockPrimary,
                 orange: colors.orange,
                 gray: gray,
                 neutral: gray,

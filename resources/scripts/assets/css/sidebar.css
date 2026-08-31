@@ -207,7 +207,7 @@ You should have received a copy of the GNU General Public License along with Noo
 }
 
 .sidebar a.active .icon {
-    color: #f09a9f;
+    color: var(--shell-accent-bright);
     background: rgba(var(--shell-accent-rgb), 0.11);
 }
 
@@ -258,8 +258,6 @@ div.content {
         inset: 4.5rem 0 0;
         z-index: 80;
         display: block;
-        width: 100%;
-        height: calc(100vh - 4.5rem);
         padding: 0;
         visibility: hidden;
         cursor: default;

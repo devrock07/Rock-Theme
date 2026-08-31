@@ -58,7 +58,7 @@ class DropdownMenu extends React.PureComponent<Props, State> {
             document.addEventListener('click', this.windowListener);
             document.addEventListener('contextmenu', this.contextMenuListener);
             window.addEventListener('resize', this.closeMenu);
-            window.addEventListener('scroll', this.closeMenu, true);
+            window.addEventListener('scroll', this.scrollListener, true);
             window.visualViewport?.addEventListener('resize', this.closeMenu);
             window.visualViewport?.addEventListener('scroll', this.closeMenu);
 
@@ -92,12 +92,21 @@ class DropdownMenu extends React.PureComponent<Props, State> {
         document.removeEventListener('click', this.windowListener);
         document.removeEventListener('contextmenu', this.contextMenuListener);
         window.removeEventListener('resize', this.closeMenu);
-        window.removeEventListener('scroll', this.closeMenu, true);
+        window.removeEventListener('scroll', this.scrollListener, true);
         window.visualViewport?.removeEventListener('resize', this.closeMenu);
         window.visualViewport?.removeEventListener('scroll', this.closeMenu);
     };
 
     closeMenu = () => this.setState({ visible: false });
+
+    scrollListener = (event: Event) => {
+        const menu = this.menu.current;
+        const target = event.target;
+
+        if (menu && target instanceof Node && (target === menu || menu.contains(target))) return;
+
+        this.closeMenu();
+    };
 
     onClickHandler = (e: React.MouseEvent<any, MouseEvent>) => {
         e.preventDefault();

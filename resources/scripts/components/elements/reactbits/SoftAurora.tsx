@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Mesh, Program, Renderer, Triangle } from 'ogl';
+import useReducedMotion from '@/plugins/useReducedMotion';
+import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import './reactbits-suite.css';
 
 type Props = {
@@ -154,8 +157,8 @@ export default ({
     speed = 0.34,
     scale = 1.45,
     brightness = 0.8,
-    color1 = '#6f0d1b',
-    color2 = '#d85a54',
+    color1,
+    color2,
     noiseFrequency = 2.4,
     noiseAmplitude = 0.9,
     bandHeight = 0.48,
@@ -167,14 +170,14 @@ export default ({
     mouseInfluence = 0.12,
 }: Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const reducedMotion = useReducedMotion();
+    const blue = useStoreState((state: ApplicationStore) => state.settings.data?.branding.themePreset === 'blue');
+    const resolvedColor1 = color1 || (blue ? '#123a82' : '#6f0d1b');
+    const resolvedColor2 = color2 || (blue ? '#5b8cff' : '#d85a54');
 
     useEffect(() => {
         const container = containerRef.current;
-        if (
-            !container ||
-            window.matchMedia('(prefers-reduced-motion: reduce), (hover: none), (pointer: coarse)').matches
-        )
-            return;
+        if (!container || reducedMotion || window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
 
         let renderer: Renderer;
         try {
@@ -201,8 +204,8 @@ export default ({
                     uSpeed: { value: speed },
                     uScale: { value: scale },
                     uBrightness: { value: brightness },
-                    uColor1: { value: hexToVec3(color1) },
-                    uColor2: { value: hexToVec3(color2) },
+                    uColor1: { value: hexToVec3(resolvedColor1) },
+                    uColor2: { value: hexToVec3(resolvedColor2) },
                     uNoiseFreq: { value: noiseFrequency },
                     uNoiseAmp: { value: noiseAmplitude },
                     uBandHeight: { value: bandHeight },
@@ -262,8 +265,8 @@ export default ({
         speed,
         scale,
         brightness,
-        color1,
-        color2,
+        resolvedColor1,
+        resolvedColor2,
         noiseFrequency,
         noiseAmplitude,
         bandHeight,
@@ -273,7 +276,10 @@ export default ({
         colorSpeed,
         enableMouseInteraction,
         mouseInfluence,
+        reducedMotion,
     ]);
 
-    return <div ref={containerRef} className={`rb-soft-aurora-canvas ${className}`} aria-hidden={'true'} />;
+    return reducedMotion ? null : (
+        <div ref={containerRef} className={`rb-soft-aurora-canvas ${className}`} aria-hidden={'true'} />
+    );
 };

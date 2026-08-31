@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import useReducedMotion from '@/plugins/useReducedMotion';
 import './reactbits-suite.css';
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -19,7 +20,7 @@ export const MagicBentoCard: React.FC<CardProps> = ({
     enableStars = true,
     enableTilt = true,
     enableMagnetism = true,
-    clickEffect = true,
+    clickEffect = false,
     onPointerMove,
     onPointerEnter,
     onPointerLeave,
@@ -28,11 +29,13 @@ export const MagicBentoCard: React.FC<CardProps> = ({
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const particles = useRef<HTMLSpanElement[]>([]);
-    const [disabled, setDisabled] = useState(false);
+    const [coarsePointer, setCoarsePointer] = useState(false);
+    const reducedMotion = useReducedMotion();
+    const disabled = coarsePointer || reducedMotion;
 
     useEffect(() => {
-        const mobile = window.matchMedia('(hover: none), (pointer: coarse), (prefers-reduced-motion: reduce)');
-        const update = () => setDisabled(mobile.matches);
+        const mobile = window.matchMedia('(hover: none), (pointer: coarse)');
+        const update = () => setCoarsePointer(mobile.matches);
         update();
         mobile.addEventListener?.('change', update);
         return () => mobile.removeEventListener?.('change', update);
@@ -54,6 +57,16 @@ export const MagicBentoCard: React.FC<CardProps> = ({
         });
         particles.current = [];
     };
+
+    useEffect(() => {
+        if (!disabled) return;
+
+        clearParticles(true);
+        if (ref.current) {
+            gsap.killTweensOf(ref.current);
+            gsap.set(ref.current, { clearProps: 'transform' });
+        }
+    }, [disabled]);
 
     const handlePointerEnter: React.PointerEventHandler<HTMLDivElement> = (event) => {
         const element = ref.current;

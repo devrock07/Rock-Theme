@@ -61,7 +61,7 @@ export default () => {
 
     return (
         <ServerContentBlock title={'File Manager'} showFlashKey={'files'}>
-            <ErrorBoundary>
+            <ErrorBoundary resetKey={`files:${directory}:${hash}`}>
                 <div className={'flex flex-wrap-reverse md:flex-nowrap mb-4'}>
                     <FileManagerBreadcrumbs
                         renderLeft={
