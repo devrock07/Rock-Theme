@@ -1,51 +1,160 @@
 name: Container
+run-name: Container / ${{ inputs.correlation_id || github.ref_name }}
 
 on:
     push:
         branches:
             - main
-        tags:
-            - 'v*'
+    pull_request:
+        branches:
+            - main
+    release:
+        types:
+            - published
     workflow_dispatch:
+        inputs:
+            publish_target:
+                description: Container channel to publish
+                required: true
+                type: choice
+                options:
+                    - release
+                    - edge
+            expected_sha:
+                description: Exact commit SHA that must be published
+                required: true
+                type: string
+            correlation_id:
+                description: Unique identifier used to locate and await this run
+                required: true
+                type: string
 
-permissions:
-    contents: read
-    packages: write
+permissions: {}
+
+concurrency:
+    group: container-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
-    publish:
-        name: Build and publish
+    validate:
+        name: Validate image
+        if: github.event_name == 'pull_request'
         runs-on: ubuntu-24.04
+        timeout-minutes: 60
+        permissions:
+            contents: read
         steps:
             - name: Check out source
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+            - name: Build image
+              uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  push: false
+                  platforms: linux/amd64
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+    publish:
+        name: Build and publish
+        if: github.event_name != 'pull_request'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 90
+        permissions:
+            contents: read
+            packages: write # Required to publish the verified image to GHCR.
+        steps:
+            - name: Check out source
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+                  ref: ${{ inputs.expected_sha || github.sha }}
+
+            - name: Validate publish source
+              shell: bash
+              env:
+                  EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
+                  GH_TOKEN: ${{ github.token }}
+                  PUBLISH_TARGET: ${{ inputs.publish_target }}
+              run: |
+                  set -euo pipefail
+                  actual_sha="$(git rev-parse HEAD)"
+                  if ! [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]] || [ "$actual_sha" != "$EXPECTED_SHA" ]; then
+                      echo "Checked out $actual_sha, expected $EXPECTED_SHA." >&2
+                      exit 1
+                  fi
+
+                  if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+                      if [ "$PUBLISH_TARGET" = release ] && [ "$GITHUB_REF_TYPE" != tag ]; then
+                          echo "Release publication must be dispatched from a tag." >&2
+                          exit 1
+                      fi
+                      if [ "$PUBLISH_TARGET" = edge ] && [ "$GITHUB_REF" != refs/heads/main ]; then
+                          echo "Edge publication must be dispatched from main." >&2
+                          exit 1
+                      fi
+                  fi
+
+                  if [ "$GITHUB_REF_TYPE" = tag ]; then
+                      expected_tag="v$(jq -er '.version | strings' package.json)"
+                      if [ "$GITHUB_REF_NAME" != "$expected_tag" ]; then
+                          echo "Tag $GITHUB_REF_NAME does not match package version $expected_tag." >&2
+                          exit 1
+                      fi
+                      tag_sha="$(git rev-parse "${GITHUB_REF_NAME}^{commit}")"
+                      if [ "$tag_sha" != "$EXPECTED_SHA" ]; then
+                          echo "Tag $GITHUB_REF_NAME resolves to $tag_sha, expected $EXPECTED_SHA." >&2
+                          exit 1
+                      fi
+                      if [ "$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft)" != false ]; then
+                          echo "Release $GITHUB_REF_NAME is missing or still a draft." >&2
+                          exit 1
+                      fi
+                  else
+                      main_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)"
+                      if [ "$GITHUB_REF" != refs/heads/main ] || [ "$main_sha" != "$EXPECTED_SHA" ]; then
+                          echo "Edge source is stale: main=$main_sha expected=$EXPECTED_SHA." >&2
+                          exit 1
+                      fi
+                  fi
 
             - name: Generate image metadata
               id: metadata
-              uses: docker/metadata-action@v5
+              uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
               with:
                   images: ghcr.io/devrock07/rock-theme
                   tags: |
                       type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=sha
+                      type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
+                      type=semver,pattern={{version}},enable=${{ github.ref_type == 'tag' }}
+                      type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
+                      type=sha,format=long
+                      type=raw,value=source-release-${{ inputs.expected_sha || github.sha }},enable=${{ github.ref_type == 'tag' }}
+                      type=raw,value=source-edge-${{ inputs.expected_sha || github.sha }},enable=${{ github.ref == 'refs/heads/main' }}
 
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+              uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
             - name: Log in to GitHub Container Registry
-              uses: docker/login-action@v3
+              uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
               with:
                   registry: ghcr.io
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build and push image
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
               with:
                   context: .
                   file: ./Dockerfile
@@ -55,3 +164,5 @@ jobs:
                   tags: ${{ steps.metadata.outputs.tags }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
+                  provenance: true
+                  sbom: true

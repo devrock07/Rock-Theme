@@ -18,22 +18,35 @@ permissions:
     contents: read
 
 env:
+    CONTAINER_PACKAGE: rock-theme
     UPSTREAM_REPOSITORY: pterodactyl/panel
 
 jobs:
     detect:
         name: Detect upstream release
         runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        permissions:
+            contents: read
+            packages: read # Required to verify published GHCR tags without rebuilding healthy releases.
         outputs:
             current: ${{ steps.versions.outputs.current }}
+            edge_container_required: ${{ steps.versions.outputs.edge_container_required }}
             latest: ${{ steps.versions.outputs.latest }}
+            mode: ${{ steps.versions.outputs.mode }}
             next_theme: ${{ steps.versions.outputs.next_theme }}
+            release_required: ${{ steps.versions.outputs.release_required }}
+            tag_required: ${{ steps.versions.outputs.tag_required }}
+            theme_tag: ${{ steps.versions.outputs.theme_tag }}
             update_required: ${{ steps.versions.outputs.update_required }}
+            version_container_required: ${{ steps.versions.outputs.version_container_required }}
+            work_required: ${{ steps.versions.outputs.work_required }}
         steps:
             - name: Check out source
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Resolve versions
               id: versions
@@ -56,53 +69,210 @@ jobs:
                       exit 1
                   fi
 
-                  current_theme="$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1)"
+                  package_version="$(node -p "require('./package.json').version")"
+                  if ! [[ "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "The package version is not a stable semantic version: $package_version" >&2
+                      exit 1
+                  fi
+                  package_theme="v${package_version}"
+                  current_theme="$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
                   if ! [[ "$current_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
                       echo "Unable to resolve the current Rock Theme tag." >&2
                       exit 1
                   fi
-                  next_theme="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+
+                  mode=healthy
+                  work_required=false
                   update_required=false
+                  tag_required=false
+                  release_required=false
+                  version_container_required=false
+                  edge_container_required=false
+
                   if [ "$current" != "$latest" ]; then
+                      base_theme="$(printf '%s\n%s\n' "$current_theme" "$package_theme" | sort -V | tail -n 1)"
+                      if ! [[ "$base_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                          echo "Unable to calculate the next Rock Theme version." >&2
+                          exit 1
+                      fi
+                      theme_tag="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
+                      mode=update
+                      work_required=true
                       update_required=true
+                      tag_required=true
+                      release_required=true
+                      version_container_required=true
+                      edge_container_required=true
+                  else
+                      theme_tag="$package_theme"
+                      head_commit="$(git rev-parse HEAD)"
+
+                      if git show-ref --verify --quiet "refs/tags/${theme_tag}"; then
+                          tag_commit="$(git rev-parse "${theme_tag}^{commit}")"
+                          if [ "$tag_commit" != "$head_commit" ]; then
+                              echo "Refusing to move immutable tag $theme_tag from $tag_commit to $head_commit." >&2
+                              exit 1
+                          fi
+                      else
+                          tag_required=true
+                      fi
+
+                      validate_release_assets() {
+                          local release_dir provenance
+                          release_dir="$(mktemp -d)"
+                          if ! gh release download "$theme_tag" --dir "$release_dir" \
+                              --pattern panel.tar.gz --pattern panel.tar.gz.sha256 >/dev/null 2>&1; then
+                              rm -rf "$release_dir"
+                              return 1
+                          fi
+                          if ! (cd "$release_dir" && sha256sum --check panel.tar.gz.sha256 >/dev/null); then
+                              rm -rf "$release_dir"
+                              return 1
+                          fi
+                          provenance="$(tar -xOf "$release_dir/panel.tar.gz" ./.rock/release.json 2>/dev/null || true)"
+                          if ! printf '%s' "$provenance" | jq -e \
+                              --arg theme_version "${theme_tag#v}" \
+                              --arg pterodactyl_version "$latest" \
+                              --arg source_commit "$head_commit" '
+                                  .schema == 1 and
+                                  .theme_version == $theme_version and
+                                  .pterodactyl_version == $pterodactyl_version and
+                                  .source_commit == $source_commit
+                              ' >/dev/null; then
+                              rm -rf "$release_dir"
+                              return 1
+                          fi
+                          rm -rf "$release_dir"
+                      }
+
+                      releases="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --slurp)"
+                      release="$(printf '%s' "$releases" | jq -c --arg tag "$theme_tag" '[.[][] | select(.tag_name == $tag)][0] // null')"
+                      if [ "$release" = null ]; then
+                          release_required=true
+                      elif [ "$(printf '%s' "$release" | jq -r '.draft')" = true ] ||
+                          ! printf '%s' "$release" | jq -e '
+                              ([.assets[]?.name] | index("panel.tar.gz")) != null and
+                              ([.assets[]?.name] | index("panel.tar.gz.sha256")) != null
+                          ' >/dev/null; then
+                          release_required=true
+                      elif ! validate_release_assets; then
+                          echo "Release $theme_tag assets failed checksum or provenance validation."
+                          release_required=true
+                      fi
+
+                      owner_type="$(gh api "users/${GITHUB_REPOSITORY_OWNER}" --jq .type)"
+                      if [ "$owner_type" = Organization ]; then
+                          package_scope="orgs/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                      else
+                          package_scope="users/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                      fi
+                      package_error="$(mktemp)"
+                      if ! package_pages="$(gh api --paginate "${package_scope}/${CONTAINER_PACKAGE}/versions?per_page=100" --slurp 2>"$package_error")"; then
+                          if grep -q 'HTTP 404' "$package_error"; then
+                              package_pages='[]'
+                          else
+                              cat "$package_error" >&2
+                              exit 1
+                          fi
+                      fi
+                      rm -f "$package_error"
+
+                      version_tag="${theme_tag#v}"
+                      minor_tag="${version_tag%.*}"
+                      release_revision_tag="source-release-${head_commit}"
+                      edge_revision_tag="source-edge-${head_commit}"
+                      conflicting_release_source="$(printf '%s' "$package_pages" | jq -r \
+                          --arg version "$version_tag" --arg source "$release_revision_tag" '
+                              [.[][] | (.metadata.container.tags // []) |
+                                  select(index($version) != null) | .[] |
+                                  select(startswith("source-release-") and . != $source)] |
+                              unique | first // empty
+                          ')"
+                      if [ -n "$conflicting_release_source" ]; then
+                          echo "Container tag $version_tag belongs to $conflicting_release_source, not $release_revision_tag." >&2
+                          exit 1
+                      fi
+                      if ! printf '%s' "$package_pages" | jq -e \
+                          --arg version "$version_tag" --arg minor "$minor_tag" --arg source "$release_revision_tag" '
+                              [.[][] | (.metadata.container.tags // [])] |
+                              any(.[]; index($version) != null and index($minor) != null and
+                                  index("latest") != null and index($source) != null)
+                          ' >/dev/null; then
+                          version_container_required=true
+                      fi
+                      if ! printf '%s' "$package_pages" | jq -e --arg source "$edge_revision_tag" '
+                          [.[][] | (.metadata.container.tags // [])] |
+                          any(.[]; index("edge") != null and index($source) != null)
+                      ' >/dev/null; then
+                          edge_container_required=true
+                      fi
+
+                      if [ "$tag_required" = true ] || [ "$release_required" = true ] ||
+                          [ "$version_container_required" = true ] || [ "$edge_container_required" = true ]; then
+                          mode=reconcile
+                          work_required=true
+                      fi
                   fi
 
                   echo "current=$current" >> "$GITHUB_OUTPUT"
                   echo "latest=$latest" >> "$GITHUB_OUTPUT"
-                  echo "next_theme=$next_theme" >> "$GITHUB_OUTPUT"
+                  echo "mode=$mode" >> "$GITHUB_OUTPUT"
+                  echo "next_theme=$theme_tag" >> "$GITHUB_OUTPUT"
+                  echo "theme_tag=$theme_tag" >> "$GITHUB_OUTPUT"
+                  echo "work_required=$work_required" >> "$GITHUB_OUTPUT"
                   echo "update_required=$update_required" >> "$GITHUB_OUTPUT"
+                  echo "tag_required=$tag_required" >> "$GITHUB_OUTPUT"
+                  echo "release_required=$release_required" >> "$GITHUB_OUTPUT"
+                  echo "version_container_required=$version_container_required" >> "$GITHUB_OUTPUT"
+                  echo "edge_container_required=$edge_container_required" >> "$GITHUB_OUTPUT"
                   {
                       echo "### Upstream detection"
                       echo "- Current base: \`$current\`"
                       echo "- Latest release: \`$latest\`"
-                      echo "- Planned theme release: \`$next_theme\`"
-                      echo "- Update required: \`$update_required\`"
+                      echo "- Theme release: \`$theme_tag\`"
+                      echo "- Mode: \`$mode\`"
+                      echo "- Git tag repair: \`$tag_required\`"
+                      echo "- GitHub release repair: \`$release_required\`"
+                      echo "- Version/Latest container repair: \`$version_container_required\`"
+                      echo "- Edge container repair: \`$edge_container_required\`"
                   } >> "$GITHUB_STEP_SUMMARY"
 
     prepare:
-        name: Build three-tree update
+        name: Prepare verified candidate
         needs: detect
-        if: needs.detect.outputs.update_required == 'true'
+        if: needs.detect.outputs.work_required == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 20
         permissions:
-            contents: write
+            contents: write # Required to push the isolated update candidate branch.
         outputs:
             branch: ${{ steps.prepare.outputs.branch }}
             commit: ${{ steps.prepare.outputs.commit }}
         steps:
             - name: Check out source
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Merge official changes over the theme
               id: prepare
               env:
                   CURRENT_TAG: ${{ needs.detect.outputs.current }}
+                  GH_TOKEN: ${{ github.token }}
                   LATEST_TAG: ${{ needs.detect.outputs.latest }}
-                  THEME_TAG: ${{ needs.detect.outputs.next_theme }}
+                  MODE: ${{ needs.detect.outputs.mode }}
+                  THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
               run: |
                   set -euo pipefail
+                  if [ "$MODE" = reconcile ]; then
+                      echo "Re-validating the current main commit before repairing incomplete publication."
+                      echo "branch=automation/pterodactyl-${LATEST_TAG#v}" >> "$GITHUB_OUTPUT"
+                      echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+
+                  gh auth setup-git
                   branch="automation/pterodactyl-${LATEST_TAG#v}"
                   base_ref="refs/rock-upstream/base"
                   latest_ref="refs/rock-upstream/latest"
@@ -158,24 +328,34 @@ jobs:
     frontend:
         name: Validate frontend
         needs: [detect, prepare]
-        if: needs.detect.outputs.update_required == 'true'
+        if: needs.detect.outputs.work_required == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 35
+        env:
+            CI: true
         permissions:
             contents: read
         steps:
             - name: Check out candidate
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
-                  ref: ${{ needs.prepare.outputs.branch }}
+                  ref: ${{ needs.prepare.outputs.commit }}
+                  persist-credentials: false
+
+            - name: Validate installer scripts
+              run: |
+                  bash -n install.sh release.sh
+                  bash tests/InstallerSmokeTest.sh
 
             - name: Set up Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version: 22
                   cache: yarn
+                  cache-dependency-path: yarn.lock
 
             - name: Install dependencies
-              run: yarn install --frozen-lockfile
+              run: yarn install --frozen-lockfile --non-interactive
 
             - name: Typecheck
               run: yarn tsc
@@ -184,13 +364,13 @@ jobs:
               run: yarn lint
 
             - name: Test
-              run: yarn test --runInBand
+              run: yarn test --ci --runInBand
 
             - name: Build production assets
               run: yarn build:production
 
             - name: Save compiled assets
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: upstream-build-${{ needs.prepare.outputs.commit }}
                   path: public/assets
@@ -198,56 +378,78 @@ jobs:
                   retention-days: 2
 
     backend:
-        name: PHP ${{ matrix.php }} / ${{ matrix.database }}
+        name: PHP ${{ matrix.php }} / ${{ matrix.database.name }}
         needs: [detect, prepare]
-        if: needs.detect.outputs.update_required == 'true'
+        if: needs.detect.outputs.work_required == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 40
+        env:
+            COMPOSER_NO_INTERACTION: '1'
+            COMPOSER_PROCESS_TIMEOUT: '0'
         permissions:
             contents: read
         strategy:
             fail-fast: false
             matrix:
                 php: ['8.2', '8.3']
-                database: ['mariadb:10', 'mariadb:11', 'mysql:8', 'mysql:9']
+                database:
+                    - name: mariadb:10
+                      image: mariadb:10@sha256:ce66c7be32a03aabe7241d0a10993a2db827ef652a35d25727d92a832ac8ef73
+                    - name: mariadb:11
+                      image: mariadb:11@sha256:2439dcd7d14010ecd1ff7a4e1c5abe8e208c34fe35290744deeeaac3569043c3
+                    - name: mysql:8
+                      image: mysql:8@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+                    - name: mysql:9
+                      image: mysql:9@sha256:257388edf9c84dbc04c763625446d5f3fa6ed60d1b0873bc552c614ba0a7ab4e
         services:
             database:
-                image: ${{ matrix.database }}
+                image: ${{ matrix.database.image }}
                 env:
                     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
                     MYSQL_DATABASE: testing
+                options: >-
+                    --health-cmd "if command -v mariadb-admin >/dev/null 2>&1; then mariadb-admin ping --host=127.0.0.1 --user=root --silent; else mysqladmin ping --host=127.0.0.1 --user=root --silent; fi"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 10
+                    --health-start-period 20s
                 ports:
                     - 3306/tcp
         steps:
             - name: Check out candidate
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
-                  ref: ${{ needs.prepare.outputs.branch }}
-
-            - name: Resolve Composer cache
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-            - name: Cache Composer downloads
-              uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-${{ matrix.php }}-
+                  ref: ${{ needs.prepare.outputs.commit }}
+                  persist-credentials: false
 
             - name: Set up PHP
-              uses: shivammathur/setup-php@v2
+              uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
               with:
                   php-version: ${{ matrix.php }}
                   extensions: bcmath, cli, curl, gd, mbstring, mysql, openssl, pdo, tokenizer, xml, zip
                   tools: composer:v2
                   coverage: none
 
+            - name: Resolve Composer cache
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Composer downloads
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: ${{ runner.os }}-composer-${{ matrix.php }}-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-${{ matrix.php }}-
+
             - name: Configure test environment
               run: cp .env.ci .env
 
+            - name: Validate Composer metadata
+              run: composer validate --strict --no-check-publish
+
             - name: Install dependencies
-              run: composer install --no-interaction --no-progress --prefer-dist
+              run: composer install --no-progress --prefer-dist
 
             - name: Check PHP formatting
               run: vendor/bin/php-cs-fixer fix --dry-run --diff
@@ -261,42 +463,75 @@ jobs:
               run: vendor/bin/phpunit tests/Integration
               env:
                   DB_HOST: 127.0.0.1
-                  DB_PORT: ${{ job.services.database.ports[3306] }}
+                  DB_PORT: ${{ job.services.database.ports['3306'] }}
                   DB_USERNAME: root
+
+    container:
+        name: Validate container (amd64/arm64)
+        needs: [detect, prepare]
+        if: needs.detect.outputs.work_required == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 90
+        permissions:
+            contents: read
+        steps:
+            - name: Check out candidate
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: ${{ needs.prepare.outputs.commit }}
+                  persist-credentials: false
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+            - name: Build candidate image
+              uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  push: false
+                  platforms: linux/amd64,linux/arm64
+                  cache-from: type=gha
 
     promote:
         name: Publish verified update
-        needs: [detect, prepare, frontend, backend]
-        if: needs.detect.outputs.update_required == 'true'
+        needs: [detect, prepare, frontend, backend, container]
+        if: needs.detect.outputs.work_required == 'true'
         runs-on: ubuntu-24.04
+        timeout-minutes: 120
+        concurrency:
+            group: rock-theme-release-${{ needs.detect.outputs.theme_tag }}
+            cancel-in-progress: false
         permissions:
-            actions: write
-            contents: write
-            issues: write
+            actions: write # Required to dispatch and await the exact container runs.
+            checks: read # Required by gh run watch to stream job conclusions.
+            contents: write # Required to fast-forward main, create a tag, and publish the release.
+            issues: write # Required to close a resolved autopilot failure report.
+            packages: read # Required to verify the resulting GHCR aliases.
         env:
             GH_TOKEN: ${{ github.token }}
             CANDIDATE_BRANCH: ${{ needs.prepare.outputs.branch }}
+            EDGE_CONTAINER_REQUIRED: ${{ needs.detect.outputs.edge_container_required }}
             LATEST_TAG: ${{ needs.detect.outputs.latest }}
-            THEME_TAG: ${{ needs.detect.outputs.next_theme }}
+            MODE: ${{ needs.detect.outputs.mode }}
+            THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
+            VERSION_CONTAINER_REQUIRED: ${{ needs.detect.outputs.version_container_required }}
         steps:
             - name: Check out verified candidate
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
-                  ref: ${{ needs.prepare.outputs.branch }}
+                  ref: ${{ needs.prepare.outputs.commit }}
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Restore compiled assets
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
               with:
                   name: upstream-build-${{ needs.prepare.outputs.commit }}
                   path: public/assets
-
-            - name: Fast-forward main
-              run: |
-                  set -euo pipefail
-                  git fetch origin main
-                  git merge-base --is-ancestor origin/main HEAD
-                  git push origin HEAD:main
 
             - name: Create install archive
               run: |
@@ -306,46 +541,282 @@ jobs:
                   rm -rf "$staging/public/assets" "$staging/.github" "$staging/tests"
                   mkdir -p "$staging/public/assets"
                   cp -a public/assets/. "$staging/public/assets/"
+                  jq -n \
+                      --arg theme_version "${THEME_TAG#v}" \
+                      --arg pterodactyl_version "$LATEST_TAG" \
+                      --arg source_commit "$(git rev-parse HEAD)" \
+                      '{schema: 1, theme_version: $theme_version, pterodactyl_version: $pterodactyl_version, source_commit: $source_commit}' \
+                      > "$staging/.rock/release.json"
                   tar -C "$staging" -czf panel.tar.gz .
                   sha256sum panel.tar.gz > panel.tar.gz.sha256
+                  sha256sum --check panel.tar.gz.sha256
+                  provenance="$(tar -xOf panel.tar.gz ./.rock/release.json)"
+                  printf '%s' "$provenance" | jq -e \
+                      --arg theme_version "${THEME_TAG#v}" \
+                      --arg pterodactyl_version "$LATEST_TAG" \
+                      --arg source_commit "$(git rev-parse HEAD)" '
+                          .schema == 1 and
+                          .theme_version == $theme_version and
+                          .pterodactyl_version == $pterodactyl_version and
+                          .source_commit == $source_commit
+                      ' >/dev/null
 
-            - name: Tag and publish release
+            - name: Promote or confirm main
               run: |
                   set -euo pipefail
-                  git config user.name "rock-theme-autopilot[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git tag -a "$THEME_TAG" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
-                  git push origin "$THEME_TAG"
-                  gh release create "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 \
-                      --title "Rock Theme $THEME_TAG" \
-                      --notes "Automated, fully tested compatibility update for Pterodactyl $LATEST_TAG." \
-                      --latest
+                  gh auth setup-git
+                  git fetch origin main
+                  if [ "$MODE" = update ]; then
+                      git merge-base --is-ancestor origin/main HEAD
+                      git push origin HEAD:main
+                  elif [ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD)" ]; then
+                      echo "Main changed after reconciliation started; refusing stale publication." >&2
+                      exit 1
+                  fi
 
-            - name: Publish container and remove candidate branch
+            - name: Reconcile immutable tag and release
               run: |
-                  gh workflow run docker.yaml --ref "$THEME_TAG"
-                  git push origin --delete "$CANDIDATE_BRANCH" || true
-                  title="Autopilot blocked updating to Pterodactyl ${LATEST_TAG}"
-                  gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[].number' | while read -r issue; do
-                      [ -n "$issue" ] && gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Resolved by the verified ${THEME_TAG} release."
+                  set -euo pipefail
+                  target_commit="$(git rev-parse HEAD)"
+                  tag_ref="refs/tags/${THEME_TAG}"
+                  peeled_ref="${tag_ref}^{}"
+                  remote_refs="$(git ls-remote --tags origin "$tag_ref" "$peeled_ref")"
+                  if [ -n "$remote_refs" ]; then
+                      remote_commit="$(printf '%s\n' "$remote_refs" | awk -v direct="$tag_ref" -v peeled="$peeled_ref" '
+                          $2 == direct { direct_sha = $1 }
+                          $2 == peeled { peeled_sha = $1 }
+                          END { print peeled_sha != "" ? peeled_sha : direct_sha }
+                      ')"
+                      if [ "$remote_commit" != "$target_commit" ]; then
+                          echo "Refusing to move immutable tag $THEME_TAG from $remote_commit to $target_commit." >&2
+                          exit 1
+                      fi
+                  else
+                      if git show-ref --verify --quiet "$tag_ref"; then
+                          if [ "$(git rev-parse "${THEME_TAG}^{commit}")" != "$target_commit" ]; then
+                              echo "Local tag $THEME_TAG does not match the verified candidate." >&2
+                              exit 1
+                          fi
+                      else
+                          git config user.name "rock-theme-autopilot[bot]"
+                          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                          git tag -a "$THEME_TAG" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
+                      fi
+                      git push origin "${tag_ref}:${tag_ref}"
+                  fi
+
+                  release_assets_valid() {
+                      local release_dir provenance
+                      release_dir="$(mktemp -d)"
+                      if ! gh release download "$THEME_TAG" --dir "$release_dir" \
+                          --pattern panel.tar.gz --pattern panel.tar.gz.sha256 >/dev/null 2>&1; then
+                          rm -rf "$release_dir"
+                          return 1
+                      fi
+                      if ! (cd "$release_dir" && sha256sum --check panel.tar.gz.sha256 >/dev/null); then
+                          rm -rf "$release_dir"
+                          return 1
+                      fi
+                      provenance="$(tar -xOf "$release_dir/panel.tar.gz" ./.rock/release.json 2>/dev/null || true)"
+                      if ! printf '%s' "$provenance" | jq -e \
+                          --arg theme_version "${THEME_TAG#v}" \
+                          --arg pterodactyl_version "$LATEST_TAG" \
+                          --arg source_commit "$target_commit" '
+                              .schema == 1 and
+                              .theme_version == $theme_version and
+                              .pterodactyl_version == $pterodactyl_version and
+                              .source_commit == $source_commit
+                          ' >/dev/null; then
+                          rm -rf "$release_dir"
+                          return 1
+                      fi
+                      rm -rf "$release_dir"
+                  }
+
+                  if release_json="$(gh release view "$THEME_TAG" --json assets,isDraft 2>/dev/null)"; then
+                      if [ "$(printf '%s' "$release_json" | jq -r .isDraft)" = false ] &&
+                          printf '%s' "$release_json" | jq -e '
+                              ([.assets[]?.name] | index("panel.tar.gz")) != null and
+                              ([.assets[]?.name] | index("panel.tar.gz.sha256")) != null
+                          ' >/dev/null && release_assets_valid; then
+                          echo "Published release $THEME_TAG has checksum-valid assets for $target_commit."
+                      else
+                          gh release upload "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 --clobber
+                          gh release edit "$THEME_TAG" --draft=false --latest
+                      fi
+                  else
+                      gh release create "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 \
+                          --draft \
+                          --title "Rock Theme $THEME_TAG" \
+                          --notes "Automated, fully tested compatibility update for Pterodactyl $LATEST_TAG." \
+                          --verify-tag
+                      gh release edit "$THEME_TAG" --draft=false --latest
+                  fi
+
+            - name: Dispatch and verify container publications
+              run: |
+                  set -euo pipefail
+                  candidate_sha="$(git rev-parse HEAD)"
+                  run_ids=()
+                  run_labels=()
+
+                  dispatch_and_find() {
+                      local target="$1"
+                      local ref="$2"
+                      local key="autopilot-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${target}"
+                      local title="Container / ${key}"
+                      local api="repos/${GITHUB_REPOSITORY}/actions/workflows/docker.yaml/runs?event=workflow_dispatch&head_sha=${candidate_sha}&per_page=100"
+                      local match=""
+
+                      gh workflow run docker.yaml --ref "$ref" \
+                          -f publish_target="$target" \
+                          -f expected_sha="$candidate_sha" \
+                          -f correlation_id="$key" >&2
+                      for _ in $(seq 1 60); do
+                          match="$(gh api "$api" | jq -r --arg title "$title" '
+                              [.workflow_runs[] | select(.display_title == $title)] |
+                              if length == 1 then (.[0].id | tostring)
+                              elif length > 1 then "duplicate"
+                              else ""
+                              end
+                          ')"
+                          if [ "$match" = duplicate ]; then
+                              echo "More than one container run matched $title." >&2
+                              return 1
+                          fi
+                          if [ -n "$match" ]; then
+                              printf '%s\n' "$match"
+                              return 0
+                          fi
+                          sleep 2
+                      done
+                      echo "Timed out locating dispatched run $title." >&2
+                      return 1
+                  }
+
+                  if [ "$VERSION_CONTAINER_REQUIRED" = true ]; then
+                      run_ids+=("$(dispatch_and_find release "$THEME_TAG")")
+                      run_labels+=(release)
+                  fi
+                  if [ "$EDGE_CONTAINER_REQUIRED" = true ]; then
+                      run_ids+=("$(dispatch_and_find edge main)")
+                      run_labels+=(edge)
+                  fi
+
+                  failed=false
+                  for index in "${!run_ids[@]}"; do
+                      if ! gh run watch "${run_ids[$index]}" --compact --exit-status --interval 10; then
+                          echo "${run_labels[$index]} container publication failed." >&2
+                          failed=true
+                      fi
+                  done
+                  if [ "$failed" = true ]; then
+                      exit 1
+                  fi
+
+                  owner_type="$(gh api "users/${GITHUB_REPOSITORY_OWNER}" --jq .type)"
+                  if [ "$owner_type" = Organization ]; then
+                      package_scope="orgs/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                  else
+                      package_scope="users/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                  fi
+                  version_tag="${THEME_TAG#v}"
+                  minor_tag="${version_tag%.*}"
+                  release_source="source-release-${candidate_sha}"
+                  edge_source="source-edge-${candidate_sha}"
+                  registry_ready=false
+                  for _ in $(seq 1 30); do
+                      package_error="$(mktemp)"
+                      if ! package_pages="$(gh api --paginate "${package_scope}/${CONTAINER_PACKAGE}/versions?per_page=100" --slurp 2>"$package_error")"; then
+                          if grep -q 'HTTP 404' "$package_error"; then
+                              package_pages='[]'
+                          else
+                              cat "$package_error" >&2
+                              exit 1
+                          fi
+                      fi
+                      rm -f "$package_error"
+                      if printf '%s' "$package_pages" | jq -e \
+                          --arg version "$version_tag" --arg minor "$minor_tag" --arg source "$release_source" '
+                              [.[][] | (.metadata.container.tags // [])] |
+                              any(.[]; index($version) != null and index($minor) != null and
+                                  index("latest") != null and index($source) != null)
+                          ' >/dev/null && printf '%s' "$package_pages" | jq -e --arg source "$edge_source" '
+                              [.[][] | (.metadata.container.tags // [])] |
+                              any(.[]; index("edge") != null and index($source) != null)
+                          ' >/dev/null; then
+                          registry_ready=true
+                          break
+                      fi
+                      sleep 10
+                  done
+                  if [ "$registry_ready" != true ]; then
+                      echo "GHCR did not expose the expected release/latest/edge source markers." >&2
+                      exit 1
+                  fi
+
+            - name: Finalize successful publication
+              run: |
+                  set -euo pipefail
+                  if [ -n "$CANDIDATE_BRANCH" ]; then
+                      git push origin --delete "$CANDIDATE_BRANCH" || true
+                  fi
+                  titles=("Autopilot blocked updating to Pterodactyl ${LATEST_TAG}" "Upstream Autopilot blocked during detection")
+                  for title in "${titles[@]}"; do
+                      gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[].number' | while read -r issue; do
+                          [ -n "$issue" ] && gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "Resolved by verified ${THEME_TAG} publication." || true
+                      done
                   done
                   {
-                      echo "### Published"
+                      echo "### Publication complete"
+                      echo "- Mode: \`$MODE\`"
                       echo "- Pterodactyl: \`$LATEST_TAG\`"
                       echo "- Rock Theme: \`$THEME_TAG\`"
                       echo "- Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${THEME_TAG}"
+                      echo "- Containers: verified \`version/latest/edge\` aliases"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+    resolve-healthy:
+        name: Confirm healthy publication
+        needs: detect
+        if: needs.detect.outputs.mode == 'healthy'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        permissions:
+            contents: read
+            issues: write
+        env:
+            GH_TOKEN: ${{ github.token }}
+            LATEST_TAG: ${{ needs.detect.outputs.latest }}
+            THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
+        steps:
+            - name: Resolve stale failure report
+              run: |
+                  set -euo pipefail
+                  titles=("Autopilot blocked updating to Pterodactyl ${LATEST_TAG}" "Upstream Autopilot blocked during detection")
+                  for title in "${titles[@]}"; do
+                      gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[].number' | while read -r issue; do
+                          [ -n "$issue" ] && gh issue close "$issue" --repo "$GITHUB_REPOSITORY" --comment "The ${THEME_TAG} release and container aliases are healthy." || true
+                      done
+                  done
+                  {
+                      echo "### Publication healthy"
+                      echo "- Rock Theme: \`$THEME_TAG\`"
+                      echo "- No repair or republish was required."
                   } >> "$GITHUB_STEP_SUMMARY"
 
     report-failure:
         name: Report blocked update
-        needs: [detect, prepare, frontend, backend, promote]
+        needs: [detect, prepare, frontend, backend, container, promote]
         if: >-
-            ${{ always() && needs.detect.result == 'success' && needs.detect.outputs.update_required == 'true' &&
-                needs.promote.result != 'success' }}
+            ${{ always() && (needs.detect.result == 'failure' ||
+                (needs.detect.result == 'success' && needs.detect.outputs.work_required == 'true' &&
+                needs.promote.result != 'success')) }}
         runs-on: ubuntu-24.04
+        timeout-minutes: 10
         permissions:
             contents: read
-            issues: write
+            issues: write # Required to create one actionable failure report.
         env:
             GH_TOKEN: ${{ github.token }}
             LATEST_TAG: ${{ needs.detect.outputs.latest }}
@@ -353,8 +824,12 @@ jobs:
             - name: Open one actionable issue
               run: |
                   set -euo pipefail
-                  title="Autopilot blocked updating to Pterodactyl ${LATEST_TAG}"
+                  if [ -n "${LATEST_TAG:-}" ]; then
+                      title="Autopilot blocked updating to Pterodactyl ${LATEST_TAG}"
+                  else
+                      title="Upstream Autopilot blocked during detection"
+                  fi
                   existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
                   if [ -z "$existing" ]; then
-                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "The automatic three-tree merge or validation suite stopped this release. No update was published. Inspect the failed run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+                      gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "The automatic merge, validation, release, or container reconciliation did not complete. Safe retry state is preserved and the next run will inspect it again. Review: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
                   fi

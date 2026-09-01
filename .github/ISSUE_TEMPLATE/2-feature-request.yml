@@ -25,6 +25,22 @@ body:
       validations:
           required: true
 
+    - type: dropdown
+      id: area
+      attributes:
+          label: Area
+          options:
+              - Client dashboard
+              - Server management
+              - Login or account
+              - Admin panel
+              - Public status page
+              - Installer or updater
+              - Documentation
+              - Other
+      validations:
+          required: true
+
     - type: textarea
       id: alternatives
       attributes:
@@ -43,5 +59,7 @@ body:
           options:
               - label: I searched existing Rock Theme issues and requests.
                 required: true
-              - label: This request is compatible with Pterodactyl Panel 1.14.1.
+              - label: This request is compatible with Pterodactyl Panel 1.15.1 or explains the required compatibility change.
+                required: true
+              - label: I identified any referenced third-party component and its license.
                 required: true

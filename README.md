@@ -1,160 +1,193 @@
 # Rock Theme
 
-![Rock Theme crimson Pterodactyl interface](./docs/rock-theme-social-preview.jpg)
+<p align="center">
+  <img src="./docs/rock-theme-social-preview.jpg" alt="Rock Theme interface preview" width="100%">
+</p>
 
-This image is also sized for the repository's GitHub social preview.
+<p align="center">
+  A responsive, operator-configurable interface distribution for Pterodactyl Panel.
+</p>
 
-Rock Theme is a responsive crimson interface for
-[Pterodactyl Panel](https://pterodactyl.io). It refreshes the client, login,
-server, and administration experiences while keeping the underlying panel
-workflow familiar.
+<p align="center">
+  <a href="https://github.com/devrock07/Rock-Theme/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/devrock07/Rock-Theme?display_name=tag&sort=semver&style=flat-square&color=c94f59"></a>
+  <a href="https://github.com/devrock07/Rock-Theme/actions/workflows/build.yaml"><img alt="Frontend checks" src="https://github.com/devrock07/Rock-Theme/actions/workflows/build.yaml/badge.svg?branch=main"></a>
+  <a href="https://github.com/devrock07/Rock-Theme/actions/workflows/ci.yaml"><img alt="Backend checks" src="https://github.com/devrock07/Rock-Theme/actions/workflows/ci.yaml/badge.svg?branch=main"></a>
+  <a href="https://github.com/devrock07/Rock-Theme/actions/workflows/docker.yaml"><img alt="Container build" src="https://github.com/devrock07/Rock-Theme/actions/workflows/docker.yaml/badge.svg?branch=main"></a>
+  <a href="https://github.com/pterodactyl/panel/releases/tag/v1.15.1"><img alt="Pterodactyl 1.15.1" src="https://img.shields.io/badge/Pterodactyl-1.15.1-10529f?style=flat-square"></a>
+</p>
 
-Built by [DevRock](https://github.com/devrock07) for Pterodactyl `1.15.1`.
+Rock Theme rebuilds the client, login, server, and administration experience
+without replacing the familiar Pterodactyl workflow. It includes two complete
+color systems, responsive navigation, configurable branding, operational
+telemetry, account-synced dashboard preferences, and release tooling designed
+for real panel installations.
 
-Version 2.0 delivers a viewport-safe notification center and a rebuilt crimson
-mobile navigation surface, with matching behavior across phone and desktop layouts.
+Rock Theme `v2.0.3` is based on and supports
+[Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
+It is a full panel distribution, not a standalone CSS file or runtime plugin.
 
-## Highlights
+[Features](#features) · [Install](#quick-install) ·
+[Configure](./docs/CONFIGURATION.md) · [Update](./docs/UPGRADING.md) ·
+[Troubleshoot](./docs/TROUBLESHOOTING.md) · [Develop](./BUILDING.md) ·
+[Contribute](./CONTRIBUTING.md) · [Support](./SUPPORT.md)
 
--   Unified Crimson Red or Midnight Blue visual system across the client and admin panels
--   Responsive layouts for desktop, tablet, and mobile
--   Configurable panel name, footer, mark or logo, dashboard copy, and artwork
--   Admin Theme Studio with curated Crimson Red and Midnight Blue presets, glass, radius, motion,
-    login artwork, console appearance, and live preview
--   Command palette, account-synced favorites and server groups, permission-aware
-    quick controls, and durable resource notifications
--   Live, one-hour, and 24-hour telemetry views with seven-day server-side retention
--   Mobile bottom navigation and polished loading skeletons
--   Branded public status page at `/status` backed by live Wings node health checks
--   Admin-controlled global announcement banner with notice, warning, and critical modes
--   Soft Aurora, Magic Bento, Fluid Glass, Profile Card, spotlight, and motion
-    treatments adapted for the panel
--   Seamless pointer ambience, polished page transitions, magnetic controls,
-    responsive navigation scrims, and card-local lighting without clipped glow
--   Reduced-motion and coarse-pointer fallbacks for accessible mobile use
--   Production release archives with compiled frontend assets
--   Daily upstream autopilot that ports the theme to verified Pterodactyl releases
-    and publishes only after the complete frontend and database matrix passes
+## Features
+
+| Area                 | Included                                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Visual system        | Crimson Red and Midnight Blue presets, configurable glass and corner radius, reduced-motion support, responsive effects, and consistent client/admin styling |
+| Branding             | Panel name, footer identity, mark or logo, dashboard copy and artwork, login media, console appearance, favicon assets, and live Theme Studio preview        |
+| Dashboard            | Search and command palette, favorites, custom server groups, quick server drawer, permission-aware power controls, and mobile bottom navigation              |
+| Operations           | Live, one-hour, and 24-hour resource graphs; seven-day telemetry retention; persistent resource notifications; and guarded loading, retry, and error states  |
+| Public communication | Optional `/status` page backed by Wings health checks and a dismissible global announcement banner with notice, warning, or critical presentation            |
+| Delivery             | Checksum-verified installer, rollback snapshots, compiled release archives, multi-architecture container builds, and gated upstream-update automation        |
+
+The interface uses adapted Soft Aurora, Magic Bento, Fluid Glass, Profile Card,
+spotlight, and motion treatments. Effects degrade for coarse pointers and honor
+the operating system's reduced-motion preference.
 
 ## Compatibility
 
-| Requirement       | Supported version |
-| ----------------- | ----------------- |
-| Pterodactyl Panel | `1.15.1`          |
-| PHP               | `8.2` or `8.3`    |
-| Node.js           | `22` or newer     |
-| Yarn              | Classic `1.x`     |
+| Component         | Supported                                        |
+| ----------------- | ------------------------------------------------ |
+| Rock Theme        | `2.0.3`                                          |
+| Pterodactyl Panel | `1.15.1`                                         |
+| PHP               | `8.2` or `8.3`                                   |
+| Node.js           | `22` or newer when building from source          |
+| Yarn              | Classic `1.x` when building from source          |
+| Architectures     | `linux/amd64` and `linux/arm64` container images |
 
-Rock Theme is a full panel overlay. Back up the panel database and `.env`
-before installing it, and test upgrades in a staging environment first.
+Do not install this release over a different Pterodactyl base version. Upgrade
+the base panel through a compatible Rock Theme release instead of running the
+official Pterodactyl updater directly over a themed installation.
 
-## Installation & Management
+## Quick install
 
-Run the verified Rock Theme shell manager to install, update, or restore a
-manager-created pre-theme backup interactively:
+> [!CAUTION]
+> Install on a tested backup. The manager creates a panel-file snapshot, but it
+> does not export your database. Back up the database and `.env` separately
+> before changing a production panel.
 
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh)
-```
-
-The manager uses a compact terminal layout with an animated, elapsed-time stage
-indicator while downloads, backups, Composer, migrations, permissions, and
-cache operations are running. If a stage fails, its latest output is printed
-immediately and the panel recovery guard still runs.
-
-The script presents a menu with three options:
-
-1. **Install Theme** – Verifies the latest release checksum, saves the original panel, and installs the compiled theme.
-2. **Update Theme** – Creates a safety backup and installs the latest verified release.
-3. **Restore Backup** – Restores the manager-created pre-theme files while preserving the current `.env` and `storage` directory.
-
-Failed downloads never touch the panel. If an operation fails after maintenance
-mode begins, the manager automatically brings the panel back online.
-
-You can also run an action directly or switch to plain or verbose output:
+On a server with an existing Pterodactyl `1.15.1` installation:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) update
-bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) install --no-animation
-bash <(curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh) update --verbose
+curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \
+  -o /tmp/rock-theme-install.sh
+sudo bash /tmp/rock-theme-install.sh install
 ```
 
-### Manual Installation
+The manager verifies the latest release checksum and archive structure before
+placing the panel in maintenance mode. It then creates a rollback snapshot,
+installs PHP dependencies, runs migrations, clears caches, restarts queue
+workers, repairs permissions, and returns the panel online. Interrupted
+operations include a recovery guard that attempts to bring the panel back up.
 
-For direct installation without the manager:
+Use the interactive menu by omitting the action, or run an operation directly:
 
 ```bash
-cd /var/www/pterodactyl
-
-php artisan down
-
-curl -fL -o panel.tar.gz https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz
-curl -fL -o panel.tar.gz.sha256 https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz.sha256
-sha256sum --check panel.tar.gz.sha256
-tar -xzf panel.tar.gz
-rm panel.tar.gz panel.tar.gz.sha256
-
-composer install --no-dev --optimize-autoloader
-php artisan migrate --seed --force
-php artisan view:clear
-php artisan config:clear
-php artisan route:clear
-php artisan queue:restart
-
-chown -R www-data:www-data /var/www/pterodactyl
-chmod -R 755 storage bootstrap/cache
-
-php artisan up
+sudo bash /tmp/rock-theme-install.sh update
+sudo bash /tmp/rock-theme-install.sh restore
+sudo bash /tmp/rock-theme-install.sh --help
 ```
 
-Replace `www-data` with the account used by your web server when necessary.
-The normal Pterodactyl scheduler (`php artisan schedule:run` every minute) also
-collects Rock Theme telemetry every five minutes and removes samples older than
-seven days.
+Read the [installation guide](./docs/INSTALLATION.md) before using a custom
+panel path, performing a manual install, or restoring a backup.
 
-## Branding
+## Configure the panel
 
-Open **Admin → Settings** to configure the public identity and Theme Studio without
-editing the theme source. See [BRANDING.md](./BRANDING.md) for the available
-settings, local image paths, and favicon locations.
+After installation, open **Admin → Settings**. Theme settings are stored in the
+panel database and apply across the client, login, server, status, and admin
+views.
+
+Common first steps:
+
+1. Set the panel name, owner, logo, and footer URL.
+2. Choose **Crimson Red** or **Midnight Blue** in Theme Studio.
+3. Add dashboard and login artwork you are licensed to use.
+4. Set console media visibility low enough to preserve terminal readability.
+5. Review the public status-page and announcement settings before enabling them.
+6. Confirm the normal Pterodactyl scheduler is running every minute.
+
+See the [configuration reference](./docs/CONFIGURATION.md) for supported values,
+media paths, persistence behavior, status-page controls, and telemetry details.
+
+## Documentation
+
+| Guide                                           | Purpose                                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| [Documentation index](./docs/README.md)         | Operator and developer documentation map                                        |
+| [Installation](./docs/INSTALLATION.md)          | Prerequisites, manager usage, manual deployment, and verification               |
+| [Configuration](./docs/CONFIGURATION.md)        | Branding, Theme Studio, media, status page, announcements, and stored user data |
+| [Upgrading and recovery](./docs/UPGRADING.md)   | Safe updates, compatibility policy, backups, rollback, and upstream automation  |
+| [Troubleshooting](./docs/TROUBLESHOOTING.md)    | Diagnostic commands and fixes for common deployment and runtime problems        |
+| [Architecture](./docs/ARCHITECTURE.md)          | Application layers, Rock Theme data, release pipeline, and design boundaries    |
+| [Building](./BUILDING.md)                       | Local dependencies, frontend checks, backend tests, and release packaging       |
+| [Branding](./BRANDING.md)                       | Short-form branding and asset reference                                         |
+| [Upstream automation](./UPSTREAM_AUTOMATION.md) | Detailed three-tree update process and safety model                             |
+| [Roadmap](./ROADMAP.md)                         | Current priorities and project direction                                        |
+| [Governance](./GOVERNANCE.md)                   | Maintenance model, decision principles, and release policy                      |
 
 ## Development
+
+Install source dependencies, then run the same frontend checks used in CI:
 
 ```bash
 yarn install --frozen-lockfile
 yarn tsc
 yarn lint
+yarn test --runInBand
 yarn build:production
 ```
 
-Development setup and release packaging are documented in
-[BUILDING.md](./BUILDING.md).
+Backend changes are checked on PHP 8.2 and 8.3 against MySQL 8/9 and MariaDB
+10/11. Follow [BUILDING.md](./BUILDING.md) for local backend setup and
+[CONTRIBUTING.md](./CONTRIBUTING.md) before opening a pull request.
 
-Upstream release automation is documented in
-[UPSTREAM_AUTOMATION.md](./UPSTREAM_AUTOMATION.md).
+## Releases and updates
 
-## Support
+A version tag runs the frontend, backend, and multi-architecture container
+release gates, then creates a draft containing `panel.tar.gz` and
+`panel.tar.gz.sha256`. Publishing that reviewed draft makes the artifacts public
+and starts the stable container publish. The installer downloads both files and
+refuses to extract an archive with a failed checksum or unsafe path.
 
--   Report Rock Theme bugs through
-    [GitHub Issues](https://github.com/devrock07/Rock-Theme/issues).
--   Use the [Pterodactyl documentation](https://pterodactyl.io) for panel,
-    Wings, node, and game-server configuration.
--   Review [SECURITY.md](./SECURITY.md) before reporting a vulnerability.
+Rock Theme also checks official Pterodactyl releases daily. A new base is
+published only after the customized tree merges cleanly and the frontend and
+backend database matrix and multi-architecture container build succeed.
+Promotion then creates the verified release archive and dispatches its
+versioned/`latest` and `edge` container builds. See
+[UPSTREAM_AUTOMATION.md](./UPSTREAM_AUTOMATION.md) for the complete process.
 
-Please reproduce theme issues on Pterodactyl `1.15.1` and include the browser,
-screen size, affected view, and screenshots.
+-   [Latest release](https://github.com/devrock07/Rock-Theme/releases/latest)
+-   [Release history](https://github.com/devrock07/Rock-Theme/releases)
+-   [Container package](https://github.com/devrock07/Rock-Theme/pkgs/container/rock-theme)
+-   [Project roadmap](https://github.com/users/devrock07/projects/3)
 
-## Credits and licenses
+## Support and security
 
-Rock Theme is a derivative Pterodactyl panel distribution and includes work
-from the NookTheme project. Rock Theme is not affiliated with Pterodactyl,
-Nookure, or React Bits.
+Use the [support guide](./SUPPORT.md) to choose the right channel. Reproducible
+Rock Theme bugs belong in [GitHub Issues](https://github.com/devrock07/Rock-Theme/issues)
+with the Rock Theme and Pterodactyl versions, browser, viewport size, affected
+route, sanitized logs, and screenshots for visual defects.
+General usage questions belong in
+[GitHub Discussions](https://github.com/devrock07/Rock-Theme/discussions/categories/q-a).
 
--   Pterodactyl code is distributed under the [MIT License](./LICENSE.md).
--   NookTheme-derived edits and Rock Theme modifications are distributed under
-    the [GNU GPLv3](./NookLicense.md), subject to third-party terms.
--   Adapted component notices and additional license conditions are listed in
+Do not open a public issue for a vulnerability. Follow
+[SECURITY.md](./SECURITY.md) and use
+[private vulnerability reporting](https://github.com/devrock07/Rock-Theme/security/advisories/new).
+Core Pterodactyl or Wings issues belong in their respective upstream projects.
+
+## Credits and licensing
+
+Rock Theme is a derivative Pterodactyl panel distribution and contains work
+derived from NookTheme plus adapted third-party interface components. It is not
+affiliated with Pterodactyl, Nookure, or React Bits.
+
+-   NookTheme-derived and Rock Theme modifications are distributed under the
+    [GNU GPLv3](./LICENSE), subject to applicable third-party terms.
+-   Pterodactyl code retains its [MIT License](./PTERODACTYL_LICENSE.md).
+-   Component attribution and additional terms are recorded in
     [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
 
-Copyright © 2022–2026 DevRock. Upstream copyright notices remain with their
-respective owners.
+Copyright © 2022–2026 DevRock. Upstream notices remain with their respective
+owners.

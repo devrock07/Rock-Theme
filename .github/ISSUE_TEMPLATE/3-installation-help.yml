@@ -1,0 +1,83 @@
+name: Installation or update help
+description: Ask for help with the Rock Theme installer, update, or rollback flow.
+title: '[Support]: '
+labels:
+    - question
+body:
+    - type: markdown
+      attributes:
+          value: |
+              This form covers Rock Theme deployment. Use Pterodactyl's support resources for Wings, nodes, eggs, and game-server configuration. Never paste passwords, tokens, `.env` contents, or database dumps.
+
+    - type: input
+      id: theme-version
+      attributes:
+          label: Rock Theme version
+          placeholder: v2.0.3, or the version being installed
+      validations:
+          required: true
+
+    - type: input
+      id: panel-version
+      attributes:
+          label: Pterodactyl version
+          placeholder: 1.15.1
+      validations:
+          required: true
+
+    - type: dropdown
+      id: operation
+      attributes:
+          label: Operation
+          options:
+              - Fresh installation
+              - Theme update
+              - Backup restore or rollback
+              - Manual archive installation
+              - Container deployment
+      validations:
+          required: true
+
+    - type: input
+      id: environment
+      attributes:
+          label: Host environment
+          description: Include the Linux distribution, PHP version, database, and web server.
+          placeholder: Ubuntu 24.04, PHP 8.3, MariaDB 11, nginx
+      validations:
+          required: true
+
+    - type: textarea
+      id: command
+      attributes:
+          label: Command used
+          description: Paste the command without credentials or private URLs.
+          render: shell
+      validations:
+          required: true
+
+    - type: textarea
+      id: output
+      attributes:
+          label: Failure output
+          description: Include the complete failing stage and redact secrets, addresses, and personal data.
+          render: shell
+      validations:
+          required: true
+
+    - type: textarea
+      id: attempted
+      attributes:
+          label: What you already tried
+
+    - type: checkboxes
+      id: checks
+      attributes:
+          label: Pre-submission checks
+          options:
+              - label: I created or verified a current panel backup before installing or updating.
+                required: true
+              - label: I checked the Wiki, support guide, release notes, and existing issues.
+                required: true
+              - label: I removed credentials, tokens, IP addresses, and personal data.
+                required: true

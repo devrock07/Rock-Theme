@@ -1,0 +1,8 @@
+# Default review ownership for Rock Theme.
+* @devrock07
+
+# Changes to release and compatibility automation always require maintainer review.
+/.github/workflows/ @devrock07
+/.rock/ @devrock07
+/install.sh @devrock07
+/release.sh @devrock07

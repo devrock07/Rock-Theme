@@ -12,6 +12,8 @@
 *.xml text eol=lf
 *.yaml text eol=lf
 *.yml text eol=lf
+.env.ci text eol=lf
+.env.example text eol=lf
 
 *.gif binary
 *.ico binary

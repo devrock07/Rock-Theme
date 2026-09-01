@@ -31,11 +31,12 @@ success_output="$workspace/success.log"
 failure_output="$workspace/failure.log"
 plain_output="$workspace/plain.log"
 
-mkdir -p "$panel/storage/framework" "$panel/bootstrap/cache" "$fixture" "$release/storage/framework" "$release/bootstrap/cache" "$mock_bin"
+mkdir -p "$panel/storage/framework" "$panel/bootstrap/cache" "$fixture" "$release/storage/framework" "$release/bootstrap/cache" "$release/.rock" "$mock_bin"
 printf 'APP_KEY=test\n' >"$panel/.env"
 printf '#!/usr/bin/env php\n' >"$panel/artisan"
 printf '#!/usr/bin/env php\n' >"$release/artisan"
 printf 'updated\n' >"$release/rock-theme-installed"
+printf '{"schema":1,"theme_version":"9.9.9","pterodactyl_version":"v1.15.1","source_commit":"0000000000000000000000000000000000000000"}\n' >"$release/.rock/release.json"
 
 tar -C "$release" -czf "$fixture/panel.tar.gz" .
 (

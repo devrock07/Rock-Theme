@@ -1,8 +1,45 @@
 # Changelog
 This file is a running track of new features and fixes to each version of the panel released starting with `v0.4.0`.
 
-This project follows [Semantic Versioning](http://semver.org) guidelines.
+This project follows [Semantic Versioning](https://semver.org/) guidelines.
 
+
+## Rock Theme v2.0.3 — 2026-09-01
+
+### Added
+
+- Professional operator and contributor documentation covering installation,
+  configuration, upgrades, recovery, architecture, support, governance, and
+  project direction.
+- Structured bug, feature, and installation-support forms plus a pull request
+  template, CODEOWNERS, release-note categories, and community standards.
+- A public, structured GitHub Project roadmap and a publication-ready Wiki.
+- CodeQL, pull-request dependency review, and grouped Dependabot maintenance.
+- Regression coverage for automatic compatibility/version metadata updates.
+
+### Changed
+
+- Hardened frontend, backend, release, container, security, and upstream
+  automation with immutable action revisions, least-privilege permissions,
+  concurrency control, timeouts, and verified release gates.
+- Made automatic releases recover safely from partial tag, asset, or container
+  publication without moving immutable tags or rebuilding healthy channels.
+- Made container publication follow verified commits, validated
+  multi-architecture candidates before promotion, and documented a Rock Theme
+  Compose deployment.
+- Expanded upstream metadata synchronization so future Pterodactyl and
+  theme-only releases update every published compatibility surface atomically.
+- Normalized the project license layout and retained the upstream Pterodactyl
+  license separately.
+
+### Fixed
+
+- Corrected installed-app icon metadata so the documented 192px and 512px
+  Android assets are both used.
+- Corrected public-status privacy guidance and removed stale or contradictory
+  installation, container, and workflow instructions.
+
+The entries below preserve the bundled upstream Pterodactyl changelog.
 ## v1.12.3
 ### Fixed
 * Adds a rate limit when changing email addresses on an account to prevent account enumeration.

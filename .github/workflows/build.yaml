@@ -12,13 +12,22 @@ on:
 permissions:
     contents: read
 
+concurrency:
+    group: frontend-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     build:
         name: Typecheck, lint, and build
         runs-on: ubuntu-24.04
+        timeout-minutes: 35
+        env:
+            CI: true
         steps:
             - name: Check out source
-              uses: actions/checkout@v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
 
             - name: Validate installer scripts
               run: |
@@ -27,13 +36,14 @@ jobs:
                   bash tests/InstallerSmokeTest.sh
 
             - name: Set up Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
                   node-version: 22
                   cache: yarn
+                  cache-dependency-path: yarn.lock
 
             - name: Install dependencies
-              run: yarn install --frozen-lockfile
+              run: yarn install --frozen-lockfile --non-interactive
 
             - name: Typecheck
               run: yarn tsc
@@ -42,7 +52,7 @@ jobs:
               run: yarn lint
 
             - name: Run frontend tests
-              run: yarn test --runInBand
+              run: yarn test --ci --runInBand
 
             - name: Build production assets
               run: yarn build:production

@@ -85,15 +85,19 @@ the same local paths and remote image/video formats as the console background.
 ## Dashboard tools
 
 Press `Ctrl+K` to open the command palette. Favorites, custom server groups,
-notifications, and telemetry samples are stored in the current browser. Quick
-view uses the normal Pterodactyl client API and respects the signed-in user's
-power permissions.
+and notification state are synchronized with the signed-in account and use a
+local fallback while a request is pending or unavailable. Resource telemetry is
+retained server-side for seven days. Quick view uses the normal Pterodactyl
+client API and respects the signed-in user's power permissions.
 
 ## Public status page
 
 The branded page is available at `/status` without authentication when enabled.
-It is an operator-controlled availability notice; it does not expose private
-nodes or server telemetry.
+It is an operator-controlled availability notice. The public response includes
+aggregate health counts and, when node cards are visible, node IDs, names, and
+their current health or maintenance state. Use **Summary Totals Only** or hide
+node cards if node names are sensitive. It does not expose private server
+telemetry.
 
 ## Logo and device icons
 
@@ -112,7 +116,9 @@ The browser and device icons are stored in `public/favicons/`, including:
 -   `android-chrome-512x512.png`
 
 Replace these files with matching dimensions, then clear browser and panel
-caches.
+caches. The favicon URLs currently use the `rock-red-2` cache token; bump that
+token in the two Blade layouts, the manifest, and `browserconfig.xml` when a
+replacement must invalidate long-lived browser caches.
 
 ## Theme source
 

@@ -1,86 +1,112 @@
-# Rock Theme - Docker Image
+# Rock Theme container image
 
-This is a ready-to-use Rock Theme image for Pterodactyl Panel.
+Rock Theme publishes a production panel image to
+`ghcr.io/devrock07/rock-theme` for `linux/amd64` and `linux/arm64`. The image
+contains the complete Pterodactyl application, compiled Rock Theme assets,
+nginx, PHP-FPM, the scheduler, and a queue worker. Wings is deployed separately.
+
+## Image tags
+
+| Tag      | Use                                           |
+| -------- | --------------------------------------------- |
+| `2.0.3`  | Immutable release; recommended for production |
+| `2.0`    | Latest compatible patch in a release line     |
+| `latest` | Latest stable Rock Theme release              |
+| `edge`   | Current `main`; testing only                  |
+
+Pin a full release version in production. Pulling `latest` or `edge` can change
+the application the next time the container is recreated.
 
 ## Requirements
 
-This image requires a database and cache. They can run in other containers (see
-the repository's [docker-compose.example.yml](../../docker-compose.example.yml))
-or as existing services.
+-   A MySQL or MariaDB database
+-   Redis for cache, sessions, and queues
+-   Persistent storage for `/app/var`, certificates, nginx configuration, and
+    application logs
+-   An existing Wings deployment and the normal Pterodactyl DNS/firewall setup
 
-A mysql database is required. We recommend the stock [MariaDB Image](https://hub.docker.com/_/mariadb/) image if you prefer to run it in a docker container. As a non-containerized option we recommend mariadb.
+The repository's [Compose example](../../docker-compose.example.yml) provides a
+starting point. Before starting it, change both database passwords, `APP_URL`,
+`APP_SERVICE_AUTHOR`, mail settings, host volume paths, and the network subnet.
+Do not commit real secrets.
 
-A caching software is required as well. We recommend the stock [Redis Image](https://hub.docker.com/_/redis/) image. You can choose any of the [supported options](#cache-drivers).
-
-You can provide additional settings using a custom `.env` file or by setting the appropriate environment variables in the docker-compose file.
-
-## Setup
-
-Start the panel and its dependencies with the included Compose example or your
-own deployment configuration.
-
-After the startup is complete you'll need to create a user.
-If you are running the docker container without docker-compose, use:
-
-```
-docker exec -it <container id> php artisan p:user:make
+```bash
+docker compose -f docker-compose.example.yml pull
+docker compose -f docker-compose.example.yml up -d
+docker compose -f docker-compose.example.yml logs -f panel
 ```
 
-If you are using docker compose use
+The panel waits for the database, creates its persistent environment file,
+runs database migrations, starts scheduled jobs, and then launches nginx and
+PHP-FPM. Initial startup can take longer while migrations complete.
 
+## Create the first administrator
+
+```bash
+docker compose -f docker-compose.example.yml exec panel php artisan p:user:make
 ```
-docker compose exec panel php artisan p:user:make
+
+Without Compose:
+
+```bash
+docker exec -it <panel-container> php artisan p:user:make
 ```
 
-## Environment Variables
+## Configuration
 
-There are multiple environment variables to configure the panel when not providing your own `.env` file, see the following table for details on each available option.
+You can mount an existing environment file at `/app/var/.env` or provide
+environment variables to the container. The most important values are:
 
-Note: If your `APP_URL` starts with `https://` you need to provide an `LE_EMAIL` as well so Certificates can be generated.
+| Variable                                                   | Purpose                                            | Required          |
+| ---------------------------------------------------------- | -------------------------------------------------- | ----------------- |
+| `APP_URL`                                                  | Public panel URL including `http://` or `https://` | Yes               |
+| `APP_TIMEZONE`                                             | PHP timezone, such as `UTC`                        | Yes               |
+| `APP_SERVICE_AUTHOR`                                       | Service-author email used by Pterodactyl           | Yes               |
+| `APP_KEY`                                                  | Existing Laravel key when migrating a panel        | Existing installs |
+| `DB_HOST`, `DB_PORT`                                       | Database endpoint                                  | Yes               |
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`                | Database credentials                               | Yes               |
+| `CACHE_DRIVER`, `SESSION_DRIVER`, `QUEUE_DRIVER`           | Normally `redis`                                   | Yes               |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`               | Redis connection                                   | Yes               |
+| `MAIL_MAILER`                                              | Mail transport, commonly `smtp`                    | Recommended       |
+| `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME`                      | Sender identity                                    | Recommended       |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | SMTP connection                                    | When using SMTP   |
+| `LE_EMAIL`                                                 | Enables built-in Let's Encrypt provisioning        | Optional          |
 
-| Variable         | Description                                                       | Required |
-| ---------------- | ----------------------------------------------------------------- | -------- |
-| `APP_URL`        | The URL the panel will be reachable with (including protocol)     | yes      |
-| `APP_TIMEZONE`   | The timezone to use for the panel                                 | yes      |
-| `LE_EMAIL`       | The email used for letsencrypt certificate generation             | yes      |
-| `DB_HOST`        | The host of the mysql instance                                    | yes      |
-| `DB_PORT`        | The port of the mysql instance                                    | yes      |
-| `DB_DATABASE`    | The name of the mysql database                                    | yes      |
-| `DB_USERNAME`    | The mysql user                                                    | yes      |
-| `DB_PASSWORD`    | The mysql password for the specified user                         | yes      |
-| `CACHE_DRIVER`   | The cache driver (see [Cache drivers](#cache-drivers) for detais) | yes      |
-| `SESSION_DRIVER` |                                                                   | yes      |
-| `QUEUE_DRIVER`   |                                                                   | yes      |
-| `REDIS_HOST`     | The hostname or IP address of the redis database                  | yes      |
-| `REDIS_PASSWORD` | The password used to secure the redis database                    | maybe    |
-| `REDIS_PORT`     | The port the redis database is using on the host                  | maybe    |
-| `MAIL_DRIVER`    | The email driver (see [Mail drivers](#mail-drivers) for details)  | yes      |
-| `MAIL_FROM`      | The email that should be used as the sender email                 | yes      |
-| `MAIL_HOST`      | The host of your mail driver instance                             | maybe    |
-| `MAIL_PORT`      | The port of your mail driver instance                             | maybe    |
-| `MAIL_USERNAME`  | The username for your mail driver                                 | maybe    |
-| `MAIL_PASSWORD`  | The password for your mail driver                                 | maybe    |
+All Rock Theme environment defaults are documented in
+[`.env.example`](../../.env.example) and [BRANDING.md](../../BRANDING.md).
+Settings saved in **Admin → Settings** take precedence over branding defaults.
 
-### Cache drivers
+## TLS and reverse proxies
 
-You can choose between different cache drivers depending on what you prefer.
-We recommend redis when using docker as it can be started in a container easily.
+Set `LE_EMAIL` only when the container itself should obtain and serve a
+Let's Encrypt certificate. When TLS terminates at a reverse proxy, omit
+`LE_EMAIL`, expose the HTTP port to that proxy, and configure trusted proxies
+and forwarding headers according to the Pterodactyl documentation.
 
-| Driver | Description                 | Required variables |
-| ------ | --------------------------- | ------------------ |
-| redis  | host where redis is running | `REDIS_HOST`       |
-| redis  | port redis is running on    | `REDIS_PORT`       |
-| redis  | redis database password     | `REDIS_PASSWORD`   |
+## Updating safely
 
-### Mail drivers
+Back up the database and persistent volumes, change the image to a verified
+release tag, then recreate the panel container:
 
-You can choose between different mail drivers according to your needs.
-Every driver requires `MAIL_FROM` to be set.
+```bash
+docker compose -f docker-compose.example.yml pull panel
+docker compose -f docker-compose.example.yml up -d panel
+docker compose -f docker-compose.example.yml logs -f panel
+```
 
-| Driver   | Description                          | Required variables                                         |
-| -------- | ------------------------------------ | ---------------------------------------------------------- |
-| mail     | uses the installed php mail          |                                                            |
-| mandrill | [Mandrill](http://www.mandrill.com/) | `MAIL_USERNAME`                                            |
-| postmark | [Postmark](https://postmarkapp.com/) | `MAIL_USERNAME`                                            |
-| mailgun  | [Mailgun](https://www.mailgun.com/)  | `MAIL_USERNAME`, `MAIL_HOST`                               |
-| smtp     | Any SMTP server can be configured    | `MAIL_USERNAME`, `MAIL_HOST`, `MAIL_PASSWORD`, `MAIL_PORT` |
+Confirm the login page, one server view, the queue worker, and the scheduler
+after every update. Do not mix a Rock Theme application image with a different
+Pterodactyl database compatibility level.
+
+## Troubleshooting
+
+```bash
+docker compose -f docker-compose.example.yml ps
+docker compose -f docker-compose.example.yml logs --tail=200 panel
+docker compose -f docker-compose.example.yml exec panel php artisan about
+docker compose -f docker-compose.example.yml exec panel php artisan migrate:status
+```
+
+Redact credentials, tokens, public IP addresses, and personal information
+before attaching output to an issue. For a complete diagnostic checklist, see
+the [troubleshooting guide](../../docs/TROUBLESHOOTING.md).

@@ -20,6 +20,18 @@ git archive --format=tar HEAD | tar -xf - -C "$staging"
 rm -rf "$staging/public/assets" "$staging/.github" "$staging/tests"
 mkdir -p "$staging/public/assets" "$root/release"
 cp -a "$root/public/assets/." "$staging/public/assets/"
+THEME_VERSION="$(node -p "require('./package.json').version")" \
+PTERODACTYL_VERSION="$(tr -d '[:space:]' < "$root/.rock/upstream-version")" \
+SOURCE_COMMIT="$(git rev-parse HEAD)" \
+node -e '
+    const fs = require("fs");
+    fs.writeFileSync(process.argv[1], JSON.stringify({
+        schema: 1,
+        theme_version: process.env.THEME_VERSION,
+        pterodactyl_version: process.env.PTERODACTYL_VERSION,
+        source_commit: process.env.SOURCE_COMMIT,
+    }) + "\n");
+' "$staging/.rock/release.json"
 
 tar -C "$staging" -czf "$root/release/panel.tar.gz" .
 (

@@ -1,0 +1,94 @@
+version: 2
+
+updates:
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+          interval: weekly
+          day: monday
+          time: '04:00'
+          timezone: Etc/UTC
+      target-branch: main
+      open-pull-requests-limit: 2
+      rebase-strategy: auto
+      commit-message:
+          prefix: 'ci(deps)'
+      groups:
+          actions:
+              patterns:
+                  - '*'
+
+    - package-ecosystem: npm
+      directory: /
+      schedule:
+          interval: weekly
+          day: monday
+          time: '04:15'
+          timezone: Etc/UTC
+      target-branch: main
+      open-pull-requests-limit: 4
+      rebase-strategy: auto
+      versioning-strategy: increase-if-necessary
+      commit-message:
+          prefix: 'build(deps)'
+      groups:
+          npm-production:
+              dependency-type: production
+              update-types:
+                  - minor
+                  - patch
+          npm-development:
+              dependency-type: development
+              update-types:
+                  - minor
+                  - patch
+      ignore:
+          - dependency-name: '*'
+            update-types:
+                - version-update:semver-major
+
+    - package-ecosystem: composer
+      directory: /
+      schedule:
+          interval: weekly
+          day: monday
+          time: '04:30'
+          timezone: Etc/UTC
+      target-branch: main
+      open-pull-requests-limit: 4
+      rebase-strategy: auto
+      versioning-strategy: increase-if-necessary
+      commit-message:
+          prefix: 'build(deps)'
+      groups:
+          composer-production:
+              dependency-type: production
+              update-types:
+                  - minor
+                  - patch
+          composer-development:
+              dependency-type: development
+              update-types:
+                  - minor
+                  - patch
+      ignore:
+          - dependency-name: '*'
+            update-types:
+                - version-update:semver-major
+
+    - package-ecosystem: docker
+      directory: /
+      schedule:
+          interval: weekly
+          day: monday
+          time: '04:45'
+          timezone: Etc/UTC
+      target-branch: main
+      open-pull-requests-limit: 2
+      rebase-strategy: auto
+      commit-message:
+          prefix: 'build(deps)'
+      groups:
+          container-base-images:
+              patterns:
+                  - '*'

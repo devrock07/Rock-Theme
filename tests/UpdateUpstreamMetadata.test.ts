@@ -1,0 +1,149 @@
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { spawnSync } from 'child_process';
+
+type VersionFile = { path: string; theme?: boolean; upstream?: boolean };
+
+const projectRoot = path.resolve(__dirname, '..');
+const synchronizedVersionFiles: VersionFile[] = [
+    { path: 'README.md', theme: true, upstream: true },
+    { path: 'docs/README.md', theme: true, upstream: true },
+    { path: 'docs/INSTALLATION.md', theme: true, upstream: true },
+    { path: 'docs/UPGRADING.md', theme: true, upstream: true },
+    { path: 'SECURITY.md', upstream: true },
+    { path: '.github/ISSUE_TEMPLATE/1-bug-report.yml', theme: true, upstream: true },
+    { path: '.github/ISSUE_TEMPLATE/2-feature-request.yml', upstream: true },
+    { path: '.github/ISSUE_TEMPLATE/3-installation-help.yml', theme: true, upstream: true },
+    { path: '.github/docker/README.md', theme: true },
+    { path: '.github/workflows/upstream-autopilot.yaml', upstream: true },
+    { path: 'docker-compose.example.yml', theme: true },
+    { path: 'UPSTREAM_AUTOMATION.md', upstream: true },
+];
+const fixtureFiles = [
+    '.rock/upstream-version',
+    'config/app.php',
+    'package.json',
+    'scripts/update-upstream-metadata.js',
+    ...synchronizedVersionFiles.map((file) => file.path),
+];
+
+const read = (root: string, file: string): string => fs.readFileSync(path.join(root, file), 'utf8');
+
+const createFixture = (): string => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rock-theme-metadata-'));
+    for (const file of new Set(fixtureFiles)) {
+        const destination = path.join(root, file);
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.copyFileSync(path.join(projectRoot, file), destination);
+    }
+    return root;
+};
+
+const nextPatch = (version: string): string => {
+    const [major, minor, patch] = version.split('.').map(Number);
+    return `${major}.${minor}.${patch + 1}`;
+};
+
+const runUpdater = (root: string, upstreamVersion: string, themeVersion: string) =>
+    spawnSync(
+        process.execPath,
+        [path.join(root, 'scripts/update-upstream-metadata.js'), `v${upstreamVersion}`, `v${themeVersion}`],
+        {
+            cwd: root,
+            encoding: 'utf8',
+        }
+    );
+
+describe('update-upstream-metadata', () => {
+    const fixtures: string[] = [];
+
+    afterEach(() => {
+        while (fixtures.length) {
+            const fixture = fixtures.pop();
+            if (fixture) fs.rmSync(fixture, { recursive: true, force: true });
+        }
+    });
+
+    it('synchronizes every published compatibility reference', () => {
+        const root = createFixture();
+        fixtures.push(root);
+
+        const previousTheme = JSON.parse(read(root, 'package.json')).version as string;
+        const previousUpstreamTag = read(root, '.rock/upstream-version').trim();
+        const previousUpstream = previousUpstreamTag.replace(/^v/, '');
+        const themeVersion = nextPatch(previousTheme);
+        const upstreamVersion = nextPatch(previousUpstream);
+        const result = runUpdater(root, upstreamVersion, themeVersion);
+
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+        expect(read(root, '.rock/upstream-version')).toBe(`v${upstreamVersion}\n`);
+        expect(JSON.parse(read(root, 'package.json'))).toMatchObject({
+            version: themeVersion,
+            description: `A responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`,
+        });
+        expect(read(root, 'config/app.php')).toContain(`'version' => '${upstreamVersion}'`);
+        expect(read(root, 'config/app.php')).toContain(`'fork-version' => '${themeVersion}'`);
+
+        for (const file of synchronizedVersionFiles) {
+            const contents = read(root, file.path);
+            if (file.theme) {
+                expect(contents).toContain(themeVersion);
+                expect(contents).not.toContain(previousTheme);
+            }
+            if (file.upstream) {
+                expect(contents).toContain(upstreamVersion);
+                expect(contents).not.toContain(previousUpstream);
+            }
+        }
+
+        const readme = read(root, 'README.md');
+        expect(readme).toContain(`/pterodactyl/panel/releases/tag/v${upstreamVersion}`);
+        expect(readme).toContain(`Rock Theme \`v${themeVersion}\``);
+        expect(readme).toContain(`| Rock Theme        | \`${themeVersion}\``);
+    });
+
+    it('does not partially write metadata when a tracked marker is missing', () => {
+        const root = createFixture();
+        fixtures.push(root);
+
+        const previousTheme = JSON.parse(read(root, 'package.json')).version as string;
+        const previousUpstream = read(root, '.rock/upstream-version').trim().replace(/^v/, '');
+        const originalConfig = read(root, 'config/app.php');
+        const originalPackage = read(root, 'package.json');
+        const securityFile = path.join(root, 'SECURITY.md');
+
+        fs.writeFileSync(
+            securityFile,
+            read(root, 'SECURITY.md').split(previousUpstream).join('version-marker-removed')
+        );
+        const result = runUpdater(root, nextPatch(previousUpstream), nextPatch(previousTheme));
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('SECURITY.md Pterodactyl version');
+        expect(read(root, 'config/app.php')).toBe(originalConfig);
+        expect(read(root, 'package.json')).toBe(originalPackage);
+        expect(read(root, '.rock/upstream-version')).toBe(`v${previousUpstream}\n`);
+    });
+
+    it('supports a theme-only release without rewriting upstream-only files', () => {
+        const root = createFixture();
+        fixtures.push(root);
+
+        const previousTheme = JSON.parse(read(root, 'package.json')).version as string;
+        const upstreamVersion = read(root, '.rock/upstream-version').trim().replace(/^v/, '');
+        const securityBefore = read(root, 'SECURITY.md');
+        const featureTemplateBefore = read(root, '.github/ISSUE_TEMPLATE/2-feature-request.yml');
+        const themeVersion = nextPatch(previousTheme);
+        const result = runUpdater(root, upstreamVersion, themeVersion);
+
+        expect(result.stderr).toBe('');
+        expect(result.status).toBe(0);
+        expect(JSON.parse(read(root, 'package.json')).version).toBe(themeVersion);
+        expect(read(root, '.rock/upstream-version')).toBe(`v${upstreamVersion}\n`);
+        expect(read(root, 'SECURITY.md')).toBe(securityBefore);
+        expect(read(root, '.github/ISSUE_TEMPLATE/2-feature-request.yml')).toBe(featureTemplateBefore);
+        expect(read(root, 'docker-compose.example.yml')).toContain(`rock-theme:${themeVersion}`);
+    });
+});

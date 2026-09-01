@@ -256,12 +256,24 @@ verify_release_checksum() {
 }
 
 validate_release_archive() {
+    local provenance
     tar -tzf "$TEMP_DIR/panel.tar.gz" >"$TEMP_DIR/archive-list"
     if grep -Eq '(^|/)\.\.(/|$)|^/' "$TEMP_DIR/archive-list"; then
         printf 'The release archive contains an unsafe path.\n' >&2
         return 1
     fi
     grep -Eq '^\./artisan$|^artisan$' "$TEMP_DIR/archive-list"
+    provenance="$(tar -xOf "$TEMP_DIR/panel.tar.gz" ./.rock/release.json 2>/dev/null)"
+    printf '%s' "$provenance" | php -r '
+        $data = json_decode(stream_get_contents(STDIN), true);
+        $tag = trim(file_get_contents($argv[1]));
+        if (($data["schema"] ?? null) !== 1 ||
+            ($data["theme_version"] ?? null) !== ltrim($tag, "v") ||
+            !preg_match("/^v[0-9]+\\.[0-9]+\\.[0-9]+$/", $data["pterodactyl_version"] ?? "") ||
+            !preg_match("/^[0-9a-f]{40}$/", $data["source_commit"] ?? "")) {
+            exit(1);
+        }
+    ' "$TEMP_DIR/latest-tag"
 }
 
 backup_panel_to() {
