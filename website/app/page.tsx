@@ -59,10 +59,10 @@ sudo bash /tmp/rockdactyl-install.sh install`;
 
 export default function Home() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="site-shell relative isolate min-h-screen text-foreground">
             <SiteHeader />
             <div
-                className="site-grid pointer-events-none fixed inset-0 -z-10"
+                className="site-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]"
                 aria-hidden="true"
             />
 
@@ -86,7 +86,7 @@ export default function Home() {
                                 Pterodactyl 1.15.1
                             </span>
                         </Link>
-                        <h1 className="hero-copy max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.9] tracking-[-0.068em]">
+                        <h1 className="hero-copy max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.93] tracking-[-0.045em]">
                             Pterodactyl,
                             <span className="block bg-gradient-to-r from-[#ff9aaa] via-[#f24963] to-[#9f1029] bg-clip-text text-transparent">
                                 refined.
@@ -133,6 +133,7 @@ export default function Home() {
                             src="/screenshots/dashboard-crimson.webp"
                             alt="Rockdactyl dashboard running locally"
                             label="Live dashboard"
+                            className="hero-screen"
                             priority
                         />
                         <div
@@ -195,7 +196,15 @@ export default function Home() {
                             title="The details operators actually touch."
                             body="Console telemetry, responsive navigation, file actions, public status, and administration flows are designed and tested as one release."
                         />
-                        <div className="mt-12 grid items-start gap-5 lg:grid-cols-[minmax(0,1.34fr)_minmax(280px,.54fr)]">
+                        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-y border-white/[0.07] py-4 font-mono text-[9px] font-medium uppercase tracking-[0.17em] text-muted-foreground">
+                            <span className="inline-flex items-center gap-2 text-foreground/80">
+                                <span className="size-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(242,73,99,.7)]" />
+                                Actual panel captures
+                            </span>
+                            <span>Desktop · 1440 px</span>
+                            <span>Mobile · 390 px</span>
+                        </div>
+                        <div className="surface-gallery relative mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1.34fr)_minmax(280px,.54fr)] lg:gap-6">
                             <div className="grid gap-5">
                                 <PanelScreenshot
                                     src="/screenshots/console.webp"
@@ -208,11 +217,14 @@ export default function Home() {
                                     label="Public status"
                                 />
                             </div>
-                            <div className="lg:sticky lg:top-24">
-                                <p className="mb-4 font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground lg:text-center">
-                                    Mobile · 390 px
+                            <div className="lg:pt-12 xl:pt-16">
+                                <p className="mb-4 flex items-center justify-between font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                                    <span>Adaptive interface</span>
+                                    <span className="text-primary/80">
+                                        Portrait
+                                    </span>
                                 </p>
-                                <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2 shadow-[0_30px_90px_rgba(0,0,0,.45)]">
+                                <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2">
                                     <div
                                         className="mx-auto mb-2 h-5 w-24 rounded-full bg-white/[0.065]"
                                         aria-hidden="true"
@@ -225,10 +237,13 @@ export default function Home() {
                                         width={390}
                                         height={844}
                                         sizes="370px"
-                                        loading="eager"
                                         className="aspect-[9/18] w-full rounded-[23px] border border-white/[0.06] object-cover object-top"
                                     />
                                 </figure>
+                                <div className="mx-auto mt-4 flex max-w-[340px] items-center justify-between border-t border-white/[0.07] pt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+                                    <span>Touch ready</span>
+                                    <span>Viewport safe</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -288,7 +303,7 @@ export default function Home() {
                     <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                         Open source · operator controlled
                     </p>
-                    <h2 className="mx-auto mt-5 max-w-4xl text-balance text-[clamp(2.7rem,6vw,5.8rem)] font-semibold leading-[0.93] tracking-[-0.065em]">
+                    <h2 className="mx-auto mt-5 max-w-4xl text-balance text-[clamp(2.7rem,6vw,5.8rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
                         A panel experience built like a product.
                     </h2>
                     <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
@@ -364,7 +379,7 @@ function SectionIntro({
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                 {eyebrow}
             </p>
-            <h2 className="mt-4 text-balance text-[clamp(2.5rem,5vw,4.6rem)] font-semibold leading-[0.96] tracking-[-0.058em]">
+            <h2 className="mt-4 text-balance text-[clamp(2.5rem,5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.045em]">
                 {title}
             </h2>
             <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">

@@ -37,7 +37,8 @@ export function PanelScreenshot({
                 height={900}
                 sizes="(max-width: 1024px) 100vw, 760px"
                 priority={priority}
-                loading={priority ? undefined : 'eager'}
+                loading={priority ? undefined : 'lazy'}
+                decoding="async"
                 className="aspect-[16/9] w-full rounded-[16px] border border-white/[0.06] object-cover object-top"
             />
         </figure>
