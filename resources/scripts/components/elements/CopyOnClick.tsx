@@ -10,6 +10,11 @@ interface CopyOnClickProps {
     children: React.ReactNode;
 }
 
+interface ClickableChildProps {
+    className?: string;
+    onClick?: React.MouseEventHandler<HTMLElement>;
+}
+
 const CopyOnClick = ({ text, showInNotification = true, children }: CopyOnClickProps) => {
     const [copied, setCopied] = useState(false);
 
@@ -29,16 +34,16 @@ const CopyOnClick = ({ text, showInNotification = true, children }: CopyOnClickP
         throw new Error('Component passed to <CopyOnClick/> must be a valid React element.');
     }
 
+    const onlyChild = React.Children.only(children) as React.ReactElement<ClickableChildProps>;
     const child = !text
-        ? React.Children.only(children)
-        : React.cloneElement(React.Children.only(children), {
-              // @ts-expect-error todo: check on this
-              className: classNames(children.props.className || '', 'cursor-pointer'),
+        ? onlyChild
+        : React.cloneElement(onlyChild, {
+              className: classNames(onlyChild.props.className || '', 'cursor-pointer'),
               onClick: (e: React.MouseEvent<HTMLElement>) => {
                   copy(String(text));
                   setCopied(true);
-                  if (typeof children.props.onClick === 'function') {
-                      children.props.onClick(e);
+                  if (typeof onlyChild.props.onClick === 'function') {
+                      onlyChild.props.onClick(e);
                   }
               },
           });

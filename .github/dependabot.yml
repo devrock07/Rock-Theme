@@ -45,6 +45,27 @@ updates:
                   - minor
                   - patch
       ignore:
+          # These pre-1.0 libraries use minor releases for breaking API changes.
+          # Rock Theme upgrades them with the matching Pterodactyl migration
+          # instead of accepting an unsafe grouped Dependabot update.
+          - dependency-name: '@floating-ui/react-dom-interactions'
+            update-types:
+                - version-update:semver-minor
+          - dependency-name: swr
+            update-types:
+                - version-update:semver-minor
+          - dependency-name: xterm-addon-fit
+            update-types:
+                - version-update:semver-minor
+          - dependency-name: xterm-addon-search
+            update-types:
+                - version-update:semver-minor
+          - dependency-name: xterm-addon-web-links
+            update-types:
+                - version-update:semver-minor
+          - dependency-name: yup
+            update-types:
+                - version-update:semver-minor
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
