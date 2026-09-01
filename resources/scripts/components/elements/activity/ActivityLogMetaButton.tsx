@@ -21,13 +21,14 @@ export default ({ meta }: { meta: Record<string, unknown> }) => {
                 </Dialog.Footer>
             </Dialog>
             <button
-                aria-describedby={'View additional event metadata'}
+                type={'button'}
+                aria-label={'View additional event metadata'}
                 className={
-                    'p-2 transition-colors duration-100 text-gray-400 group-hover:text-gray-300 group-hover:hover:text-gray-50'
+                    'inline-flex min-w-[2.75rem] min-h-[2.75rem] items-center justify-center p-2 transition-colors duration-100 text-gray-400 group-hover:text-gray-300 group-hover:hover:text-gray-50'
                 }
                 onClick={() => setOpen(true)}
             >
-                <ClipboardListIcon className={'w-5 h-5'} />
+                <ClipboardListIcon className={'w-5 h-5'} aria-hidden={'true'} />
             </button>
         </div>
     );

@@ -20,7 +20,7 @@ return [
     | change this value if you are not maintaining your own internal versions.
     */
 
-    'fork-version' => '2.0.3',
+    'fork-version' => '2.1.0',
 
     /*
     |--------------------------------------------------------------------------

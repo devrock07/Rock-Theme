@@ -5,7 +5,7 @@ both before every update.
 
 | Installed component | Current supported release |
 | ------------------- | ------------------------- |
-| Rock Theme          | `v2.0.3`                  |
+| Rock Theme          | `v2.1.0`                  |
 | Pterodactyl base    | `v1.15.1`                 |
 
 The supported Pterodactyl base is recorded in `.rock/upstream-version` and the
@@ -18,7 +18,8 @@ without applying the corresponding compatibility work.
 Before updating a production panel:
 
 1. Read the [Rock Theme release notes](https://github.com/devrock07/Rock-Theme/releases).
-2. Confirm that the target release supports the panel's current Pterodactyl base.
+2. Confirm that the target release declares the same Pterodactyl base or a newer
+   base in the same major release line.
 3. Export the database and copy `.env` outside the panel directory.
 4. Confirm recent panel and database backups can be read.
 5. Check available disk space and schedule a maintenance window.
@@ -86,8 +87,11 @@ The built-in restore action targets only `original-panel.tar.gz`. Timestamped
 snapshots are safety archives for a deliberate manual recovery; the manager
 does not present a snapshot picker.
 
-All of these are panel-file archives, not database dumps. Copy critical
-snapshots off the panel host and apply your normal retention policy.
+Each archive has a neighboring `.sha256` record. The manager verifies the
+checksum and safe archive member types before it trusts a snapshot for recovery.
+All of these are panel-file archives, not database dumps. Copy each critical
+archive together with its checksum off the panel host and apply your normal
+retention policy.
 
 ## Restore the original panel
 
@@ -113,8 +117,11 @@ over a live panel without first protecting the current state.
 
 ## Recover from a failed update
 
-If the manager exits after maintenance mode starts, its cleanup handler attempts
-to bring the panel online. Confirm the state explicitly:
+If the manager exits before migrations begin, its cleanup handler restores code
+from the pre-operation snapshot, preserves the live `.env` and `storage`, and
+attempts to bring the panel online. It prints a manual snapshot path if
+automatic restoration fails. A panel that was already in maintenance mode is
+left there. Confirm the state explicitly:
 
 ```bash
 cd /var/www/pterodactyl
@@ -122,10 +129,12 @@ php artisan up
 php artisan optimize:clear
 ```
 
-Next, inspect the stage output and `storage/logs/laravel-*.log`. Prefer fixing a
-dependency, permission, or migration error in place when the extracted source
-and database migration are already aligned. Use a matching file and database
-backup for a full rollback.
+Next, inspect the failed stage output and `storage/logs/laravel-*.log`. The
+manager deliberately skips automatic file rollback once migration work starts,
+because old code and a newer schema can be less recoverable than the failed
+deployment. It deliberately keeps the panel offline for operator review. Use
+matching file and database backups for an exact point-in-time rollback, and
+protect the current database before restoring an older copy.
 
 For a timestamped snapshot, do not extract it blindly over the current tree.
 Extra files from the failed version can remain and create an invalid mixed
@@ -145,7 +154,12 @@ contains:
 The archive also contains `.rock/release.json`, binding its Rock Theme version,
 Pterodactyl base, and source commit to the checksum-protected payload. Release
 automation downloads and validates these fields before treating an existing
-release as healthy.
+release as healthy. Archive entries use stable ordering, normalized ownership
+and modes, the source commit timestamp, and timestamp-free gzip output. Local
+and hosted release gates compare two clean frontend builds, then use the same
+packager to prepare two independent staging trees and stop if either comparison
+differs. GitHub's job summary records the source commit, size, and SHA-256 digest
+for release diagnosis.
 
 Publishing the reviewed draft makes those artifacts public and starts the
 versioned/`latest` multi-architecture container build.
@@ -153,7 +167,7 @@ versioned/`latest` multi-architecture container build.
 Verify a pinned release before extraction:
 
 ```bash
-release=v2.0.3
+release=v2.1.0
 curl -fL -O "https://github.com/devrock07/Rock-Theme/releases/download/$release/panel.tar.gz"
 curl -fL -O "https://github.com/devrock07/Rock-Theme/releases/download/$release/panel.tar.gz.sha256"
 sha256sum --check panel.tar.gz.sha256
@@ -172,8 +186,8 @@ update exists, it:
 1. performs a three-tree merge using the old official release as the base, the
    Rock Theme tree as the customized side, and the new official release as the
    upstream side;
-2. updates version metadata and prepares an isolated automation branch;
-3. runs TypeScript, ESLint, Jest, and a production Webpack build;
+2. updates version metadata and exports an isolated, read-only candidate bundle;
+3. runs TypeScript, ESLint, Jest, and two matching production Webpack builds;
 4. runs PHP formatting, unit, and integration checks on PHP 8.2/8.3 across
    MariaDB 10/11 and MySQL 8/9;
 5. builds the candidate container for both `linux/amd64` and `linux/arm64`;
@@ -184,15 +198,26 @@ update exists, it:
 9. verifies commit-specific GHCR source markers before reporting success.
 
 A failed merge or validation leaves `main` and the latest release unchanged and
-opens one actionable GitHub issue. A later publication failure is safely
-retryable: the next run re-validates the exact promoted commit and reconciles
-only a missing tag, release asset, or container channel. Healthy runs do not
-republish. The workflow rejects version downgrades and never force-pushes
-`main` or an existing release tag.
+opens one actionable GitHub issue. After promotion starts, the exact validated
+commit remains on `automation/upstream-candidate` until its tag, release assets,
+and container channels are verified. Retries use that preserved commit even if
+`main` later advances without changing the Rock Theme version, and a newer
+upstream release waits for the incomplete publication to finish. If `main` moves
+to another Rock Theme version or a newer release appears, the older pending
+candidate is blocked rather than allowed to move GitHub or container `latest`
+aliases backwards. Healthy runs use the immutable version tag as their release
+source and `main` as their `edge` source, so ordinary post-release commits do not
+invalidate publication checks. Upstream tag commits are SHA-pinned during
+detection, and the retry marker is removed only with an exact-SHA lease. The
+workflow rejects version downgrades and never force-pushes `main` or an existing
+release tag.
 
 Autopilot owns the release attached to its bot-pushed tag. The normal Release
 workflow ignores `github-actions[bot]` tag events, preventing a competing draft,
 while human-pushed version tags retain the standard reviewed-draft process.
+Autopilot-created drafts contain an exact source-commit marker and must also be
+authored by `github-actions[bot]`; drafts without both proofs are left untouched
+for human review.
 
 Automatic compatibility is a release-engineering safety net, not a substitute
 for staging. Review each generated release before production deployment. The

@@ -1,21 +1,24 @@
 # Installation
 
-Rock Theme `v2.0.3` is a complete Pterodactyl Panel distribution based on
-Pterodactyl `v1.15.1`. Install it over a working panel on that same base
-version. It is not a plugin that can be added to an arbitrary Pterodactyl
-release.
+Rock Theme `v2.1.0` is a complete Pterodactyl Panel distribution based on
+Pterodactyl `v1.15.1`. Install it over a working panel on that base, or use the
+manager for a verified forward upgrade from an older `1.x` base. It is not a
+plugin that can be added to an arbitrary Pterodactyl release.
 
 ## Before you begin
 
 Confirm all of the following:
 
--   The existing panel is Pterodactyl `1.15.1` and is working before the change.
+-   The existing panel is a working Pterodactyl `1.x` release no newer than
+    `1.15.1`; same-base installation is the lowest-risk path.
 -   You have root or `sudo` access to the panel host.
 -   `curl`, `tar`, `sha256sum`, PHP, and Composer are installed.
 -   The host is using PHP `8.2` or `8.3` with the normal Pterodactyl extensions.
 -   The Pterodactyl queue worker and one-minute scheduler are already configured.
 -   You have enough free space for at least one complete panel-file snapshot.
 -   You have a recent, tested database backup and a separate copy of `.env`.
+-   Any custom backup and lock directories are real, root-owned directories that
+    are not writable by group or other users.
 
 The installer backs up panel files. It does **not** export the panel database or
 validate your external backup system.
@@ -58,14 +61,27 @@ Before maintenance mode begins, the manager:
    web-server account;
 3. resolves the latest GitHub release;
 4. downloads `panel.tar.gz` and `panel.tar.gz.sha256`;
-5. verifies the SHA-256 checksum; and
-6. rejects archives containing absolute paths or parent-directory traversal.
+5. verifies the SHA-256 checksum and binds release provenance to the Git tag;
+6. cross-checks the archived Pterodactyl base metadata; and
+7. rejects traversal, duplicate members, links, special files, `.env`, and
+   `storage/**` entries.
 
-It then creates the snapshot, enables maintenance mode, extracts the release,
-runs Composer and database migrations, clears optimized caches, restarts the
-queue, repairs ownership and writable-directory permissions, and brings the
-panel online. If the process is interrupted after maintenance mode starts, an
-exit guard attempts to run `php artisan up`.
+It then creates and verifies a checksummed snapshot, extracts the release into a
+private staging directory, enables maintenance mode, removes stale application
+files, deploys the staged tree, runs Composer and database migrations, clears
+optimized caches, restarts the queue, repairs ownership and writable-directory
+permissions, and brings the panel online. If staging, dependency installation,
+or a signal interrupts the operation before migrations begin, an exit guard
+restores code from the pre-operation snapshot while preserving the current
+`.env` and `storage`, then runs `php artisan up` when the panel was not already
+in maintenance mode.
+
+Once database migration work begins, automatic file rollback is disabled. This
+avoids pairing older source with a partially or fully migrated schema. The
+manager leaves the snapshot in place and reports it for deliberate recovery.
+The panel remains in maintenance mode instead of exposing a potentially
+half-migrated deployment. Use the independent database backup with the matching
+file snapshot when an exact point-in-time rollback is required.
 
 ### Custom paths and output
 
@@ -84,6 +100,10 @@ sudo env \
   ROCK_BACKUP_ROOT=/srv/backups/rock-theme \
   bash /tmp/rock-theme-install.sh install
 ```
+
+Both paths are resolved before any destructive step. The panel path must contain
+`artisan`, cannot resolve to a broad system directory, and the backup root must
+not be located inside the panel tree.
 
 For automation or detailed diagnosis:
 

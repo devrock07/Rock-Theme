@@ -43,10 +43,14 @@ jobs:
                       exit 1
                   fi
 
+            - name: Validate release metadata
+              run: yarn metadata:check
+
             - name: Validate installer scripts
               run: |
-                  bash -n install.sh release.sh
+                  bash -n install.sh release.sh scripts/package-release.sh scripts/verify-release-assets.sh tests/ReleaseToolingSmokeTest.sh
                   bash tests/InstallerSmokeTest.sh
+                  bash tests/ReleaseToolingSmokeTest.sh
 
             - name: Install dependencies
               run: yarn install --frozen-lockfile --non-interactive
@@ -54,14 +58,17 @@ jobs:
             - name: Typecheck
               run: yarn tsc
 
+            - name: Typecheck responsive QA
+              run: yarn test:responsive:typecheck
+
             - name: Lint
               run: yarn lint
 
             - name: Run frontend tests
               run: yarn test --ci --runInBand
 
-            - name: Build production assets
-              run: yarn build:production
+            - name: Verify reproducible production assets
+              run: bash scripts/verify-release-assets.sh
 
             - name: Save compiled assets
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -197,21 +204,10 @@ jobs:
                   path: public/assets
 
             - name: Create release archive
-              run: |
-                  set -euo pipefail
-                  staging="$(mktemp -d)"
-                  git archive --format=tar HEAD | tar -xf - -C "$staging"
-                  rm -rf "$staging/public/assets" "$staging/.github" "$staging/tests"
-                  mkdir -p "$staging/public/assets"
-                  cp -a public/assets/. "$staging/public/assets/"
-                  jq -n \
-                      --arg theme_version "${GITHUB_REF_NAME#v}" \
-                      --arg pterodactyl_version "$(tr -d '[:space:]' < .rock/upstream-version)" \
-                      --arg source_commit "$(git rev-parse HEAD)" \
-                      '{schema: 1, theme_version: $theme_version, pterodactyl_version: $pterodactyl_version, source_commit: $source_commit}' \
-                      > "$staging/.rock/release.json"
-                  tar -C "$staging" -czf panel.tar.gz .
-                  sha256sum panel.tar.gz > panel.tar.gz.sha256
+              run: bash scripts/package-release.sh panel.tar.gz
+
+            - name: Create release checksum
+              run: sha256sum panel.tar.gz > panel.tar.gz.sha256
 
             - name: Verify release archive provenance
               run: |
@@ -227,6 +223,18 @@ jobs:
                           .pterodactyl_version == $pterodactyl_version and
                           .source_commit == $source_commit
                       ' >/dev/null
+                  archive_sha="$(cut -d ' ' -f 1 panel.tar.gz.sha256)"
+                  archive_bytes="$(stat -c '%s' panel.tar.gz)"
+                  {
+                      echo "### Reproducible release artifact"
+                      echo "- Theme: \`${GITHUB_REF_NAME}\`"
+                      echo "- Pterodactyl: \`$(tr -d '[:space:]' < .rock/upstream-version)\`"
+                      echo "- Source: \`$(git rev-parse HEAD)\`"
+                      echo "- SHA-256: \`${archive_sha}\`"
+                      echo "- Size: \`${archive_bytes}\` bytes"
+                      echo "- Assets: two clean production builds matched"
+                      echo "- Determinism: two independent archive passes matched"
+                  } >> "$GITHUB_STEP_SUMMARY"
 
             - name: Create draft GitHub release
               uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3

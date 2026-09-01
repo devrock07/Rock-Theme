@@ -58,6 +58,85 @@ const runUpdater = (root: string, upstreamVersion: string, themeVersion: string)
 describe('update-upstream-metadata', () => {
     const fixtures: string[] = [];
 
+    it('accepts a synchronized release metadata fixture', () => {
+        const root = createFixture();
+        fixtures.push(root);
+        const result = spawnSync(
+            process.execPath,
+            [path.join(root, 'scripts/update-upstream-metadata.js'), '--check'],
+            {
+                cwd: root,
+                encoding: 'utf8',
+            }
+        );
+
+        expect(result.status).toBe(0);
+        expect(result.stdout).toContain('Release metadata is consistent');
+    });
+
+    it('rejects inconsistent structured release metadata', () => {
+        const root = createFixture();
+        fixtures.push(root);
+        fs.writeFileSync(
+            path.join(root, 'config/app.php'),
+            read(root, 'config/app.php').replace(
+                /('fork-version'\s*=>\s*')[^']+(')/,
+                (_match, prefix, suffix) => `${prefix}0.0.1${suffix}`
+            )
+        );
+        const result = spawnSync(
+            process.execPath,
+            [path.join(root, 'scripts/update-upstream-metadata.js'), '--check'],
+            {
+                cwd: root,
+                encoding: 'utf8',
+            }
+        );
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('Release metadata is inconsistent');
+    });
+
+    it('rejects a stale container minor tag', () => {
+        const root = createFixture();
+        fixtures.push(root);
+        const dockerReadme = read(root, '.github/docker/README.md');
+        fs.writeFileSync(path.join(root, '.github/docker/README.md'), dockerReadme.replace('| `2.1`', '| `2.0`'));
+        const result = spawnSync(
+            process.execPath,
+            [path.join(root, 'scripts/update-upstream-metadata.js'), '--check'],
+            {
+                cwd: root,
+                encoding: 'utf8',
+            }
+        );
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('minor image tag');
+    });
+
+    it('rejects a stale structured field even when the expected version appears elsewhere', () => {
+        const root = createFixture();
+        fixtures.push(root);
+        const manifest = JSON.parse(read(root, 'package.json')) as { version: string };
+        const readme = read(root, 'README.md').replace(
+            `Rock Theme \`v${manifest.version}\` is based on and supports`,
+            `Rock Theme \`v0.0.1\` is based on and supports`
+        );
+        fs.writeFileSync(path.join(root, 'README.md'), `${readme}\nExpected elsewhere: ${manifest.version}\n`);
+        const result = spawnSync(
+            process.execPath,
+            [path.join(root, 'scripts/update-upstream-metadata.js'), '--check'],
+            {
+                cwd: root,
+                encoding: 'utf8',
+            }
+        );
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('README.md release heading');
+    });
+
     afterEach(() => {
         while (fixtures.length) {
             const fixture = fixtures.pop();

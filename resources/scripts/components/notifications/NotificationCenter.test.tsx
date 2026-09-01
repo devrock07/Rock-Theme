@@ -81,11 +81,55 @@ describe('NotificationCenter', () => {
             </MemoryRouter>
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
-        fireEvent.click(screen.getByRole('button', { name: 'Close notifications' }));
+        const trigger = screen.getByRole('button', { name: 'Notifications' });
+        fireEvent.click(trigger);
+        const close = screen.getByRole('button', { name: 'Close notifications' });
+        expect(close).toHaveFocus();
+        fireEvent.click(close);
 
         expect(screen.queryByRole('dialog', { name: 'Notifications' })).not.toBeInTheDocument();
         expect(document.body).not.toHaveStyle({ overflow: 'hidden' });
+        expect(trigger).toHaveFocus();
+    });
+
+    it('keeps keyboard focus inside the mobile notification dialog', () => {
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        const trigger = screen.getByRole('button', { name: 'Notifications' });
+        fireEvent.click(trigger);
+        const close = screen.getByRole('button', { name: 'Close notifications' });
+        const notificationLink = screen.getByRole('link', { name: /Server recovered/ });
+
+        notificationLink.focus();
+        fireEvent.keyDown(document, { key: 'Tab' });
+        expect(screen.getByRole('button', { name: 'Clear notifications' })).toHaveFocus();
+
+        close.focus();
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('dialog', { name: 'Notifications' })).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
+    });
+
+    it('keeps focus in the mobile dialog after clearing the focused action', async () => {
+        render(
+            <MemoryRouter>
+                <NotificationCenter />
+            </MemoryRouter>
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Notifications' }));
+        const clear = screen.getByRole('button', { name: 'Clear notifications' });
+        clear.focus();
+        fireEvent.click(clear);
+
+        const close = screen.getByRole('button', { name: 'Close notifications' });
+        await waitFor(() => expect(close).toHaveFocus());
+        fireEvent.keyDown(document, { key: 'Tab' });
+        expect(close).toHaveFocus();
     });
 
     it('marks a remote notification read when it is opened', () => {

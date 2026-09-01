@@ -16,7 +16,12 @@ export default styled.div<{ $hoverable?: boolean }>`
                 border-color: rgba(var(--shell-accent-rgb), 0.25);
                 background: linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(45, 11, 16, 0.5));
                 box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 14px 38px rgba(0, 0, 0, 0.14);
-                transform: translateY(-1px);
+            }
+
+            @media (hover: hover) and (pointer: fine) {
+                &:hover {
+                    transform: translateY(-1px);
+                }
             }
         `};
 

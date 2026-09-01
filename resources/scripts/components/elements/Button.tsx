@@ -31,15 +31,16 @@ const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
 
     &:hover:not(:disabled) {
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 10px 28px rgba(0, 0, 0, 0.16);
-        transform: translateY(-1px);
     }
 
-    &:hover:not(:disabled)::before {
-        left: 135%;
-    }
+    @media (hover: hover) and (pointer: fine) {
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
 
-    &:active:not(:disabled) {
-        transform: translateY(0);
+        &:hover:not(:disabled)::before {
+            left: 135%;
+        }
     }
 
     & > span {
@@ -50,11 +51,11 @@ const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
     ${(props) =>
         ((!props.isSecondary && !props.color) || props.color === 'primary') &&
         css<Props>`
-            ${(props) => !props.isSecondary && tw`bg-primary-500 border-primary-600 border text-primary-50`};
+            ${(props) => !props.isSecondary && tw`bg-primary-700 border-primary-800 border text-primary-50`};
             background-image: linear-gradient(135deg, rgba(var(--shell-accent-rgb), 0.18), transparent 48%);
 
             &:hover:not(:disabled) {
-                ${tw`bg-primary-600 border-primary-700`};
+                ${tw`bg-primary-800 border-primary-900`};
             }
         `};
 
@@ -117,7 +118,7 @@ const ButtonStyle = styled.button<Omit<Props, 'isLoading'>>`
             &:hover:not(:disabled) {
                 ${tw`border-neutral-500 text-neutral-100`};
                 ${(props) => props.color === 'red' && tw`bg-red-500 border-red-600 text-red-50`};
-                ${(props) => props.color === 'primary' && tw`bg-primary-500 border-primary-600 text-primary-50`};
+                ${(props) => props.color === 'primary' && tw`bg-primary-700 border-primary-800 text-primary-50`};
                 ${(props) => props.color === 'green' && tw`bg-green-500 border-green-600 text-green-50`};
             }
         `};

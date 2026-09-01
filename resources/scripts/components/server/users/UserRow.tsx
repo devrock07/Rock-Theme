@@ -21,7 +21,7 @@ export default ({ subuser }: Props) => {
         <GreyRowBox css={tw`mb-2`}>
             <EditSubuserModal subuser={subuser} visible={visible} onModalDismissed={() => setVisible(false)} />
             <div css={tw`w-10 h-10 rounded-full bg-white border-2 border-neutral-800 overflow-hidden hidden md:block`}>
-                <img css={tw`w-full h-full`} src={`${subuser.image}?s=400`} />
+                <img css={tw`w-full h-full`} src={`${subuser.image}?s=400`} alt={''} aria-hidden={'true'} />
             </div>
             <div css={tw`ml-4 flex-1 overflow-hidden`}>
                 <p css={tw`text-sm truncate`}>{subuser.email}</p>
@@ -50,10 +50,10 @@ export default ({ subuser }: Props) => {
                         <button
                             type={'button'}
                             aria-label={'Edit subuser'}
-                            css={tw`block text-sm p-1 md:p-2 text-neutral-500 hover:text-neutral-100 transition-colors duration-150 mx-4`}
+                            css={tw`inline-flex min-w-[2.75rem] min-h-[2.75rem] items-center justify-center text-sm p-2 text-neutral-500 hover:text-neutral-100 transition-colors duration-150 mx-2 md:mx-4`}
                             onClick={() => setVisible(true)}
                         >
-                            <FontAwesomeIcon icon={faPencilAlt} />
+                            <FontAwesomeIcon icon={faPencilAlt} aria-hidden={'true'} />
                         </button>
                     </Can>
                     <Can action={'user.delete'}>

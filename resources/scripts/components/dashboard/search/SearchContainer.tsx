@@ -21,8 +21,13 @@ export default () => {
         <>
             {visible && <SearchModal appear visible={visible} onDismissed={() => setVisible(false)} />}
             <Tooltip placement={'bottom'} content={'Search'}>
-                <button className={'navigation-link search-trigger'} onClick={() => setVisible(true)}>
-                    <FontAwesomeIcon icon={faSearch} />
+                <button
+                    type={'button'}
+                    className={'navigation-link search-trigger'}
+                    onClick={() => setVisible(true)}
+                    aria-label={'Search servers or pages'}
+                >
+                    <FontAwesomeIcon icon={faSearch} aria-hidden={'true'} />
                     <span className={'search-copy'}>Search servers or pages</span>
                     <kbd>Ctrl K</kbd>
                 </button>

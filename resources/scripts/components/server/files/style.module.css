@@ -29,7 +29,12 @@
         color: #f4f3f7;
         border-color: rgba(var(--shell-accent-rgb), 0.18);
         background: linear-gradient(110deg, rgba(var(--shell-accent-rgb), 0.075), var(--shell-panel));
-        transform: translateX(2px);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            transform: translateX(2px);
+        }
     }
 
     &:focus-within {

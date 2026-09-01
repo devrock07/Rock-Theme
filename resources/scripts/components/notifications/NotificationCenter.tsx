@@ -52,6 +52,14 @@ const Center = styled.div`
         box-shadow: 0 0 12px rgba(var(--shell-accent-rgb), 0.34);
         font-size: 0.58rem;
     }
+
+    @media (max-width: 800px) {
+        & > .notification-trigger {
+            width: 2.75rem;
+            height: 2.75rem;
+            margin-left: 0.15rem;
+        }
+    }
 `;
 
 const NotificationBackdrop = styled.div`
@@ -192,6 +200,13 @@ const NotificationPanel = styled.div`
         text-align: center;
     }
 
+    @media (max-width: 800px) {
+        .notification-actions button {
+            width: 2.75rem;
+            height: 2.75rem;
+        }
+    }
+
     @media (max-width: 700px) {
         width: auto;
         border-radius: 16px;
@@ -202,11 +217,6 @@ const NotificationPanel = styled.div`
 
         .notification-head strong {
             font-size: 0.9rem;
-        }
-
-        .notification-actions button {
-            width: 2.25rem;
-            height: 2.25rem;
         }
 
         .notification-list {
@@ -324,14 +334,64 @@ export default () => {
             const target = event.target as Node;
             if (!center.current?.contains(target) && !panel.current?.contains(target)) setOpen(false);
         };
-        const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
         document.addEventListener('mousedown', close);
-        document.addEventListener('keydown', closeOnEscape);
         return () => {
             document.removeEventListener('mousedown', close);
-            document.removeEventListener('keydown', closeOnEscape);
         };
     }, [open, sync]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const panelElement = panel.current;
+        const restoreFocusTo = trigger.current;
+        panelElement?.querySelector<HTMLButtonElement>('[aria-label="Close notifications"]')?.focus();
+
+        const handleKeyboard = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                setOpen(false);
+                return;
+            }
+
+            if (event.key !== 'Tab' || !panelPosition.mobile || !panelElement) return;
+
+            const focusable = Array.from(
+                panelElement.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            );
+            if (!focusable.length) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (!panelElement.contains(document.activeElement)) {
+                event.preventDefault();
+                (event.shiftKey ? last : first).focus();
+            } else if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyboard);
+        return () => {
+            document.removeEventListener('keydown', handleKeyboard);
+            restoreFocusTo?.focus();
+        };
+    }, [open, panelPosition.mobile]);
+
+    useLayoutEffect(() => {
+        if (!open) return;
+
+        const panelElement = panel.current;
+        if (panelElement && !panelElement.contains(document.activeElement)) {
+            panelElement.querySelector<HTMLButtonElement>('[aria-label="Close notifications"]')?.focus();
+        }
+    }, [items.length, open, panelPosition.mobile]);
 
     useLayoutEffect(() => {
         if (!open) return;
@@ -372,7 +432,7 @@ export default () => {
                 aria-expanded={open}
                 aria-controls={'rock-notification-panel'}
             >
-                <FontAwesomeIcon icon={faBell} />
+                <FontAwesomeIcon icon={faBell} aria-hidden={'true'} />
                 {!!items.length && (
                     <span className={'notification-count'}>{items.length > 9 ? '9+' : items.length}</span>
                 )}
@@ -422,7 +482,7 @@ export default () => {
                                             }}
                                             aria-label={'Clear notifications'}
                                         >
-                                            <FontAwesomeIcon icon={faCheck} />
+                                            <FontAwesomeIcon icon={faCheck} aria-hidden={'true'} />
                                         </button>
                                     )}
                                     <button
@@ -430,7 +490,7 @@ export default () => {
                                         onClick={() => setOpen(false)}
                                         aria-label={'Close notifications'}
                                     >
-                                        <FontAwesomeIcon icon={faTimes} />
+                                        <FontAwesomeIcon icon={faTimes} aria-hidden={'true'} />
                                     </button>
                                 </div>
                             </div>

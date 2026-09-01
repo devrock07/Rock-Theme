@@ -18,6 +18,7 @@ export interface ModalProps extends RequiredModalProps {
     closeOnEscape?: boolean;
     closeOnBackground?: boolean;
     showSpinnerOverlay?: boolean;
+    ariaLabel?: string;
 }
 
 export const ModalMask = styled.div`
@@ -53,8 +54,8 @@ const ModalContainer = styled.div<{ alignTop?: boolean }>`
         background: linear-gradient(
             145deg,
             rgba(255, 255, 255, 0.055),
-            rgba(13, 12, 14, 0.97) 45%,
-            rgba(68, 13, 21, 0.16)
+            color-mix(in srgb, var(--shell-panel-strong) 97%, transparent) 45%,
+            rgba(var(--shell-accent-rgb), 0.11)
         );
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.075), 0 32px 90px rgba(0, 0, 0, 0.55);
     }
@@ -72,7 +73,14 @@ const ModalContainer = styled.div<{ alignTop?: boolean }>`
 
     & > .close-icon {
         ${tw`absolute right-0 p-2 text-white cursor-pointer opacity-50 transition-all duration-150 ease-linear hover:opacity-100`};
-        top: -2.5rem;
+        top: -3rem;
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: transparent;
 
         &:hover {
             ${tw`transform rotate-90`}
@@ -92,20 +100,33 @@ const Modal: React.FC<ModalProps> = ({
     top = true,
     closeOnBackground = true,
     closeOnEscape = true,
+    ariaLabel = 'Dialog',
     onDismissed,
     children,
 }) => {
     const [render, setRender] = useState(visible);
+    const container = useRef<HTMLDivElement>(null);
+    // Capture this before a visible modal is committed. React applies autoFocus
+    // during the commit itself, so reading activeElement from the focus effect
+    // would otherwise remember an input inside the dialog instead of the
+    // control that launched it.
+    const previousFocus = useRef<HTMLElement | null>(
+        visible && document.activeElement instanceof HTMLElement ? document.activeElement : null
+    );
+    const previousVisible = useRef(visible);
 
     const isDismissable = useMemo(() => {
         return (dismissable ?? true) && !showSpinnerOverlay;
     }, [dismissable, showSpinnerOverlay]);
 
     useEffect(() => {
-        if (!isDismissable || !closeOnEscape) return;
+        if (!render || !isDismissable || !closeOnEscape) return;
 
         const handler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setRender(false);
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                setRender(false);
+            }
         };
 
         window.addEventListener('keydown', handler);
@@ -114,7 +135,62 @@ const Modal: React.FC<ModalProps> = ({
         };
     }, [isDismissable, closeOnEscape, render]);
 
-    useEffect(() => setRender(visible), [visible]);
+    useEffect(() => {
+        if (visible && !previousVisible.current) {
+            previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        }
+
+        previousVisible.current = visible;
+        setRender(visible);
+    }, [visible]);
+
+    useEffect(() => {
+        if (!render) return;
+
+        const modal = container.current;
+        const firstTarget =
+            modal?.querySelector<HTMLElement>('[autofocus]') ||
+            modal?.querySelector<HTMLElement>(
+                '.modal-surface input:not([disabled]), .modal-surface select:not([disabled]), .modal-surface textarea:not([disabled]), .modal-surface button:not([disabled]), .modal-surface a[href]'
+            ) ||
+            modal?.querySelector<HTMLElement>('.close-icon') ||
+            modal;
+        firstTarget?.focus();
+
+        const trapFocus = (event: KeyboardEvent) => {
+            if (event.key !== 'Tab' || !modal) return;
+
+            const focusable = Array.from(
+                modal.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            );
+            if (!focusable.length) {
+                event.preventDefault();
+                modal.focus();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (!modal.contains(document.activeElement)) {
+                event.preventDefault();
+                (event.shiftKey ? last : first).focus();
+            } else if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener('keydown', trapFocus);
+        return () => {
+            document.removeEventListener('keydown', trapFocus);
+            previousFocus.current?.focus();
+        };
+    }, [render]);
 
     return (
         <Fade in={render} timeout={150} appear={appear ?? false} unmountOnExit onExited={() => onDismissed()}>
@@ -130,9 +206,21 @@ const Modal: React.FC<ModalProps> = ({
                     }
                 }}
             >
-                <ModalContainer alignTop={top}>
+                <ModalContainer
+                    ref={container}
+                    alignTop={top}
+                    role={'dialog'}
+                    aria-modal={'true'}
+                    aria-label={ariaLabel}
+                    tabIndex={-1}
+                >
                     {isDismissable && (
-                        <div className={'close-icon'} onClick={() => setRender(false)}>
+                        <button
+                            type={'button'}
+                            className={'close-icon'}
+                            onClick={() => setRender(false)}
+                            aria-label={'Close dialog'}
+                        >
                             <svg
                                 xmlns={'http://www.w3.org/2000/svg'}
                                 fill={'none'}
@@ -146,7 +234,7 @@ const Modal: React.FC<ModalProps> = ({
                                     d={'M6 18L18 6M6 6l12 12'}
                                 />
                             </svg>
-                        </div>
+                        </button>
                     )}
                     {showSpinnerOverlay && (
                         <Fade timeout={150} appear in>

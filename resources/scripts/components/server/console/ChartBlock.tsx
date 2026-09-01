@@ -14,7 +14,7 @@ interface ChartBlockProps {
 export default ({ title, legend, value, children, tone = 'rose' }: ChartBlockProps) => (
     <MagicBentoCard
         className={classNames(styles.chart_container, styles[`chart_tone_${tone}`], 'group')}
-        glowColor={tone === 'ember' ? '217, 96, 105' : 'var(--shell-accent-rgb)'}
+        glowColor={'var(--shell-accent-rgb)'}
         particleCount={4}
         enableMagnetism={false}
         clickEffect={false}

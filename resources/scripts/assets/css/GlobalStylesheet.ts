@@ -160,7 +160,7 @@ export default createGlobalStyle`
         ${tw`m-0`};
     }
 
-    textarea, select, input, button, button:focus, button:focus-visible {
+    textarea, select, input, button, button:focus {
         ${tw`outline-none`};
     }
 
@@ -175,8 +175,8 @@ export default createGlobalStyle`
     }
 
     :focus-visible {
-        outline: 2px solid rgba(var(--shell-accent-rgb), 0.72);
-        outline-offset: 2px;
+        outline: 2px solid var(--shell-accent-bright) !important;
+        outline-offset: 3px !important;
     }
 
     hr {

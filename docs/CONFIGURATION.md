@@ -4,6 +4,9 @@ Rock Theme configuration is available under **Admin → Settings**. Saving the
 form writes values to the panel's settings table and restarts the queue worker
 when possible.
 
+For complete starting profiles rather than individual fields, see
+[Operator recipes](./RECIPES.md).
+
 ## Configuration precedence
 
 The values in `.env` and `config/branding.php` are installation defaults. Once

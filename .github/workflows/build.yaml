@@ -31,7 +31,7 @@ jobs:
 
             - name: Validate installer scripts
               run: |
-                  bash -n install.sh release.sh
+                  bash -n install.sh release.sh scripts/package-release.sh scripts/verify-release-assets.sh tests/ReleaseToolingSmokeTest.sh
                   bash install.sh --help | grep -q 'Rock Theme installer'
                   bash tests/InstallerSmokeTest.sh
 
@@ -42,11 +42,20 @@ jobs:
                   cache: yarn
                   cache-dependency-path: yarn.lock
 
+            - name: Validate release tooling
+              run: bash tests/ReleaseToolingSmokeTest.sh
+
             - name: Install dependencies
               run: yarn install --frozen-lockfile --non-interactive
 
+            - name: Validate release metadata
+              run: yarn metadata:check
+
             - name: Typecheck
               run: yarn tsc
+
+            - name: Typecheck responsive QA
+              run: yarn test:responsive:typecheck
 
             - name: Lint
               run: yarn lint

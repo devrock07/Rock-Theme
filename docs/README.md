@@ -1,6 +1,6 @@
 # Rock Theme documentation
 
-This documentation covers Rock Theme `v2.0.3`, based on Pterodactyl Panel
+This documentation covers Rock Theme `v2.1.0`, based on Pterodactyl Panel
 `v1.15.1`.
 
 ## Panel operators
@@ -9,6 +9,7 @@ This documentation covers Rock Theme `v2.0.3`, based on Pterodactyl Panel
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | [Installation](./INSTALLATION.md)        | Installing Rock Theme, choosing manager or manual deployment, using a custom panel path, or verifying a new installation    |
 | [Configuration](./CONFIGURATION.md)      | Setting branding, themes, media, the public status page, announcements, telemetry, or user-facing dashboard behavior        |
+| [Operator recipes](./RECIPES.md)         | Applying production-ready branding, theme, status, announcement, console-media, mobile, and telemetry configurations        |
 | [Upgrading and recovery](./UPGRADING.md) | Updating Rock Theme, reviewing compatibility, understanding backups, or restoring an installation                           |
 | [Troubleshooting](./TROUBLESHOOTING.md)  | Diagnosing installer failures, blank or stale assets, permissions, telemetry, notifications, media, or status-page behavior |
 

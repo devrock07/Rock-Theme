@@ -33,7 +33,7 @@ const spin = keyframes`
 `;
 
 const ActionButton = styled(Button)`
-    ${tw`rounded-full w-8 h-8 flex items-center justify-center p-0`};
+    ${tw`rounded-full w-11 h-11 flex items-center justify-center p-0`};
 
     &.hover\\:spin:hover {
         animation: ${spin} 2s linear infinite;
@@ -51,12 +51,13 @@ const ScreenBlock = ({ title, image, message, onBack, onRetry }: ScreenBlockProp
                         <ActionButton
                             onClick={() => (onRetry ? onRetry() : onBack ? onBack() : null)}
                             className={onRetry ? 'hover:spin' : undefined}
+                            aria-label={onRetry ? 'Retry' : 'Go back'}
                         >
-                            <FontAwesomeIcon icon={onRetry ? faSyncAlt : faArrowLeft} />
+                            <FontAwesomeIcon icon={onRetry ? faSyncAlt : faArrowLeft} aria-hidden={'true'} />
                         </ActionButton>
                     </div>
                 )}
-                <img src={image} css={tw`w-2/3 h-auto select-none mx-auto`} />
+                <img src={image} alt={''} aria-hidden={'true'} css={tw`w-2/3 h-auto select-none mx-auto`} />
                 <h2 css={tw`mt-10 text-neutral-900 font-bold text-4xl`}>{title}</h2>
                 <p css={tw`text-sm text-neutral-700 mt-2`}>{message}</p>
             </div>

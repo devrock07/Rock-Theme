@@ -39,6 +39,155 @@ const replaceVersionReferences = (contents, current, replacement, label) => {
     return contents.split(current).join(replacement);
 };
 
+const readReleaseMetadata = (root) => {
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+    const upstreamTag = fs.readFileSync(path.join(root, '.rock', 'upstream-version'), 'utf8').trim();
+    const appConfig = fs.readFileSync(path.join(root, 'config', 'app.php'), 'utf8');
+    const upstreamMatch = appConfig.match(/'version'\s*=>\s*'([^']+)'/);
+    const themeMatch = appConfig.match(/'fork-version'\s*=>\s*'([^']+)'/);
+
+    if (!versionPattern.test(upstreamTag) || !versionPattern.test(`v${manifest.version || ''}`)) {
+        throw new Error('The panel or Rock Theme version is not valid semantic version metadata.');
+    }
+    if (!upstreamMatch || !themeMatch) throw new Error('config/app.php is missing release version metadata.');
+
+    return {
+        upstreamTag,
+        upstreamVersion: upstreamTag.slice(1),
+        themeTag: `v${manifest.version}`,
+        themeVersion: manifest.version,
+        configUpstreamVersion: upstreamMatch[1],
+        configThemeVersion: themeMatch[1],
+        description: manifest.description,
+    };
+};
+
+const checkReleaseMetadata = (root) => {
+    const metadata = readReleaseMetadata(root);
+    const errors = [];
+    const exactChecks = [
+        ['README.md', /Rock Theme `v([^`]+)` is based on and supports/, metadata.themeVersion, 'release heading'],
+        ['README.md', /\| Rock Theme\s*\| `([^`]+)`/, metadata.themeVersion, 'compatibility table'],
+        ['README.md', /\| Pterodactyl Panel\s*\| `([^`]+)`/, metadata.upstreamVersion, 'compatibility table'],
+        [
+            'docs/README.md',
+            /documentation covers Rock Theme `v([^`]+)`, based on Pterodactyl Panel\s+`v[^`]+`/,
+            metadata.themeVersion,
+            'documentation release',
+        ],
+        [
+            'docs/README.md',
+            /documentation covers Rock Theme `v[^`]+`, based on Pterodactyl Panel\s+`v([^`]+)`/,
+            metadata.upstreamVersion,
+            'documentation base',
+        ],
+        [
+            'docs/INSTALLATION.md',
+            /Rock Theme `v([^`]+)` is a complete Pterodactyl Panel distribution/,
+            metadata.themeVersion,
+            'installation release',
+        ],
+        [
+            'docs/INSTALLATION.md',
+            /distribution based on\s+Pterodactyl `v([^`]+)`/,
+            metadata.upstreamVersion,
+            'installation base',
+        ],
+        ['docs/UPGRADING.md', /\| Rock Theme\s*\| `v([^`]+)`/, metadata.themeVersion, 'upgrade table'],
+        ['docs/UPGRADING.md', /\| Pterodactyl base\s*\| `v([^`]+)`/, metadata.upstreamVersion, 'upgrade table'],
+        ['SECURITY.md', /\| Latest `2\.x` release \| `([^`]+)`/, metadata.upstreamVersion, 'support table'],
+        [
+            '.github/ISSUE_TEMPLATE/1-bug-report.yml',
+            /placeholder:\s+v([^\s]+)/,
+            metadata.themeVersion,
+            'bug-report release',
+        ],
+        [
+            '.github/ISSUE_TEMPLATE/1-bug-report.yml',
+            /placeholder:\s+([0-9]+\.[0-9]+\.[0-9]+)\s*$/m,
+            metadata.upstreamVersion,
+            'bug-report base',
+        ],
+        [
+            '.github/ISSUE_TEMPLATE/3-installation-help.yml',
+            /placeholder:\s+v([^,\s]+), or the version being installed/,
+            metadata.themeVersion,
+            'installation-help release',
+        ],
+        [
+            '.github/ISSUE_TEMPLATE/3-installation-help.yml',
+            /placeholder:\s+([0-9]+\.[0-9]+\.[0-9]+)\s*$/m,
+            metadata.upstreamVersion,
+            'installation-help base',
+        ],
+        [
+            '.github/docker/README.md',
+            /\| `([0-9]+\.[0-9]+\.[0-9]+)`\s+\| Immutable release/,
+            metadata.themeVersion,
+            'immutable container tag',
+        ],
+        [
+            'docker-compose.example.yml',
+            /image:\s+ghcr\.io\/devrock07\/rock-theme:([^\s]+)/,
+            metadata.themeVersion,
+            'Compose image',
+        ],
+        [
+            '.github/workflows/upstream-autopilot.yaml',
+            /description: Optional Pterodactyl tag \(for example v([^\)]+)\)/,
+            metadata.upstreamVersion,
+            'autopilot example',
+        ],
+        [
+            'UPSTREAM_AUTOMATION.md',
+            /tag such as\s+`v([^`]+)` for a controlled retry/,
+            metadata.upstreamVersion,
+            'autopilot documentation',
+        ],
+    ];
+
+    if (metadata.configUpstreamVersion !== metadata.upstreamVersion) {
+        errors.push(
+            `config/app.php panel version ${metadata.configUpstreamVersion} does not match ${metadata.upstreamTag}.`
+        );
+    }
+    if (metadata.configThemeVersion !== metadata.themeVersion) {
+        errors.push(
+            `config/app.php Rock Theme version ${metadata.configThemeVersion} does not match ${metadata.themeTag}.`
+        );
+    }
+    if (!metadata.description.includes(`Pterodactyl Panel ${metadata.upstreamVersion}`)) {
+        errors.push('package.json description does not match the configured Pterodactyl version.');
+    }
+
+    for (const file of synchronizedVersionFiles) {
+        const contents = fs.readFileSync(path.join(root, file.path), 'utf8');
+        if (file.theme && !contents.includes(metadata.themeVersion)) {
+            errors.push(`${file.path} does not reference Rock Theme ${metadata.themeVersion}.`);
+        }
+        if (file.upstream && !contents.includes(metadata.upstreamVersion)) {
+            errors.push(`${file.path} does not reference Pterodactyl ${metadata.upstreamVersion}.`);
+        }
+        if (file.path === '.github/docker/README.md') {
+            const minorTag = metadata.themeVersion.split('.').slice(0, 2).join('.');
+            if (!new RegExp('\\|\\s*`' + minorTag.replace('.', '\\.') + '`\\s*\\|').test(contents)) {
+                errors.push(`${file.path} does not publish the expected ${minorTag} minor image tag.`);
+            }
+        }
+    }
+
+    for (const [file, pattern, expected, label] of exactChecks) {
+        const contents = fs.readFileSync(path.join(root, file), 'utf8');
+        const match = contents.match(pattern);
+        if (!match || match[1] !== expected) {
+            errors.push(`${file} ${label} does not match ${expected}.`);
+        }
+    }
+
+    if (errors.length) throw new Error(`Release metadata is inconsistent:\n- ${errors.join('\n- ')}`);
+    return metadata;
+};
+
 const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
     if (!versionPattern.test(upstreamTag || '') || !versionPattern.test(themeTag || '')) {
         throw new Error('Usage: node scripts/update-upstream-metadata.js v<panel-version> v<theme-version>');
@@ -105,6 +254,16 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
                     themeVersion,
                     `${file.path} Rock Theme version`
                 );
+                if (file.path === '.github/docker/README.md') {
+                    const previousMinor = previousThemeVersion.split('.').slice(0, 2).join('.');
+                    const nextMinor = themeVersion.split('.').slice(0, 2).join('.');
+                    next = replaceVersionReferences(
+                        next,
+                        `\`${previousMinor}\``,
+                        `\`${nextMinor}\``,
+                        `${file.path} minor tag`
+                    );
+                }
             }
             if (file.upstream && upstreamChanged) {
                 next = replaceVersionReferences(
@@ -127,6 +286,11 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
 const main = () => {
     const [, , upstreamTag, themeTag] = process.argv;
     try {
+        if (upstreamTag === '--check') {
+            const result = checkReleaseMetadata(path.resolve(__dirname, '..'));
+            console.log(`Release metadata is consistent for ${result.themeTag} on ${result.upstreamTag}.`);
+            return;
+        }
         const result = updateUpstreamMetadata(path.resolve(__dirname, '..'), upstreamTag, themeTag);
         console.log(`Prepared Rock Theme ${result.themeTag} for Pterodactyl ${result.upstreamTag}.`);
     } catch (error) {
@@ -137,4 +301,4 @@ const main = () => {
 
 if (require.main === module) main();
 
-module.exports = { synchronizedVersionFiles, updateUpstreamMetadata };
+module.exports = { checkReleaseMetadata, synchronizedVersionFiles, updateUpstreamMetadata };

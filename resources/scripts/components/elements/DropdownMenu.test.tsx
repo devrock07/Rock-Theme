@@ -85,4 +85,51 @@ describe('DropdownMenu', () => {
         fireEvent.scroll(window);
         expect(screen.queryByRole('button', { name: 'Download' })).not.toBeInTheDocument();
     });
+
+    it('exposes menu state and supports keyboard navigation and dismissal', () => {
+        render(
+            <DropdownMenu renderToggle={(onClick) => <button onClick={onClick}>Actions</button>}>
+                <button role={'menuitem'}>Download</button>
+                <button role={'menuitem'}>Delete</button>
+            </DropdownMenu>
+        );
+
+        const toggle = screen.getByRole('button', { name: 'Actions' });
+        expect(toggle).toHaveAttribute('aria-haspopup', 'menu');
+        expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+        fireEvent.click(toggle, { detail: 0 });
+
+        const menu = screen.getByRole('menu');
+        const download = screen.getByRole('menuitem', { name: 'Download' });
+        const remove = screen.getByRole('menuitem', { name: 'Delete' });
+        expect(toggle).toHaveAttribute('aria-expanded', 'true');
+        expect(toggle).toHaveAttribute('aria-controls', menu.id);
+        expect(download).toHaveFocus();
+
+        fireEvent.keyDown(document, { key: 'ArrowDown' });
+        expect(remove).toHaveFocus();
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        expect(toggle).toHaveFocus();
+    });
+
+    it('restores focus before a selected menu action is removed', () => {
+        render(
+            <DropdownMenu renderToggle={(onClick) => <button onClick={onClick}>Actions</button>}>
+                <button role={'menuitem'}>Rename</button>
+            </DropdownMenu>
+        );
+
+        const toggle = screen.getByRole('button', { name: 'Actions' });
+        fireEvent.click(toggle);
+        const action = screen.getByRole('menuitem', { name: 'Rename' });
+        action.focus();
+        fireEvent.click(action);
+
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(toggle).toHaveFocus();
+    });
 });

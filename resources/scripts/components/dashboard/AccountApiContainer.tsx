@@ -104,9 +104,15 @@ export default () => {
                                 <p css={tw`text-sm ml-4 hidden md:block`}>
                                     <code css={tw`font-mono py-1 px-2 bg-neutral-900 rounded`}>{key.identifier}</code>
                                 </p>
-                                <button css={tw`ml-4 p-2 text-sm`} onClick={() => setDeleteIdentifier(key.identifier)}>
+                                <button
+                                    type={'button'}
+                                    css={tw`ml-4 inline-flex min-w-[2.75rem] min-h-[2.75rem] items-center justify-center p-2 text-sm`}
+                                    onClick={() => setDeleteIdentifier(key.identifier)}
+                                    aria-label={`Delete API key ${key.description}`}
+                                >
                                     <FontAwesomeIcon
                                         icon={faTrashAlt}
+                                        aria-hidden={'true'}
                                         css={tw`text-neutral-400 hover:text-red-400 transition-colors duration-150`}
                                     />
                                 </button>

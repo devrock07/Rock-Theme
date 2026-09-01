@@ -166,8 +166,10 @@
     transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.rb-fluid-glass:hover .rb-fluid-caustic {
-    transform: translateX(115%) rotate(18deg);
+@media (hover: hover) and (pointer: fine) {
+    .rb-fluid-glass:hover .rb-fluid-caustic {
+        transform: translateX(115%) rotate(18deg);
+    }
 }
 
 .rb-fluid-content {
@@ -310,10 +312,12 @@
     transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
-.rb-profile-actions button:hover {
-    border-color: rgba(var(--shell-accent-rgb), 0.52);
-    background: rgba(var(--shell-accent-rgb), 0.2);
-    transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+    .rb-profile-actions button:hover {
+        border-color: rgba(var(--shell-accent-rgb), 0.52);
+        background: rgba(var(--shell-accent-rgb), 0.2);
+        transform: translateY(-1px);
+    }
 }
 
 @media (max-width: 640px) {

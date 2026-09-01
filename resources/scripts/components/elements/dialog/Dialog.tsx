@@ -4,6 +4,7 @@ import { Button } from '@/components/elements/button/index';
 import { XIcon } from '@heroicons/react/solid';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DialogContext, IconPosition, RenderDialogProps, styles } from './';
+import useReducedMotion from '@/plugins/useReducedMotion';
 
 const variants = {
     open: {
@@ -38,6 +39,7 @@ export default ({
     const [icon, setIcon] = useState<React.ReactNode>();
     const [footer, setFooter] = useState<React.ReactNode>();
     const [iconPosition, setIconPosition] = useState<IconPosition>('title');
+    const reducedMotion = useReducedMotion();
 
     const onDialogClose = (): void => {
         if (!preventExternalClose) {
@@ -52,10 +54,10 @@ export default ({
                     <HDialog
                         static
                         as={motion.div}
-                        initial={{ opacity: 0 }}
+                        initial={reducedMotion ? false : { opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
+                        exit={reducedMotion ? undefined : { opacity: 0 }}
+                        transition={{ duration: reducedMotion ? 0 : 0.15 }}
                         open={open}
                         onClose={onDialogClose}
                     >
@@ -64,10 +66,10 @@ export default ({
                             <div className={styles.container}>
                                 <HDialog.Panel
                                     as={motion.div}
-                                    initial={'closed'}
-                                    animate={'open'}
-                                    exit={'closed'}
-                                    variants={variants}
+                                    initial={reducedMotion ? false : 'closed'}
+                                    animate={reducedMotion ? undefined : 'open'}
+                                    exit={reducedMotion ? undefined : 'closed'}
+                                    variants={reducedMotion ? undefined : variants}
                                     className={styles.panel}
                                 >
                                     <div className={'flex flex-1 min-h-0 p-6 pb-0 overflow-y-auto'}>
@@ -96,9 +98,10 @@ export default ({
                                                 size={Button.Sizes.Small}
                                                 shape={Button.Shapes.IconSquare}
                                                 onClick={onClose}
-                                                className={'group'}
+                                                className={'group min-w-[2.75rem] min-h-[2.75rem]'}
+                                                aria-label={'Close dialog'}
                                             >
-                                                <XIcon className={styles.close_icon} />
+                                                <XIcon className={styles.close_icon} aria-hidden={'true'} />
                                             </Button.Text>
                                         </div>
                                     )}

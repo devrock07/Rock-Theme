@@ -3,6 +3,51 @@ This file is a running track of new features and fixes to each version of the pa
 
 This project follows [Semantic Versioning](https://semver.org/) guidelines.
 
+## Rock Theme v2.1.0 — 2026-09-01
+
+### Added
+
+- Deployment-driven Playwright QA for phone, tablet, desktop, and ultrawide
+  viewports, including HTTP/runtime, overflow, control-size, and screenshot
+  evidence checks.
+- Async regression coverage for notification persistence, file uploads, backup
+  actions, settings storage, server navigation races, retries, and error paths.
+- Production operator recipes for branding, themes, status privacy,
+  announcements, console media, mobile use, reverse proxying, and telemetry.
+- Installer scenarios for custom paths, corrupt artifacts, interrupted updates,
+  failed snapshots, extraction, dependencies, migrations, and original-panel
+  restoration.
+
+### Changed
+
+- Strengthened keyboard navigation, focus containment and restoration, visible
+  focus rings, icon labels, reduced motion, and compact touch targets throughout
+  client and server views.
+- Kept Crimson Red and Midnight Blue on the same shared surface, dialog,
+  dropdown, login, and chart token system.
+- Made installer snapshots and release outputs atomic, with guarded file
+  recovery before database migrations begin.
+- Staged release files before deployment, removed stale application files,
+  preserved live `.env` and storage data, checksummed recovery snapshots, and
+  kept failed database migrations in maintenance mode for operator review.
+- Bound installer provenance to the immutable release tag and rejected archive
+  traversal, duplicate members, links, special files, and protected live paths.
+- Made local, tagged, and autopilot assets and archives reproducible through
+  independent builds, manifest-only asset selection, stable path ordering,
+  normalized metadata, and timestamp-free gzip output, with source/SHA
+  diagnostics in release summaries.
+- Added protected-environment controls to real-panel responsive QA so test
+  credentials cannot be redirected through workflow inputs.
+
+### Fixed
+
+- Prevented persisted dashboard state from leaking across account or server
+  storage keys and added malformed, quota, removal, and cross-tab recovery.
+- Prevented stale server-load failures from replacing a newer navigation and
+  exposed a working retry state after load errors.
+- Restored accessible, theme-aware file and backup menus across mobile dialogs
+  and portal-based dropdowns.
+
 ## Rock Theme v2.0.3 — 2026-09-01
 
 ### Added

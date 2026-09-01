@@ -195,7 +195,11 @@ const Card = styled(MagicBentoCard)`
         color: white;
         border-color: rgba(var(--shell-accent-rgb), 0.4);
         background: rgba(var(--shell-accent-rgb), 0.16);
-        transform: translateX(2px);
+    }
+    @media (hover: hover) and (pointer: fine) {
+        &:hover .manage {
+            transform: translateX(2px);
+        }
     }
 
     @media (max-width: 480px) {

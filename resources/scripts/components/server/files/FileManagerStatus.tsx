@@ -55,10 +55,14 @@ const FileUploadList = () => {
                     </Tooltip>
                     <Code className={'flex-1 truncate'}>{file.name}</Code>
                     <button
+                        type={'button'}
                         onClick={cancelFileUpload.bind(this, id)}
-                        className={'text-gray-500 hover:text-gray-200 transition-colors duration-75'}
+                        className={
+                            'inline-flex min-w-[2.75rem] min-h-[2.75rem] items-center justify-center text-gray-500 hover:text-gray-200 transition-colors duration-75'
+                        }
+                        aria-label={`Cancel upload for ${file.name}`}
                     >
-                        <XIcon className={'w-5 h-5'} />
+                        <XIcon className={'w-5 h-5'} aria-hidden={'true'} />
                     </button>
                 </div>
             ))}

@@ -9,8 +9,8 @@ nginx, PHP-FPM, the scheduler, and a queue worker. Wings is deployed separately.
 
 | Tag      | Use                                           |
 | -------- | --------------------------------------------- |
-| `2.0.3`  | Immutable release; recommended for production |
-| `2.0`    | Latest compatible patch in a release line     |
+| `2.1.0`  | Immutable release; recommended for production |
+| `2.1`    | Latest compatible patch in a release line     |
 | `latest` | Latest stable Rock Theme release              |
 | `edge`   | Current `main`; testing only                  |
 

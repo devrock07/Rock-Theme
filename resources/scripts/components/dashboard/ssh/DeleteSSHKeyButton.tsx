@@ -35,9 +35,15 @@ export default ({ name, fingerprint }: { name: string; fingerprint: string }) =>
             >
                 Removing the <Code>{name}</Code> SSH key will invalidate its usage across the Panel.
             </Dialog.Confirm>
-            <button css={tw`ml-4 p-2 text-sm`} onClick={() => setVisible(true)}>
+            <button
+                type={'button'}
+                css={tw`ml-4 inline-flex min-w-[2.75rem] min-h-[2.75rem] items-center justify-center p-2 text-sm`}
+                onClick={() => setVisible(true)}
+                aria-label={`Delete SSH key ${name}`}
+            >
                 <FontAwesomeIcon
                     icon={faTrashAlt}
+                    aria-hidden={'true'}
                     css={tw`text-neutral-400 hover:text-red-400 transition-colors duration-150`}
                 />
             </button>

@@ -20,6 +20,8 @@
 /release/
 /result/
 /coverage/
+/playwright-report/
+/test-results/
 coverage.xml
 resources/lang/locales.js
 

@@ -38,7 +38,12 @@ const RightNavigation = styled.div`
             border-color: var(--shell-border-strong);
             background: linear-gradient(135deg, var(--shell-accent-soft), rgba(255, 255, 255, 0.035));
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 24px rgba(0, 0, 0, 0.16);
-            transform: translateY(-1px);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                transform: translateY(-1px);
+            }
         }
     }
 
@@ -75,8 +80,16 @@ const RightNavigation = styled.div`
     }
 
     @media (max-width: 800px) {
+        & > a,
+        & > button,
+        & > .navigation-link {
+            width: 2.75rem;
+            height: 2.75rem;
+            margin-left: 0.2rem;
+        }
+
         & > .search-trigger {
-            width: 2.55rem;
+            width: 2.75rem;
             padding: 0;
             justify-content: center;
 
@@ -92,9 +105,9 @@ const RightNavigation = styled.div`
         & > button,
         & > .navigation-link,
         & > .search-trigger {
-            width: 2.15rem;
-            height: 2.15rem;
-            margin-left: 0.25rem;
+            width: 2.75rem;
+            height: 2.75rem;
+            margin-left: 0.15rem;
             backdrop-filter: none;
         }
     }
@@ -158,6 +171,7 @@ const Topbar = styled.div`
 
     #logo > a {
         max-width: 100%;
+        min-height: 2.75rem;
     }
 
     .user-copy {
@@ -266,14 +280,14 @@ export default () => {
                     <SearchContainer />
                     <NotificationCenter />
                     <Tooltip placement={'bottom'} content={'Dashboard'}>
-                        <NavLink to={'/'} exact className={'optional-nav'}>
-                            <FontAwesomeIcon icon={faLayerGroup} />
+                        <NavLink to={'/'} exact className={'optional-nav'} aria-label={'Dashboard'}>
+                            <FontAwesomeIcon icon={faLayerGroup} aria-hidden={'true'} />
                         </NavLink>
                     </Tooltip>
                     {rootAdmin && (
                         <Tooltip placement={'bottom'} content={'Admin'}>
-                            <a href={'/admin'} rel={'noreferrer'} className={'optional-nav'}>
-                                <FontAwesomeIcon icon={faCogs} />
+                            <a href={'/admin'} rel={'noreferrer'} className={'optional-nav'} aria-label={'Admin'}>
+                                <FontAwesomeIcon icon={faCogs} aria-hidden={'true'} />
                             </a>
                         </Tooltip>
                     )}
@@ -282,15 +296,15 @@ export default () => {
                         <p className={'text-2xs text-neutral-500 leading-tight'}>Control panel</p>
                     </div>
                     <Tooltip placement={'bottom'} content={'Account Settings'}>
-                        <NavLink to={'/account'}>
+                        <NavLink to={'/account'} aria-label={'Account settings'}>
                             <span className={'flex items-center w-5 h-5'}>
                                 <Avatar.User />
                             </span>
                         </NavLink>
                     </Tooltip>
                     <Tooltip placement={'bottom'} content={'Sign Out'}>
-                        <button onClick={onTriggerLogout}>
-                            <FontAwesomeIcon icon={faSignOutAlt} />
+                        <button type={'button'} onClick={onTriggerLogout} aria-label={'Sign out'}>
+                            <FontAwesomeIcon icon={faSignOutAlt} aria-hidden={'true'} />
                         </button>
                     </Tooltip>
                 </RightNavigation>

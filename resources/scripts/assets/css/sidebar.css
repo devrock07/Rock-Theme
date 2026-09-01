@@ -215,12 +215,20 @@ You should have received a copy of the GNU General Public License along with Noo
     color: var(--shell-text);
     border-color: rgba(255, 255, 255, 0.055);
     background: linear-gradient(100deg, rgba(var(--shell-accent-rgb), 0.065), rgba(255, 255, 255, 0.025));
-    transform: translateX(2px);
 }
 
 .sidebar a:hover .icon {
     color: #ded6d8;
-    transform: translateY(-1px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .sidebar a:hover {
+        transform: translateX(2px);
+    }
+
+    .sidebar a:hover .icon {
+        transform: translateY(-1px);
+    }
 }
 
 /* Page content. The value of the margin-left property should match the value of the sidebar's width property */
@@ -280,6 +288,13 @@ div.content {
     .navbar-button {
         display: inline-flex;
         cursor: pointer;
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-basis: 2.75rem;
+    }
+
+    .sidebar a {
+        min-height: 2.75rem;
     }
 }
 
@@ -287,6 +302,12 @@ div.content {
     .content-container {
         margin-left: 1rem;
         margin-right: 1rem;
+    }
+
+    .navbar-button {
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-basis: 2.75rem;
     }
 }
 

@@ -31,11 +31,15 @@ jobs:
             packages: read # Required to verify published GHCR tags without rebuilding healthy releases.
         outputs:
             current: ${{ steps.versions.outputs.current }}
+            current_upstream_commit: ${{ steps.versions.outputs.current_upstream_commit }}
+            edge_commit: ${{ steps.versions.outputs.edge_commit }}
             edge_container_required: ${{ steps.versions.outputs.edge_container_required }}
             latest: ${{ steps.versions.outputs.latest }}
+            latest_upstream_commit: ${{ steps.versions.outputs.latest_upstream_commit }}
             mode: ${{ steps.versions.outputs.mode }}
             next_theme: ${{ steps.versions.outputs.next_theme }}
             release_required: ${{ steps.versions.outputs.release_required }}
+            source_commit: ${{ steps.versions.outputs.source_commit }}
             tag_required: ${{ steps.versions.outputs.tag_required }}
             theme_tag: ${{ steps.versions.outputs.theme_tag }}
             update_required: ${{ steps.versions.outputs.update_required }}
@@ -68,6 +72,39 @@ jobs:
                       echo "Refusing to downgrade the upstream base from $current to $latest." >&2
                       exit 1
                   fi
+                  deferred_latest=""
+                  persisted_candidate_sha="$(git ls-remote origin refs/heads/automation/upstream-candidate | awk 'NR == 1 { print $1 }')"
+                  if [ -n "$persisted_candidate_sha" ]; then
+                      if ! [[ "$persisted_candidate_sha" =~ ^[0-9a-f]{40}$ ]]; then
+                          echo "Invalid persisted candidate commit: $persisted_candidate_sha" >&2
+                          exit 1
+                      fi
+                      if [ "$current" != "$latest" ]; then
+                          deferred_latest="$latest"
+                          latest="$current"
+                      fi
+                  fi
+
+                  resolve_upstream_tag_commit() {
+                      local direct_ref peeled_ref remote_commit remote_refs tag="$1"
+                      direct_ref="refs/tags/${tag}"
+                      peeled_ref="${direct_ref}^{}"
+                      remote_refs="$(git ls-remote --tags "https://github.com/${UPSTREAM_REPOSITORY}.git" \
+                          "$direct_ref" "$peeled_ref")"
+                      remote_commit="$(printf '%s\n' "$remote_refs" | awk -v direct="$direct_ref" -v peeled="$peeled_ref" '
+                          $2 == direct { direct_sha = $1 }
+                          $2 == peeled { peeled_sha = $1 }
+                          END { print peeled_sha != "" ? peeled_sha : direct_sha }
+                      ')"
+                      if ! [[ "$remote_commit" =~ ^[0-9a-f]{40}$ ]]; then
+                          echo "Unable to resolve immutable upstream tag $tag." >&2
+                          return 1
+                      fi
+                      printf '%s\n' "$remote_commit"
+                  }
+
+                  current_upstream_commit="$(resolve_upstream_tag_commit "$current")"
+                  latest_upstream_commit="$(resolve_upstream_tag_commit "$latest")"
 
                   package_version="$(node -p "require('./package.json').version")"
                   if ! [[ "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -75,9 +112,16 @@ jobs:
                       exit 1
                   fi
                   package_theme="v${package_version}"
-                  current_theme="$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)"
+                  releases="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --slurp)"
+                  current_theme="$(printf '%s' "$releases" | jq -r '.[][] | .tag_name // empty' |
+                      awk '/^v[0-9]+\.[0-9]+\.[0-9]+$/' | sort -V | tail -n 1)"
+                  current_theme="${current_theme:-$package_theme}"
                   if ! [[ "$current_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
                       echo "Unable to resolve the current Rock Theme tag." >&2
+                      exit 1
+                  fi
+                  if [ "$(printf '%s\n%s\n' "$current_theme" "$package_theme" | sort -V | tail -n 1)" != "$package_theme" ]; then
+                      echo "Package version $package_theme is older than published Rock Theme release $current_theme." >&2
                       exit 1
                   fi
 
@@ -88,6 +132,9 @@ jobs:
                   release_required=false
                   version_container_required=false
                   edge_container_required=false
+                  manual_release_pending=false
+                  source_commit=""
+                  edge_commit=""
 
                   if [ "$current" != "$latest" ]; then
                       base_theme="$(printf '%s\n%s\n' "$current_theme" "$package_theme" | sort -V | tail -n 1)"
@@ -105,23 +152,73 @@ jobs:
                       edge_container_required=true
                   else
                       theme_tag="$package_theme"
-                      head_commit="$(git rev-parse HEAD)"
+                      main_commit="$(git rev-parse HEAD)"
+                      head_commit="$main_commit"
+                      edge_commit="$main_commit"
+                      candidate_pending=false
+                      candidate_ref="refs/remotes/rock-candidate/pending"
+                      candidate_sha="$persisted_candidate_sha"
+                      if [ -n "$candidate_sha" ]; then
+                          git -c core.hooksPath=/dev/null fetch --force --no-tags origin \
+                              "+refs/heads/automation/upstream-candidate:${candidate_ref}"
+                          test "$(git rev-parse "${candidate_ref}^{commit}")" = "$candidate_sha"
+                          git merge-base --is-ancestor "$candidate_sha" "$main_commit"
+                          candidate_upstream="$(git show "${candidate_sha}:.rock/upstream-version" | tr -d '[:space:]')"
+                          candidate_version="$(git show "${candidate_sha}:package.json" | jq -er .version)"
+                          if [ "$candidate_upstream" != "$latest" ] ||
+                              ! [[ "$candidate_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                              echo "Persisted candidate metadata is not valid for $latest." >&2
+                              exit 1
+                          fi
+                          theme_tag="v${candidate_version}"
+                          if [ "$theme_tag" != "$package_theme" ]; then
+                              echo "Persisted candidate $theme_tag no longer matches main package version $package_theme." >&2
+                              exit 1
+                          fi
+                          head_commit="$candidate_sha"
+                          candidate_pending=true
+                      fi
 
                       if git show-ref --verify --quiet "refs/tags/${theme_tag}"; then
                           tag_commit="$(git rev-parse "${theme_tag}^{commit}")"
-                          if [ "$tag_commit" != "$head_commit" ]; then
-                              echo "Refusing to move immutable tag $theme_tag from $tag_commit to $head_commit." >&2
+                          tag_upstream="$(git show "${tag_commit}:.rock/upstream-version" | tr -d '[:space:]')"
+                          tag_version="$(git show "${tag_commit}:package.json" | jq -er .version)"
+                          if [ "$tag_upstream" != "$latest" ] || [ "v${tag_version}" != "$theme_tag" ]; then
+                              echo "Existing tag $theme_tag does not contain matching release metadata." >&2
                               exit 1
+                          fi
+                          if [ "$candidate_pending" = true ]; then
+                              if [ "$tag_commit" != "$head_commit" ]; then
+                                  echo "Refusing to move immutable tag $theme_tag from $tag_commit to $head_commit." >&2
+                                  exit 1
+                              fi
+                          else
+                              if ! git merge-base --is-ancestor "$tag_commit" "$main_commit"; then
+                                  echo "Existing tag $theme_tag is not an ancestor of current main." >&2
+                                  exit 1
+                              fi
+                              head_commit="$tag_commit"
                           fi
                       else
                           tag_required=true
                       fi
+                      source_commit="$head_commit"
 
                       validate_release_assets() {
-                          local release_dir provenance
+                          local checksum release_dir provenance
                           release_dir="$(mktemp -d)"
                           if ! gh release download "$theme_tag" --dir "$release_dir" \
                               --pattern panel.tar.gz --pattern panel.tar.gz.sha256 >/dev/null 2>&1; then
+                              rm -rf "$release_dir"
+                              return 1
+                          fi
+                          if [ "$(find "$release_dir" -mindepth 1 -maxdepth 1 -type f | wc -l)" -ne 2 ] ||
+                              [ -L "$release_dir/panel.tar.gz" ] || [ -L "$release_dir/panel.tar.gz.sha256" ]; then
+                              rm -rf "$release_dir"
+                              return 1
+                          fi
+                          checksum="$(cat "$release_dir/panel.tar.gz.sha256")"
+                          if ! [[ "$checksum" =~ ^[0-9a-f]{64}[[:space:]][[:space:]]panel\.tar\.gz$ ]]; then
                               rm -rf "$release_dir"
                               return 1
                           fi
@@ -145,77 +242,109 @@ jobs:
                           rm -rf "$release_dir"
                       }
 
-                      releases="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --slurp)"
                       release="$(printf '%s' "$releases" | jq -c --arg tag "$theme_tag" '[.[][] | select(.tag_name == $tag)][0] // null')"
                       if [ "$release" = null ]; then
                           release_required=true
-                      elif [ "$(printf '%s' "$release" | jq -r '.draft')" = true ] ||
-                          ! printf '%s' "$release" | jq -e '
-                              ([.assets[]?.name] | index("panel.tar.gz")) != null and
-                              ([.assets[]?.name] | index("panel.tar.gz.sha256")) != null
-                          ' >/dev/null; then
-                          release_required=true
-                      elif ! validate_release_assets; then
-                          echo "Release $theme_tag assets failed checksum or provenance validation."
-                          release_required=true
-                      fi
-
-                      owner_type="$(gh api "users/${GITHUB_REPOSITORY_OWNER}" --jq .type)"
-                      if [ "$owner_type" = Organization ]; then
-                          package_scope="orgs/${GITHUB_REPOSITORY_OWNER}/packages/container"
                       else
-                          package_scope="users/${GITHUB_REPOSITORY_OWNER}/packages/container"
-                      fi
-                      package_error="$(mktemp)"
-                      if ! package_pages="$(gh api --paginate "${package_scope}/${CONTAINER_PACKAGE}/versions?per_page=100" --slurp 2>"$package_error")"; then
-                          if grep -q 'HTTP 404' "$package_error"; then
-                              package_pages='[]'
-                          else
-                              cat "$package_error" >&2
-                              exit 1
+                          autopilot_marker="<!-- rock-theme-autopilot:source=${head_commit} -->"
+                          release_author="$(printf '%s' "$release" | jq -r '.author.login // empty')"
+                          release_body="$(printf '%s' "$release" | jq -r '.body // ""')"
+                          release_owned=false
+                          release_needs_repair=false
+                          if [ "$release_author" = 'github-actions[bot]' ] &&
+                              [[ "$release_body" == *"$autopilot_marker"* ]]; then
+                              release_owned=true
+                          fi
+                          if [ "$(printf '%s' "$release" | jq -r '.draft')" = true ] ||
+                              ! printf '%s' "$release" | jq -e '
+                                  ([.assets[]?.name] | index("panel.tar.gz")) != null and
+                                  ([.assets[]?.name] | index("panel.tar.gz.sha256")) != null
+                              ' >/dev/null; then
+                              release_needs_repair=true
+                          elif ! validate_release_assets; then
+                              echo "Release $theme_tag assets failed checksum or provenance validation."
+                              release_needs_repair=true
+                          fi
+                          if [ "$release_needs_repair" = true ]; then
+                              if [ "$release_owned" = true ]; then
+                                  release_required=true
+                              else
+                                  echo "Release $theme_tag requires human review; Autopilot ownership was not proven."
+                                  manual_release_pending=true
+                              fi
                           fi
                       fi
-                      rm -f "$package_error"
 
-                      version_tag="${theme_tag#v}"
-                      minor_tag="${version_tag%.*}"
-                      release_revision_tag="source-release-${head_commit}"
-                      edge_revision_tag="source-edge-${head_commit}"
-                      conflicting_release_source="$(printf '%s' "$package_pages" | jq -r \
-                          --arg version "$version_tag" --arg source "$release_revision_tag" '
-                              [.[][] | (.metadata.container.tags // []) |
-                                  select(index($version) != null) | .[] |
-                                  select(startswith("source-release-") and . != $source)] |
-                              unique | first // empty
-                          ')"
-                      if [ -n "$conflicting_release_source" ]; then
-                          echo "Container tag $version_tag belongs to $conflicting_release_source, not $release_revision_tag." >&2
-                          exit 1
-                      fi
-                      if ! printf '%s' "$package_pages" | jq -e \
-                          --arg version "$version_tag" --arg minor "$minor_tag" --arg source "$release_revision_tag" '
+                      if [ "$manual_release_pending" = true ]; then
+                          echo "::notice title=Human release review required::Release $theme_tag is untouched because Autopilot ownership was not proven."
+                          mode=human-review
+                          work_required=false
+                          tag_required=false
+                          release_required=false
+                          version_container_required=false
+                          edge_container_required=false
+                      else
+                          owner_type="$(gh api "users/${GITHUB_REPOSITORY_OWNER}" --jq .type)"
+                          if [ "$owner_type" = Organization ]; then
+                              package_scope="orgs/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                          else
+                              package_scope="users/${GITHUB_REPOSITORY_OWNER}/packages/container"
+                          fi
+                          package_error="$(mktemp)"
+                          if ! package_pages="$(gh api --paginate "${package_scope}/${CONTAINER_PACKAGE}/versions?per_page=100" --slurp 2>"$package_error")"; then
+                              if grep -q 'HTTP 404' "$package_error"; then
+                                  package_pages='[]'
+                              else
+                                  cat "$package_error" >&2
+                                  exit 1
+                              fi
+                          fi
+                          rm -f "$package_error"
+
+                          version_tag="${theme_tag#v}"
+                          minor_tag="${version_tag%.*}"
+                          release_revision_tag="source-release-${head_commit}"
+                          edge_revision_tag="source-edge-${edge_commit}"
+                          conflicting_release_source="$(printf '%s' "$package_pages" | jq -r \
+                              --arg version "$version_tag" --arg source "$release_revision_tag" '
+                                  [.[][] | (.metadata.container.tags // []) |
+                                      select(index($version) != null) | .[] |
+                                      select(startswith("source-release-") and . != $source)] |
+                                  unique | first // empty
+                              ')"
+                          if [ -n "$conflicting_release_source" ]; then
+                              echo "Container tag $version_tag belongs to $conflicting_release_source, not $release_revision_tag." >&2
+                              exit 1
+                          fi
+                          if ! printf '%s' "$package_pages" | jq -e \
+                              --arg version "$version_tag" --arg minor "$minor_tag" --arg source "$release_revision_tag" '
+                                  [.[][] | (.metadata.container.tags // [])] |
+                                  any(.[]; index($version) != null and index($minor) != null and
+                                      index("latest") != null and index($source) != null)
+                              ' >/dev/null; then
+                              version_container_required=true
+                          fi
+                          if ! printf '%s' "$package_pages" | jq -e --arg source "$edge_revision_tag" '
                               [.[][] | (.metadata.container.tags // [])] |
-                              any(.[]; index($version) != null and index($minor) != null and
-                                  index("latest") != null and index($source) != null)
+                              any(.[]; index("edge") != null and index($source) != null)
                           ' >/dev/null; then
-                          version_container_required=true
-                      fi
-                      if ! printf '%s' "$package_pages" | jq -e --arg source "$edge_revision_tag" '
-                          [.[][] | (.metadata.container.tags // [])] |
-                          any(.[]; index("edge") != null and index($source) != null)
-                      ' >/dev/null; then
-                          edge_container_required=true
-                      fi
+                              edge_container_required=true
+                          fi
 
-                      if [ "$tag_required" = true ] || [ "$release_required" = true ] ||
-                          [ "$version_container_required" = true ] || [ "$edge_container_required" = true ]; then
-                          mode=reconcile
-                          work_required=true
+                          if [ "$tag_required" = true ] || [ "$release_required" = true ] ||
+                              [ "$version_container_required" = true ] || [ "$edge_container_required" = true ] ||
+                              [ "$candidate_pending" = true ]; then
+                              mode=reconcile
+                              work_required=true
+                          fi
                       fi
                   fi
 
                   echo "current=$current" >> "$GITHUB_OUTPUT"
+                  echo "current_upstream_commit=$current_upstream_commit" >> "$GITHUB_OUTPUT"
+                  echo "edge_commit=$edge_commit" >> "$GITHUB_OUTPUT"
                   echo "latest=$latest" >> "$GITHUB_OUTPUT"
+                  echo "latest_upstream_commit=$latest_upstream_commit" >> "$GITHUB_OUTPUT"
                   echo "mode=$mode" >> "$GITHUB_OUTPUT"
                   echo "next_theme=$theme_tag" >> "$GITHUB_OUTPUT"
                   echo "theme_tag=$theme_tag" >> "$GITHUB_OUTPUT"
@@ -223,14 +352,22 @@ jobs:
                   echo "update_required=$update_required" >> "$GITHUB_OUTPUT"
                   echo "tag_required=$tag_required" >> "$GITHUB_OUTPUT"
                   echo "release_required=$release_required" >> "$GITHUB_OUTPUT"
+                  echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
                   echo "version_container_required=$version_container_required" >> "$GITHUB_OUTPUT"
                   echo "edge_container_required=$edge_container_required" >> "$GITHUB_OUTPUT"
                   {
                       echo "### Upstream detection"
                       echo "- Current base: \`$current\`"
                       echo "- Latest release: \`$latest\`"
+                      if [ -n "$deferred_latest" ]; then
+                          echo "- Deferred until pending publication completes: \`$deferred_latest\`"
+                      fi
                       echo "- Theme release: \`$theme_tag\`"
+                      echo "- Release source: \`${source_commit:-pending merge}\`"
                       echo "- Mode: \`$mode\`"
+                      if [ "$manual_release_pending" = true ]; then
+                          echo "- Publication: waiting for review of a release Autopilot does not own"
+                      fi
                       echo "- Git tag repair: \`$tag_required\`"
                       echo "- GitHub release repair: \`$release_required\`"
                       echo "- Version/Latest container repair: \`$version_container_required\`"
@@ -244,9 +381,9 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 20
         permissions:
-            contents: write # Required to push the isolated update candidate branch.
+            contents: read
         outputs:
-            branch: ${{ steps.prepare.outputs.branch }}
+            base: ${{ steps.prepare.outputs.base }}
             commit: ${{ steps.prepare.outputs.commit }}
         steps:
             - name: Check out source
@@ -259,38 +396,95 @@ jobs:
               id: prepare
               env:
                   CURRENT_TAG: ${{ needs.detect.outputs.current }}
-                  GH_TOKEN: ${{ github.token }}
+                  EXPECTED_CURRENT_UPSTREAM: ${{ needs.detect.outputs.current_upstream_commit }}
+                  EXPECTED_LATEST_UPSTREAM: ${{ needs.detect.outputs.latest_upstream_commit }}
+                  EXPECTED_SOURCE: ${{ needs.detect.outputs.source_commit }}
                   LATEST_TAG: ${{ needs.detect.outputs.latest }}
                   MODE: ${{ needs.detect.outputs.mode }}
                   THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
               run: |
                   set -euo pipefail
-                  gh auth setup-git
                   branch="automation/upstream-candidate"
+                  trusted_metadata="$GITHUB_WORKSPACE/.git/rock-update-upstream-metadata.js"
+                  cp scripts/update-upstream-metadata.js "$trusted_metadata"
+                  main_commit="$(git rev-parse HEAD)"
+                  echo "base=$main_commit" >> "$GITHUB_OUTPUT"
 
                   if [ "$MODE" = reconcile ]; then
-                      echo "Re-validating the current main commit before repairing incomplete publication."
-                      git push --force origin "HEAD:refs/heads/$branch"
-                      echo "branch=$branch" >> "$GITHUB_OUTPUT"
+                      echo "Re-validating the preserved release candidate before repairing publication."
+                      if ! [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]; then
+                          echo "Invalid expected release source: $EXPECTED_SOURCE" >&2
+                          exit 1
+                      fi
+                      if [ "$EXPECTED_SOURCE" != "$main_commit" ]; then
+                          candidate_ref="refs/remotes/rock-candidate/pending"
+                          persisted_candidate="$(git ls-remote origin refs/heads/automation/upstream-candidate |
+                              awk 'NR == 1 { print $1 }')"
+                          if [ -n "$persisted_candidate" ]; then
+                              if [ "$persisted_candidate" != "$EXPECTED_SOURCE" ]; then
+                                  echo "Persisted candidate changed from $EXPECTED_SOURCE to $persisted_candidate." >&2
+                                  exit 1
+                              fi
+                              git -c core.hooksPath=/dev/null fetch --force --no-tags origin \
+                                  "+refs/heads/automation/upstream-candidate:${candidate_ref}"
+                              test "$(git rev-parse "${candidate_ref}^{commit}")" = "$EXPECTED_SOURCE"
+                              git checkout -B "$branch" "$candidate_ref"
+                          else
+                              if ! git show-ref --verify --quiet "refs/tags/${THEME_TAG}" ||
+                                  [ "$(git rev-parse "${THEME_TAG}^{commit}")" != "$EXPECTED_SOURCE" ] ||
+                                  ! git merge-base --is-ancestor "$EXPECTED_SOURCE" "$main_commit"; then
+                                  echo "Release source $EXPECTED_SOURCE is neither the retry marker nor immutable tag $THEME_TAG." >&2
+                                  exit 1
+                              fi
+                              git checkout -B "$branch" "$EXPECTED_SOURCE"
+                          fi
+                      else
+                          git checkout -B "$branch"
+                      fi
+                      git bundle create "$RUNNER_TEMP/upstream-candidate.bundle" "refs/heads/$branch"
                       echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
                       exit 0
                   fi
 
                   base_ref="refs/rock-upstream/base"
                   latest_ref="refs/rock-upstream/latest"
-                  protected_paths=(README.md .github/workflows/release.yaml)
+                  protected_paths=(
+                      README.md
+                      .github/workflows
+                      install.sh
+                      release.sh
+                      scripts/copy-compiled-assets.js
+                      scripts/package-release.sh
+                      scripts/update-upstream-metadata.js
+                      scripts/verify-release-assets.sh
+                      tests/InstallerSmokeTest.sh
+                      tests/ReleaseToolingSmokeTest.sh
+                      tests/UpstreamAutopilotWorkflow.test.ts
+                  )
 
                   git config user.name "rock-theme-autopilot[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  if ! [[ "$EXPECTED_CURRENT_UPSTREAM" =~ ^[0-9a-f]{40}$ &&
+                      "$EXPECTED_LATEST_UPSTREAM" =~ ^[0-9a-f]{40}$ ]]; then
+                      echo "Invalid pinned upstream commit." >&2
+                      exit 1
+                  fi
                   git fetch --force --no-tags "https://github.com/${UPSTREAM_REPOSITORY}.git" \
                       "+refs/tags/${CURRENT_TAG}:${base_ref}" \
                       "+refs/tags/${LATEST_TAG}:${latest_ref}"
 
-                  base_commit="$(git rev-parse "${base_ref}^{commit}")"
+                  upstream_base_commit="$(git rev-parse "${base_ref}^{commit}")"
                   latest_commit="$(git rev-parse "${latest_ref}^{commit}")"
-                  theme_commit="$(git rev-parse HEAD)"
+                  if [ "$upstream_base_commit" != "$EXPECTED_CURRENT_UPSTREAM" ] ||
+                      [ "$latest_commit" != "$EXPECTED_LATEST_UPSTREAM" ]; then
+                      echo "An upstream release tag moved after detection; refusing the candidate." >&2
+                      echo "Current: expected=$EXPECTED_CURRENT_UPSTREAM actual=$upstream_base_commit" >&2
+                      echo "Latest: expected=$EXPECTED_LATEST_UPSTREAM actual=$latest_commit" >&2
+                      exit 1
+                  fi
+                  theme_commit="$main_commit"
                   merge_status=0
-                  merge_output="$(git merge-tree --write-tree --name-only --merge-base="$base_commit" "$theme_commit" "$latest_commit" 2>&1)" || merge_status=$?
+                  merge_output="$(git merge-tree --write-tree --name-only --merge-base="$upstream_base_commit" "$theme_commit" "$latest_commit" 2>&1)" || merge_status=$?
                   merged_tree="$(printf '%s\n' "$merge_output" | head -n 1)"
 
                   if ! [[ "$merged_tree" =~ ^[0-9a-f]+$ ]]; then
@@ -301,7 +495,7 @@ jobs:
 
                   if [ "$merge_status" -ne 0 ]; then
                       conflicts="$(printf '%s\n' "$merge_output" | sed -n '2,/^$/p' | sed '/^$/d')"
-                      unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|\.github/workflows/release\.yaml)$' || true)"
+                      unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|\.github/workflows/.*|install\.sh|release\.sh|scripts/(copy-compiled-assets|update-upstream-metadata)\.js|scripts/(package-release|verify-release-assets)\.sh|tests/(InstallerSmokeTest|ReleaseToolingSmokeTest)\.sh|tests/UpstreamAutopilotWorkflow\.test\.ts)$' || true)"
                       if [ -z "$conflicts" ] || [ -n "$unexpected" ]; then
                           echo "$merge_output" >&2
                           echo "The upstream release has genuine application conflicts with Rock Theme." >&2
@@ -319,13 +513,20 @@ jobs:
                       echo "Merge markers remain after resolving protected fork files." >&2
                       exit 1
                   fi
-                  node scripts/update-upstream-metadata.js "$LATEST_TAG" "$THEME_TAG"
+                  node "$trusted_metadata" "$LATEST_TAG" "$THEME_TAG"
                   git add -A
                   git commit -m "chore: update Pterodactyl to ${LATEST_TAG}"
-                  git push --force origin "HEAD:refs/heads/$branch"
+                  git bundle create "$RUNNER_TEMP/upstream-candidate.bundle" "refs/heads/$branch"
 
-                  echo "branch=$branch" >> "$GITHUB_OUTPUT"
                   echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+            - name: Save candidate bundle
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: upstream-candidate-${{ steps.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}/upstream-candidate.bundle
+                  if-no-files-found: error
+                  retention-days: 2
 
     frontend:
         name: Validate frontend
@@ -344,6 +545,12 @@ jobs:
                   ref: refs/heads/main
                   persist-credentials: false
 
+            - name: Restore candidate bundle
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: upstream-candidate-${{ needs.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}
+
             - name: Check out verified candidate
               env:
                   EXPECTED_COMMIT: ${{ needs.prepare.outputs.commit }}
@@ -353,20 +560,23 @@ jobs:
                       echo "Invalid candidate commit: $EXPECTED_COMMIT" >&2
                       exit 1
                   fi
-                  git fetch --force --no-tags origin \
-                      '+refs/heads/automation/upstream-candidate:refs/remotes/origin/automation/upstream-candidate'
-                  actual_commit="$(git rev-parse 'refs/remotes/origin/automation/upstream-candidate^{commit}')"
+                  bundle="$RUNNER_TEMP/upstream-candidate.bundle"
+                  git bundle verify "$bundle"
+                  git fetch --force --no-tags "$bundle" \
+                      '+refs/heads/automation/upstream-candidate:refs/remotes/rock-candidate/main'
+                  actual_commit="$(git rev-parse 'refs/remotes/rock-candidate/main^{commit}')"
                   if [ "$actual_commit" != "$EXPECTED_COMMIT" ]; then
-                      echo "Candidate branch resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
+                      echo "Candidate bundle resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
                       exit 1
                   fi
-                  git checkout --detach refs/remotes/origin/automation/upstream-candidate
+                  git checkout --detach refs/remotes/rock-candidate/main
                   test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
 
             - name: Validate installer scripts
               run: |
-                  bash -n install.sh release.sh
+                  bash -n install.sh release.sh scripts/package-release.sh scripts/verify-release-assets.sh
                   bash tests/InstallerSmokeTest.sh
+                  bash tests/ReleaseToolingSmokeTest.sh
 
             - name: Set up Node.js
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -376,8 +586,14 @@ jobs:
             - name: Install dependencies
               run: yarn install --frozen-lockfile --non-interactive
 
+            - name: Validate release metadata
+              run: yarn metadata:check
+
             - name: Typecheck
               run: yarn tsc
+
+            - name: Typecheck responsive QA
+              run: yarn test:responsive:typecheck
 
             - name: Lint
               run: yarn lint
@@ -385,14 +601,43 @@ jobs:
             - name: Test
               run: yarn test --ci --runInBand
 
-            - name: Build production assets
-              run: yarn build:production
+            - name: Verify reproducible production assets
+              run: bash scripts/verify-release-assets.sh
 
-            - name: Save compiled assets
+            - name: Create verified release archive
+              env:
+                  LATEST_TAG: ${{ needs.detect.outputs.latest }}
+                  THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
+              run: |
+                  set -euo pipefail
+                  release_dir="$RUNNER_TEMP/verified-release"
+                  mkdir -p "$release_dir"
+                  bash scripts/package-release.sh "$release_dir/panel.tar.gz"
+                  (cd "$release_dir" && sha256sum panel.tar.gz > panel.tar.gz.sha256)
+                  checksum="$(cat "$release_dir/panel.tar.gz.sha256")"
+                  if ! [[ "$checksum" =~ ^[0-9a-f]{64}[[:space:]][[:space:]]panel\.tar\.gz$ ]]; then
+                      echo "Release checksum did not use the canonical panel.tar.gz record." >&2
+                      exit 1
+                  fi
+                  (cd "$release_dir" && sha256sum --check panel.tar.gz.sha256)
+                  provenance="$(tar -xOf "$release_dir/panel.tar.gz" ./.rock/release.json)"
+                  printf '%s' "$provenance" | jq -e \
+                      --arg theme_version "${THEME_TAG#v}" \
+                      --arg pterodactyl_version "$LATEST_TAG" \
+                      --arg source_commit "$(git rev-parse HEAD)" '
+                          .schema == 1 and
+                          .theme_version == $theme_version and
+                          .pterodactyl_version == $pterodactyl_version and
+                          .source_commit == $source_commit
+                      ' >/dev/null
+
+            - name: Save verified release archive
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: upstream-build-${{ needs.prepare.outputs.commit }}
-                  path: public/assets
+                  name: upstream-release-${{ needs.prepare.outputs.commit }}
+                  path: |
+                      ${{ runner.temp }}/verified-release/panel.tar.gz
+                      ${{ runner.temp }}/verified-release/panel.tar.gz.sha256
                   if-no-files-found: error
                   retention-days: 2
 
@@ -441,6 +686,12 @@ jobs:
                   ref: refs/heads/main
                   persist-credentials: false
 
+            - name: Restore candidate bundle
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: upstream-candidate-${{ needs.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}
+
             - name: Check out verified candidate
               env:
                   EXPECTED_COMMIT: ${{ needs.prepare.outputs.commit }}
@@ -450,14 +701,16 @@ jobs:
                       echo "Invalid candidate commit: $EXPECTED_COMMIT" >&2
                       exit 1
                   fi
-                  git fetch --force --no-tags origin \
-                      '+refs/heads/automation/upstream-candidate:refs/remotes/origin/automation/upstream-candidate'
-                  actual_commit="$(git rev-parse 'refs/remotes/origin/automation/upstream-candidate^{commit}')"
+                  bundle="$RUNNER_TEMP/upstream-candidate.bundle"
+                  git bundle verify "$bundle"
+                  git fetch --force --no-tags "$bundle" \
+                      '+refs/heads/automation/upstream-candidate:refs/remotes/rock-candidate/main'
+                  actual_commit="$(git rev-parse 'refs/remotes/rock-candidate/main^{commit}')"
                   if [ "$actual_commit" != "$EXPECTED_COMMIT" ]; then
-                      echo "Candidate branch resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
+                      echo "Candidate bundle resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
                       exit 1
                   fi
-                  git checkout --detach refs/remotes/origin/automation/upstream-candidate
+                  git checkout --detach refs/remotes/rock-candidate/main
                   test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
 
             - name: Set up PHP
@@ -507,6 +760,12 @@ jobs:
                   ref: refs/heads/main
                   persist-credentials: false
 
+            - name: Restore candidate bundle
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: upstream-candidate-${{ needs.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}
+
             - name: Check out verified candidate
               env:
                   EXPECTED_COMMIT: ${{ needs.prepare.outputs.commit }}
@@ -516,14 +775,16 @@ jobs:
                       echo "Invalid candidate commit: $EXPECTED_COMMIT" >&2
                       exit 1
                   fi
-                  git fetch --force --no-tags origin \
-                      '+refs/heads/automation/upstream-candidate:refs/remotes/origin/automation/upstream-candidate'
-                  actual_commit="$(git rev-parse 'refs/remotes/origin/automation/upstream-candidate^{commit}')"
+                  bundle="$RUNNER_TEMP/upstream-candidate.bundle"
+                  git bundle verify "$bundle"
+                  git fetch --force --no-tags "$bundle" \
+                      '+refs/heads/automation/upstream-candidate:refs/remotes/rock-candidate/main'
+                  actual_commit="$(git rev-parse 'refs/remotes/rock-candidate/main^{commit}')"
                   if [ "$actual_commit" != "$EXPECTED_COMMIT" ]; then
-                      echo "Candidate branch resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
+                      echo "Candidate bundle resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
                       exit 1
                   fi
-                  git checkout --detach refs/remotes/origin/automation/upstream-candidate
+                  git checkout --detach refs/remotes/rock-candidate/main
                   test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
 
             - name: Set up QEMU
@@ -556,9 +817,10 @@ jobs:
             issues: write # Required to close a resolved autopilot failure report.
             packages: read # Required to verify the resulting GHCR aliases.
         env:
-            GH_TOKEN: ${{ github.token }}
-            CANDIDATE_BRANCH: ${{ needs.prepare.outputs.branch }}
+            CANDIDATE_SHA: ${{ needs.prepare.outputs.commit }}
             EDGE_CONTAINER_REQUIRED: ${{ needs.detect.outputs.edge_container_required }}
+            EXPECTED_BASE: ${{ needs.prepare.outputs.base }}
+            EXPECTED_EDGE_COMMIT: ${{ needs.detect.outputs.edge_commit }}
             LATEST_TAG: ${{ needs.detect.outputs.latest }}
             MODE: ${{ needs.detect.outputs.mode }}
             THEME_TAG: ${{ needs.detect.outputs.theme_tag }}
@@ -571,76 +833,112 @@ jobs:
                   fetch-depth: 0
                   persist-credentials: false
 
-            - name: Check out verified candidate
-              env:
-                  EXPECTED_COMMIT: ${{ needs.prepare.outputs.commit }}
-              run: |
-                  set -euo pipefail
-                  if ! [[ "$EXPECTED_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
-                      echo "Invalid candidate commit: $EXPECTED_COMMIT" >&2
-                      exit 1
-                  fi
-                  git fetch --force --no-tags origin \
-                      '+refs/heads/automation/upstream-candidate:refs/remotes/origin/automation/upstream-candidate'
-                  actual_commit="$(git rev-parse 'refs/remotes/origin/automation/upstream-candidate^{commit}')"
-                  if [ "$actual_commit" != "$EXPECTED_COMMIT" ]; then
-                      echo "Candidate branch resolved to $actual_commit, expected $EXPECTED_COMMIT." >&2
-                      exit 1
-                  fi
-                  git checkout --detach refs/remotes/origin/automation/upstream-candidate
-                  test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
-
-            - name: Restore compiled assets
+            - name: Restore candidate bundle
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
               with:
-                  name: upstream-build-${{ needs.prepare.outputs.commit }}
-                  path: public/assets
+                  name: upstream-candidate-${{ needs.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}
 
-            - name: Create install archive
+            - name: Import verified candidate
               run: |
                   set -euo pipefail
-                  staging="$(mktemp -d)"
-                  git archive --format=tar HEAD | tar -xf - -C "$staging"
-                  rm -rf "$staging/public/assets" "$staging/.github" "$staging/tests"
-                  mkdir -p "$staging/public/assets"
-                  cp -a public/assets/. "$staging/public/assets/"
-                  jq -n \
-                      --arg theme_version "${THEME_TAG#v}" \
-                      --arg pterodactyl_version "$LATEST_TAG" \
-                      --arg source_commit "$(git rev-parse HEAD)" \
-                      '{schema: 1, theme_version: $theme_version, pterodactyl_version: $pterodactyl_version, source_commit: $source_commit}' \
-                      > "$staging/.rock/release.json"
-                  tar -C "$staging" -czf panel.tar.gz .
-                  sha256sum panel.tar.gz > panel.tar.gz.sha256
-                  sha256sum --check panel.tar.gz.sha256
-                  provenance="$(tar -xOf panel.tar.gz ./.rock/release.json)"
+                  if ! [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ && "$EXPECTED_BASE" =~ ^[0-9a-f]{40}$ ]]; then
+                      echo "Invalid candidate or base commit." >&2
+                      exit 1
+                  fi
+                  bundle="$RUNNER_TEMP/upstream-candidate.bundle"
+                  git bundle verify "$bundle"
+                  git -c core.hooksPath=/dev/null fetch --force --no-tags "$bundle" \
+                      '+refs/heads/automation/upstream-candidate:refs/remotes/rock-candidate/main'
+                  actual_commit="$(git rev-parse 'refs/remotes/rock-candidate/main^{commit}')"
+                  if [ "$actual_commit" != "$CANDIDATE_SHA" ]; then
+                      echo "Candidate bundle resolved to $actual_commit, expected $CANDIDATE_SHA." >&2
+                      exit 1
+                  fi
+                  git fsck --strict "$CANDIDATE_SHA"
+
+            - name: Restore verified release archive
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: upstream-release-${{ needs.prepare.outputs.commit }}
+                  path: ${{ runner.temp }}/verified-release
+
+            - name: Validate inert release archive
+              env:
+                  RELEASE_DIR: ${{ runner.temp }}/verified-release
+              run: |
+                  set -euo pipefail
+                  if [ "$(find "$RELEASE_DIR" -mindepth 1 -maxdepth 1 -type f | wc -l)" -ne 2 ] ||
+                      [ -L "$RELEASE_DIR/panel.tar.gz" ] || [ -L "$RELEASE_DIR/panel.tar.gz.sha256" ]; then
+                      echo "Release artifact must contain exactly two regular files." >&2
+                      exit 1
+                  fi
+                  checksum="$(cat "$RELEASE_DIR/panel.tar.gz.sha256")"
+                  if ! [[ "$checksum" =~ ^[0-9a-f]{64}[[:space:]][[:space:]]panel\.tar\.gz$ ]]; then
+                      echo "Release checksum did not use the canonical panel.tar.gz record." >&2
+                      exit 1
+                  fi
+                  (cd "$RELEASE_DIR" && sha256sum --check panel.tar.gz.sha256)
+                  provenance="$(tar -xOf "$RELEASE_DIR/panel.tar.gz" ./.rock/release.json)"
                   printf '%s' "$provenance" | jq -e \
                       --arg theme_version "${THEME_TAG#v}" \
                       --arg pterodactyl_version "$LATEST_TAG" \
-                      --arg source_commit "$(git rev-parse HEAD)" '
+                      --arg source_commit "$CANDIDATE_SHA" '
                           .schema == 1 and
                           .theme_version == $theme_version and
                           .pterodactyl_version == $pterodactyl_version and
                           .source_commit == $source_commit
                       ' >/dev/null
+                  archive_sha="${checksum%% *}"
+                  archive_bytes="$(stat -c '%s' "$RELEASE_DIR/panel.tar.gz")"
+                  {
+                      echo "### Reproducible autopilot artifact"
+                      echo "- Theme: \`${THEME_TAG}\`"
+                      echo "- Pterodactyl: \`${LATEST_TAG}\`"
+                      echo "- Source: \`${CANDIDATE_SHA}\`"
+                      echo "- SHA-256: \`${archive_sha}\`"
+                      echo "- Size: \`${archive_bytes}\` bytes"
+                      echo "- Assets: two clean production builds matched"
+                      echo "- Determinism: two independent archive passes matched"
+                  } >> "$GITHUB_STEP_SUMMARY"
 
             - name: Promote or confirm main
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
                   gh auth setup-git
-                  git fetch origin main
-                  if [ "$MODE" = update ]; then
-                      git merge-base --is-ancestor origin/main HEAD
-                      git push origin HEAD:main
-                  elif [ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD)" ]; then
-                      echo "Main changed after reconciliation started; refusing stale publication." >&2
+                  git -c core.hooksPath=/dev/null fetch --force --no-tags origin \
+                      '+refs/heads/main:refs/remotes/origin/main'
+                  main_commit="$(git rev-parse 'refs/remotes/origin/main^{commit}')"
+                  if [ "$main_commit" != "$EXPECTED_BASE" ]; then
+                      echo "Main changed from $EXPECTED_BASE to $main_commit during validation." >&2
                       exit 1
+                  fi
+                  if [ "$MODE" = update ]; then
+                      read -r commit parent extra < <(git rev-list --parents -n 1 "$CANDIDATE_SHA")
+                      if [ "$commit" != "$CANDIDATE_SHA" ] || [ "$parent" != "$EXPECTED_BASE" ] || [ -n "${extra:-}" ]; then
+                          echo "Update candidate is not exactly one commit above the validated main commit." >&2
+                          exit 1
+                      fi
+                      if [ -n "$(git ls-remote origin refs/heads/automation/upstream-candidate)" ]; then
+                          echo "A pending autopilot candidate already exists; refusing to replace it." >&2
+                          exit 1
+                      fi
+                      git push --atomic origin \
+                          "$CANDIDATE_SHA:refs/heads/main" \
+                          "$CANDIDATE_SHA:refs/heads/automation/upstream-candidate"
+                  else
+                      git merge-base --is-ancestor "$CANDIDATE_SHA" "$main_commit"
                   fi
 
             - name: Reconcile immutable tag and release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RELEASE_DIR: ${{ runner.temp }}/verified-release
               run: |
                   set -euo pipefail
-                  target_commit="$(git rev-parse HEAD)"
+                  target_commit="$CANDIDATE_SHA"
                   tag_ref="refs/tags/${THEME_TAG}"
                   peeled_ref="${tag_ref}^{}"
                   remote_refs="$(git ls-remote --tags origin "$tag_ref" "$peeled_ref")"
@@ -663,16 +961,26 @@ jobs:
                       else
                           git config user.name "rock-theme-autopilot[bot]"
                           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                          git tag -a "$THEME_TAG" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
+                          git tag -a "$THEME_TAG" "$target_commit" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
                       fi
                       git push origin "${tag_ref}:${tag_ref}"
                   fi
 
                   release_assets_valid() {
-                      local release_dir provenance
+                      local checksum release_dir provenance
                       release_dir="$(mktemp -d)"
                       if ! gh release download "$THEME_TAG" --dir "$release_dir" \
                           --pattern panel.tar.gz --pattern panel.tar.gz.sha256 >/dev/null 2>&1; then
+                          rm -rf "$release_dir"
+                          return 1
+                      fi
+                      if [ "$(find "$release_dir" -mindepth 1 -maxdepth 1 -type f | wc -l)" -ne 2 ] ||
+                          [ -L "$release_dir/panel.tar.gz" ] || [ -L "$release_dir/panel.tar.gz.sha256" ]; then
+                          rm -rf "$release_dir"
+                          return 1
+                      fi
+                      checksum="$(cat "$release_dir/panel.tar.gz.sha256")"
+                      if ! [[ "$checksum" =~ ^[0-9a-f]{64}[[:space:]][[:space:]]panel\.tar\.gz$ ]]; then
                           rm -rf "$release_dir"
                           return 1
                       fi
@@ -696,7 +1004,8 @@ jobs:
                       rm -rf "$release_dir"
                   }
 
-                  if release_json="$(gh release view "$THEME_TAG" --json assets,isDraft 2>/dev/null)"; then
+                  autopilot_marker="<!-- rock-theme-autopilot:source=${target_commit} -->"
+                  if release_json="$(gh release view "$THEME_TAG" --json assets,author,body,isDraft 2>/dev/null)"; then
                       if [ "$(printf '%s' "$release_json" | jq -r .isDraft)" = false ] &&
                           printf '%s' "$release_json" | jq -e '
                               ([.assets[]?.name] | index("panel.tar.gz")) != null and
@@ -704,36 +1013,60 @@ jobs:
                           ' >/dev/null && release_assets_valid; then
                           echo "Published release $THEME_TAG has checksum-valid assets for $target_commit."
                       else
-                          gh release upload "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 --clobber
+                          release_author="$(printf '%s' "$release_json" | jq -r '.author.login // empty')"
+                          release_body="$(printf '%s' "$release_json" | jq -r '.body // ""')"
+                          if [ "$release_author" != 'github-actions[bot]' ] ||
+                              [[ "$release_body" != *"$autopilot_marker"* ]]; then
+                              echo "Refusing to modify release $THEME_TAG because Autopilot ownership was not proven." >&2
+                              exit 1
+                          fi
+                          gh release upload "$THEME_TAG" \
+                              "$RELEASE_DIR/panel.tar.gz" "$RELEASE_DIR/panel.tar.gz.sha256" --clobber
                           gh release edit "$THEME_TAG" --draft=false --latest
                       fi
                   else
-                      gh release create "$THEME_TAG" panel.tar.gz panel.tar.gz.sha256 \
+                      release_notes="Automated, fully tested compatibility update for Pterodactyl ${LATEST_TAG}.
+
+                  ${autopilot_marker}"
+                      gh release create "$THEME_TAG" \
+                          "$RELEASE_DIR/panel.tar.gz" "$RELEASE_DIR/panel.tar.gz.sha256" \
                           --draft \
                           --title "Rock Theme $THEME_TAG" \
-                          --notes "Automated, fully tested compatibility update for Pterodactyl $LATEST_TAG." \
+                          --notes "$release_notes" \
                           --verify-tag
                       gh release edit "$THEME_TAG" --draft=false --latest
                   fi
 
             - name: Dispatch and verify container publications
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
-                  candidate_sha="$(git rev-parse HEAD)"
+                  candidate_sha="$CANDIDATE_SHA"
+                  if [ "$MODE" = update ]; then
+                      edge_sha="$candidate_sha"
+                  else
+                      edge_sha="$EXPECTED_EDGE_COMMIT"
+                  fi
+                  if ! [[ "$edge_sha" =~ ^[0-9a-f]{40}$ ]]; then
+                      echo "Invalid edge source commit: $edge_sha" >&2
+                      exit 1
+                  fi
                   run_ids=()
                   run_labels=()
 
                   dispatch_and_find() {
                       local target="$1"
                       local ref="$2"
+                      local expected_sha="$3"
                       local key="autopilot-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${target}"
                       local title="Container / ${key}"
-                      local api="repos/${GITHUB_REPOSITORY}/actions/workflows/docker.yaml/runs?event=workflow_dispatch&head_sha=${candidate_sha}&per_page=100"
+                      local api="repos/${GITHUB_REPOSITORY}/actions/workflows/docker.yaml/runs?event=workflow_dispatch&head_sha=${expected_sha}&per_page=100"
                       local match=""
 
                       gh workflow run docker.yaml --ref "$ref" \
                           -f publish_target="$target" \
-                          -f expected_sha="$candidate_sha" \
+                          -f expected_sha="$expected_sha" \
                           -f correlation_id="$key" >&2
                       for _ in $(seq 1 60); do
                           match="$(gh api "$api" | jq -r --arg title "$title" '
@@ -758,11 +1091,11 @@ jobs:
                   }
 
                   if [ "$VERSION_CONTAINER_REQUIRED" = true ]; then
-                      run_ids+=("$(dispatch_and_find release "$THEME_TAG")")
+                      run_ids+=("$(dispatch_and_find release "$THEME_TAG" "$candidate_sha")")
                       run_labels+=(release)
                   fi
                   if [ "$EDGE_CONTAINER_REQUIRED" = true ]; then
-                      run_ids+=("$(dispatch_and_find edge main)")
+                      run_ids+=("$(dispatch_and_find edge main "$edge_sha")")
                       run_labels+=(edge)
                   fi
 
@@ -786,7 +1119,7 @@ jobs:
                   version_tag="${THEME_TAG#v}"
                   minor_tag="${version_tag%.*}"
                   release_source="source-release-${candidate_sha}"
-                  edge_source="source-edge-${candidate_sha}"
+                  edge_source="source-edge-${edge_sha}"
                   registry_ready=false
                   for _ in $(seq 1 30); do
                       package_error="$(mktemp)"
@@ -819,10 +1152,19 @@ jobs:
                   fi
 
             - name: Finalize successful publication
+              env:
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   set -euo pipefail
-                  if [ -n "$CANDIDATE_BRANCH" ]; then
-                      git push origin --delete "$CANDIDATE_BRANCH" || true
+                  gh auth setup-git
+                  marker_ref="refs/heads/automation/upstream-candidate"
+                  marker_sha="$(git ls-remote origin "$marker_ref" | awk 'NR == 1 { print $1 }')"
+                  if [ -n "$marker_sha" ]; then
+                      if [ "$marker_sha" != "$CANDIDATE_SHA" ]; then
+                          echo "Retry marker changed from $CANDIDATE_SHA to $marker_sha; refusing to delete it." >&2
+                          exit 1
+                      fi
+                      git push --force-with-lease="${marker_ref}:${CANDIDATE_SHA}" origin ":${marker_ref}"
                   fi
                   titles=("Autopilot blocked updating to Pterodactyl ${LATEST_TAG}" "Upstream Autopilot blocked during detection")
                   for title in "${titles[@]}"; do

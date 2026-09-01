@@ -37,17 +37,22 @@ type ModalType = 'rename' | 'move' | 'chmod';
 
 const StyledRow = styled.button<{ $danger?: boolean }>`
     ${tw`p-2 flex items-center rounded w-full text-left`};
+    min-height: 2.75rem;
     border: 0;
     background: transparent;
-    color: ${(props) => (props.$danger ? '#e99aa2' : '#c9b7bc')};
+    color: ${(props) => (props.$danger ? 'var(--shell-danger)' : 'var(--shell-text)')};
     transition: color 150ms ease, background 150ms ease, transform 150ms ease;
 
     &:hover,
     &:focus-visible {
-        color: ${(props) => (props.$danger ? '#ff8d98' : '#ffd6da')};
+        color: ${(props) => (props.$danger ? 'var(--shell-danger)' : 'var(--shell-accent-bright)')};
         background: ${(props) => (props.$danger ? 'rgba(225, 66, 82, 0.18)' : 'rgba(var(--shell-accent-rgb), 0.15)')};
-        transform: translateX(2px);
-        outline: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            transform: translateX(2px);
+        }
     }
 `;
 
@@ -58,8 +63,8 @@ interface RowProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Row = ({ icon, title, ...props }: RowProps) => (
-    <StyledRow type={'button'} {...props}>
-        <FontAwesomeIcon icon={icon} css={tw`text-xs`} fixedWidth />
+    <StyledRow type={'button'} role={'menuitem'} {...props}>
+        <FontAwesomeIcon icon={icon} css={tw`text-xs`} fixedWidth aria-hidden={'true'} />
         <span css={tw`ml-2`}>{title}</span>
     </StyledRow>
 );
@@ -168,10 +173,15 @@ const FileDropdownMenu = ({ file }: { file: FileObject }) => {
             <DropdownMenu
                 ref={onClickRef}
                 renderToggle={(onClick) => (
-                    <div css={tw`px-4 py-2 hover:text-white`} onClick={onClick}>
-                        <FontAwesomeIcon icon={faEllipsisH} />
+                    <button
+                        type={'button'}
+                        css={tw`inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] px-3 hover:text-white`}
+                        onClick={onClick}
+                        aria-label={`Actions for ${file.name}`}
+                    >
+                        <FontAwesomeIcon icon={faEllipsisH} aria-hidden={'true'} />
                         <SpinnerOverlay visible={showSpinner} fixed size={'large'} />
-                    </div>
+                    </button>
                 )}
             >
                 <Can action={'file.update'}>

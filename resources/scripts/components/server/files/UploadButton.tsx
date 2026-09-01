@@ -22,6 +22,9 @@ function isFileOrDirectory(event: DragEvent): boolean {
     return event.dataTransfer.types.some((value) => value.toLowerCase() === 'files');
 }
 
+export const containsDirectory = (items?: DataTransferItemList | null): boolean =>
+    Array.from(items || []).some((item) => item.webkitGetAsEntry?.()?.isDirectory === true);
+
 export default ({ className }: WithClassname) => {
     const fileUploadInput = useRef<HTMLInputElement>(null);
     const uploadSequence = useRef(0);
@@ -57,12 +60,13 @@ export default ({ className }: WithClassname) => {
         setUploadProgress({ id, loaded: data.loaded });
     };
 
-    const onFileSubmission = (files: FileList) => {
+    const onFileSubmission = (files: FileList, items?: DataTransferItemList | null) => {
         clearAndAddHttpError();
-        const list = Array.from(files);
-        if (list.some((file) => !file.type && (!file.size || file.size === 4096))) {
+        if (containsDirectory(items)) {
             return addError('Folder uploads are not supported.', 'Error');
         }
+
+        const list = Array.from(files);
 
         const uploads = list.map((file) => {
             const controller = new AbortController();
@@ -118,7 +122,7 @@ export default ({ className }: WithClassname) => {
                             visible.value = false;
                             if (!e.dataTransfer?.files.length) return;
 
-                            onFileSubmission(e.dataTransfer.files);
+                            onFileSubmission(e.dataTransfer.files, e.dataTransfer.items);
                         }}
                     >
                         <div className={'w-full flex items-center justify-center pointer-events-none'}>

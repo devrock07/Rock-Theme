@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
 import { createPortal } from 'react-dom';
+import useReducedMotion from '@/plugins/useReducedMotion';
 
 type Interaction = 'hover' | 'click' | 'focus';
 
@@ -43,6 +44,7 @@ const arrowSides: Record<Side, string> = {
 export default ({ children, ...props }: Props) => {
     const arrowEl = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
+    const reducedMotion = useReducedMotion();
 
     const { x, y, reference, floating, middlewareData, strategy, context, placement } = useFloating({
         open,
@@ -82,10 +84,10 @@ export default ({ children, ...props }: Props) => {
         <AnimatePresence>
             {open && (
                 <motion.div
-                    initial={{ opacity: 0, y: 2 }}
+                    initial={reducedMotion ? false : { opacity: 0, y: 2 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 2 }}
-                    transition={{ duration: 0.1 }}
+                    exit={reducedMotion ? undefined : { opacity: 0, y: 2 }}
+                    transition={{ duration: reducedMotion ? 0 : 0.1 }}
                     {...getFloatingProps({
                         ref: floating,
                         className:

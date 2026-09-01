@@ -32,7 +32,11 @@ const Container = styled.div`
         overflow: hidden;
         border: 1px solid var(--shell-border);
         border-radius: 12px;
-        background: linear-gradient(135deg, rgba(20, 17, 27, 0.88), rgba(9, 9, 11, 0.94));
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--shell-panel-soft) 88%, transparent),
+            color-mix(in srgb, var(--shell-bg) 94%, transparent)
+        );
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 28px 90px rgba(0, 0, 0, 0.36);
         backdrop-filter: blur(24px) saturate(1.3);
     }
@@ -46,7 +50,7 @@ const Container = styled.div`
         overflow: hidden;
         border-right: 1px solid var(--shell-border);
         background: radial-gradient(circle at 70% 100%, rgba(var(--shell-accent-rgb), 0.24), transparent 15rem),
-            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.065) 1px, transparent 0), #090909;
+            radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.065) 1px, transparent 0), var(--shell-bg);
         background-size: auto, 24px 24px, auto;
     }
 
@@ -95,7 +99,11 @@ const Container = styled.div`
         inset: 0;
         content: '';
         pointer-events: none;
-        background: linear-gradient(145deg, rgba(7, 7, 8, 0.78), rgba(var(--shell-accent-rgb), 0.12));
+        background: linear-gradient(
+            145deg,
+            color-mix(in srgb, var(--shell-bg) 78%, transparent),
+            rgba(var(--shell-accent-rgb), 0.12)
+        );
     }
 
     .auth-mark {
@@ -113,8 +121,8 @@ const Container = styled.div`
         border-width: 1px;
         border-color: rgba(255, 255, 255, 0.12) !important;
         border-radius: 8px;
-        background: #0b090a !important;
-        color: #f4f3f7 !important;
+        background: var(--shell-bg) !important;
+        color: var(--shell-text) !important;
         caret-color: var(--shell-accent-bright);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
     }
@@ -127,7 +135,7 @@ const Container = styled.div`
     .auth-form button[type='submit'] {
         border: 0;
         border-radius: 8px;
-        background: linear-gradient(135deg, var(--shell-accent-bright), var(--shell-accent));
+        background: linear-gradient(135deg, rgb(var(--rock-primary-700)), rgb(var(--rock-primary-800)));
         color: white;
         box-shadow: 0 12px 30px rgba(var(--shell-accent-rgb), 0.24);
         text-transform: none;
@@ -140,7 +148,12 @@ const Container = styled.div`
     .auth-form button[type='submit']:focus {
         filter: brightness(1.08);
         box-shadow: 0 14px 34px rgba(var(--shell-accent-rgb), 0.32);
-        transform: translateY(-1px);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .auth-form button[type='submit']:hover {
+            transform: translateY(-1px);
+        }
     }
 
     @media (max-width: 760px) {

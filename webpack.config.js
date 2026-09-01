@@ -2,6 +2,7 @@ const path = require('node:path');
 const webpack = require('webpack');
 const { WebpackAssetsManifest } = require('webpack-assets-manifest');
 const TerserPlugin = require('terser-webpack-plugin');
+const { version } = require('./package.json');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -101,7 +102,10 @@ module.exports = {
         new webpack.EnvironmentPlugin({
             NODE_ENV: process.env.NODE_ENV || 'development',
             DEBUG: process.env.NODE_ENV !== 'production',
-            WEBPACK_BUILD_HASH: Date.now().toString(16),
+            // Keep production output reproducible while still invalidating locale
+            // caches for each tagged Rock Theme release. Development HMR uses its
+            // own per-page value in resources/scripts/i18n.ts.
+            WEBPACK_BUILD_HASH: process.env.WEBPACK_BUILD_HASH || version,
         }),
         new WebpackAssetsManifest({
             output: 'manifest.json',

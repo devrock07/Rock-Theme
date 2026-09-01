@@ -6,6 +6,7 @@
     @apply relative bg-gray-600 rounded max-w-xl w-full mx-auto shadow-lg text-left;
     @apply ring-4 ring-gray-800 ring-opacity-80;
     display: flex;
+    max-height: calc(100vh - 2rem);
     max-height: calc(100dvh - 2rem);
     overflow: hidden;
     flex-direction: column;
@@ -36,6 +37,6 @@
     }
 
     &.info {
-        @apply bg-primary-500 text-primary-50;
+        @apply bg-primary-700 text-primary-50;
     }
 }

@@ -1,0 +1,82 @@
+name: Responsive QA
+
+on:
+    workflow_dispatch:
+        inputs:
+            routes:
+                description: Comma-separated same-origin, root-relative routes to verify
+                required: true
+                default: /auth/login,/status
+                type: string
+
+permissions:
+    contents: read
+
+concurrency:
+    group: responsive-qa-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    responsive:
+        name: Phone, tablet, desktop, and ultrawide
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        environment: responsive-qa
+        env:
+            CI: true
+        steps:
+            - name: Check out source
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: refs/heads/main
+                  persist-credentials: false
+
+            - name: Set up Node.js
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 22
+                  cache: yarn
+                  cache-dependency-path: yarn.lock
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile --non-interactive
+
+            - name: Typecheck responsive QA
+              run: yarn test:responsive:typecheck
+
+            - name: Validate protected target
+              env:
+                  ROCK_VISUAL_BASE_URL: ${{ vars.ROCK_VISUAL_BASE_URL }}
+              run: |
+                  node -e '
+                      const value = process.env.ROCK_VISUAL_BASE_URL;
+                      if (!value) throw new Error("Set ROCK_VISUAL_BASE_URL on the responsive-qa environment.");
+                      const target = new URL(value);
+                      if (target.protocol !== "https:") throw new Error("Responsive QA requires an HTTPS target.");
+                      if (target.username || target.password || target.pathname !== "/" || target.search || target.hash) {
+                          throw new Error("ROCK_VISUAL_BASE_URL must be a clean HTTPS origin.");
+                      }
+                  '
+
+            - name: Install Chromium
+              run: yarn playwright install --with-deps chromium
+
+            - name: Run responsive checks
+              env:
+                  ROCK_VISUAL_BASE_URL: ${{ vars.ROCK_VISUAL_BASE_URL }}
+                  ROCK_VISUAL_ROUTES: ${{ inputs.routes }}
+                  ROCK_VISUAL_EMAIL: ${{ secrets.ROCK_VISUAL_EMAIL }}
+                  ROCK_VISUAL_PASSWORD: ${{ secrets.ROCK_VISUAL_PASSWORD }}
+              run: yarn test:responsive
+
+            - name: Upload failure diagnostics
+              if: failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: responsive-qa-${{ github.run_id }}
+                  path: |
+                      test-results/responsive
+                      playwright-report
+                  if-no-files-found: warn
+                  retention-days: 3

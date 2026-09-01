@@ -1,6 +1,6 @@
 {
     "name": "rock-theme",
-    "version": "2.0.3",
+    "version": "2.1.0",
     "private": true,
     "description": "A responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel 1.15.1.",
     "author": {
@@ -95,6 +95,7 @@
         "@babel/preset-typescript": "^7.12.1",
         "@babel/runtime": "^7.29.6",
         "@fontsource-variable/ibm-plex-sans": "^5.2.8",
+        "@playwright/test": "^1.62.1",
         "@testing-library/dom": "^8.14.0",
         "@testing-library/jest-dom": "^5.16.4",
         "@testing-library/react": "12.1.5",
@@ -168,6 +169,9 @@
     "scripts": {
         "clean": "node scripts/clean-assets.js",
         "test": "jest",
+        "test:responsive": "playwright test --config tests/visual/playwright.config.ts",
+        "test:responsive:typecheck": "tsc --noEmit -p tests/visual/tsconfig.json",
+        "metadata:check": "node scripts/update-upstream-metadata.js --check",
         "tsc": "tsc --noEmit",
         "lint": "eslint ./resources/scripts/**/*.{ts,tsx} --ext .ts,.tsx",
         "watch": "cross-env NODE_ENV=development ./node_modules/.bin/webpack --watch --progress",

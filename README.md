@@ -22,7 +22,7 @@ color systems, responsive navigation, configurable branding, operational
 telemetry, account-synced dashboard preferences, and release tooling designed
 for real panel installations.
 
-Rock Theme `v2.0.3` is based on and supports
+Rock Theme `v2.1.0` is based on and supports
 [Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
 It is a full panel distribution, not a standalone CSS file or runtime plugin.
 
@@ -50,16 +50,18 @@ the operating system's reduced-motion preference.
 
 | Component         | Supported                                        |
 | ----------------- | ------------------------------------------------ |
-| Rock Theme        | `2.0.3`                                          |
+| Rock Theme        | `2.1.0`                                          |
 | Pterodactyl Panel | `1.15.1`                                         |
 | PHP               | `8.2` or `8.3`                                   |
 | Node.js           | `22` or newer when building from source          |
 | Yarn              | Classic `1.x` when building from source          |
 | Architectures     | `linux/amd64` and `linux/arm64` container images |
 
-Do not install this release over a different Pterodactyl base version. Upgrade
-the base panel through a compatible Rock Theme release instead of running the
-official Pterodactyl updater directly over a themed installation.
+The manager accepts the declared base or a forward upgrade within the same
+Pterodactyl major version. It refuses downgrades, conflicting installed-version
+markers, and major-version jumps. Upgrade themed installations through a
+compatible Rock Theme release instead of running the official Pterodactyl
+updater directly over theme code.
 
 ## Quick install
 
@@ -76,11 +78,17 @@ curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.s
 sudo bash /tmp/rock-theme-install.sh install
 ```
 
-The manager verifies the latest release checksum and archive structure before
-placing the panel in maintenance mode. It then creates a rollback snapshot,
+The manager verifies the latest release checksum, Git provenance, and archive
+structure before placing the panel in maintenance mode. It creates a checksummed
+rollback snapshot, stages the release, removes stale application files,
 installs PHP dependencies, runs migrations, clears caches, restarts queue
 workers, repairs permissions, and returns the panel online. Interrupted
-operations include a recovery guard that attempts to bring the panel back up.
+operations before database migrations begin include a recovery guard that
+restores code from the pre-operation snapshot while preserving the live `.env`
+and `storage`, then brings the panel back up. Once migration work starts, the
+manager keeps the new source in place rather than pairing old code with a newer
+schema and leaves the panel in maintenance mode for review. A separate database
+backup remains required for point-in-time recovery.
 
 Use the interactive menu by omitting the action, or run an operation directly:
 
@@ -118,6 +126,7 @@ media paths, persistence behavior, status-page controls, and telemetry details.
 | [Documentation index](./docs/README.md)         | Operator and developer documentation map                                        |
 | [Installation](./docs/INSTALLATION.md)          | Prerequisites, manager usage, manual deployment, and verification               |
 | [Configuration](./docs/CONFIGURATION.md)        | Branding, Theme Studio, media, status page, announcements, and stored user data |
+| [Operator recipes](./docs/RECIPES.md)           | Ready-to-apply production profiles for branding, status, media, and mobile use  |
 | [Upgrading and recovery](./docs/UPGRADING.md)   | Safe updates, compatibility policy, backups, rollback, and upstream automation  |
 | [Troubleshooting](./docs/TROUBLESHOOTING.md)    | Diagnostic commands and fixes for common deployment and runtime problems        |
 | [Architecture](./docs/ARCHITECTURE.md)          | Application layers, Rock Theme data, release pipeline, and design boundaries    |

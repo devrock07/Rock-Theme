@@ -164,29 +164,31 @@ export default ({ backup }: Props) => {
                 <DropdownMenu
                     renderToggle={(onClick) => (
                         <button
+                            type={'button'}
                             onClick={onClick}
-                            css={tw`text-gray-200 transition-colors duration-150 hover:text-gray-100 p-2`}
+                            css={tw`text-gray-200 transition-colors duration-150 hover:text-gray-100 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] p-2`}
+                            aria-label={`Actions for ${backup.name}`}
                         >
-                            <FontAwesomeIcon icon={faEllipsisH} />
+                            <FontAwesomeIcon icon={faEllipsisH} aria-hidden={'true'} />
                         </button>
                     )}
                 >
                     <div css={tw`text-sm`}>
                         <Can action={'backup.download'}>
-                            <DropdownButtonRow onClick={doDownload}>
+                            <DropdownButtonRow type={'button'} role={'menuitem'} onClick={doDownload}>
                                 <FontAwesomeIcon fixedWidth icon={faCloudDownloadAlt} css={tw`text-xs`} />
                                 <span css={tw`ml-2`}>Download</span>
                             </DropdownButtonRow>
                         </Can>
                         <Can action={'backup.restore'}>
-                            <DropdownButtonRow onClick={() => setModal('restore')}>
+                            <DropdownButtonRow type={'button'} role={'menuitem'} onClick={() => setModal('restore')}>
                                 <FontAwesomeIcon fixedWidth icon={faBoxOpen} css={tw`text-xs`} />
                                 <span css={tw`ml-2`}>Restore</span>
                             </DropdownButtonRow>
                         </Can>
                         <Can action={'backup.delete'}>
                             <>
-                                <DropdownButtonRow onClick={onLockToggle}>
+                                <DropdownButtonRow type={'button'} role={'menuitem'} onClick={onLockToggle}>
                                     <FontAwesomeIcon
                                         fixedWidth
                                         icon={backup.isLocked ? faUnlock : faLock}
@@ -195,7 +197,12 @@ export default ({ backup }: Props) => {
                                     {backup.isLocked ? 'Unlock' : 'Lock'}
                                 </DropdownButtonRow>
                                 {!backup.isLocked && (
-                                    <DropdownButtonRow danger onClick={() => setModal('delete')}>
+                                    <DropdownButtonRow
+                                        type={'button'}
+                                        role={'menuitem'}
+                                        danger
+                                        onClick={() => setModal('delete')}
+                                    >
                                         <FontAwesomeIcon fixedWidth icon={faTrashAlt} css={tw`text-xs`} />
                                         <span css={tw`ml-2`}>Delete</span>
                                     </DropdownButtonRow>
@@ -206,10 +213,12 @@ export default ({ backup }: Props) => {
                 </DropdownMenu>
             ) : (
                 <button
+                    type={'button'}
                     onClick={() => setModal('delete')}
-                    css={tw`text-gray-200 transition-colors duration-150 hover:text-gray-100 p-2`}
+                    css={tw`text-gray-200 transition-colors duration-150 hover:text-gray-100 inline-flex items-center justify-center min-w-[2.75rem] min-h-[2.75rem] p-2`}
+                    aria-label={`Delete ${backup.name}`}
                 >
-                    <FontAwesomeIcon icon={faTrashAlt} />
+                    <FontAwesomeIcon icon={faTrashAlt} aria-hidden={'true'} />
                 </button>
             )}
         </>

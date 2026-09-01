@@ -18,12 +18,10 @@ module.exports = {
             prefix: '<rootDir>/',
         }),
     },
-    setupFilesAfterEnv: [
-        '<rootDir>/resources/scripts/setup-tests.ts',
-    ],
+    setupFilesAfterEnv: ['<rootDir>/resources/scripts/setup-tests.ts'],
     transform: {
         '^.+\\.tsx?$': 'ts-jest',
         '^.+\\.jsx?$': 'babel-jest',
     },
-    testPathIgnorePatterns: ['/node_modules/'],
+    testPathIgnorePatterns: ['/node_modules/', '/tests/visual/'],
 };

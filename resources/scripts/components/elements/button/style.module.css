@@ -8,13 +8,13 @@
     transform: translateZ(0);
 
     &:hover:not(:disabled) {
-        transform: translateY(-1px);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 10px 28px rgba(0, 0, 0, 0.16);
     }
 
-    &:active:not(:disabled) {
-        transform: translateY(0);
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22);
+    @media (hover: hover) and (pointer: fine) {
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
     }
 
     /* Sizing Controls */
@@ -49,17 +49,27 @@
 }
 
 .primary {
-    @apply bg-blue-600 text-blue-50;
-    background-image: linear-gradient(135deg, rgba(255, 210, 214, 0.18), transparent 48%),
+    color: #fff;
+    background-color: rgb(var(--rock-primary-700));
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 48%),
         linear-gradient(105deg, rgba(var(--shell-accent-rgb), 0.2), rgba(var(--shell-accent-rgb), 0.08));
-    @apply hover:bg-blue-500 active:bg-blue-500 focus:ring-blue-400 focus:ring-opacity-75;
+    --tw-ring-color: rgba(var(--shell-accent-rgb), 0.72);
+
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+        background-color: rgb(var(--rock-primary-800));
+    }
 
     &.secondary {
-        @apply hover:bg-blue-600 active:bg-blue-600;
+        &:hover:not(:disabled),
+        &:active:not(:disabled) {
+            background-color: rgb(var(--rock-primary-700));
+        }
     }
 
     &:disabled {
-        @apply bg-blue-500/75 text-blue-200/75;
+        color: rgba(255, 255, 255, 0.68);
+        background-color: rgba(var(--shell-accent-rgb), 0.58);
     }
 }
 
