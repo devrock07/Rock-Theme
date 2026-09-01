@@ -10,7 +10,7 @@ RUN yarn install --frozen-lockfile \
 
 # Stage 1:
 # Build the actual container with all of the needed PHP dependencies that will run the application.
-FROM --platform=$TARGETOS/$TARGETARCH php:8.3-fpm-alpine@sha256:bf90236449d333cef008b1f01c72a3d4f11a6470a74629665e4c6b6158f03fc8
+FROM --platform=$TARGETOS/$TARGETARCH php:8.5-fpm-alpine@sha256:0da714a817e3d9a4553eae95cfc4a4785cf45a048d3fc9ef6d580579026ffb2b
 WORKDIR /app
 COPY . ./
 COPY --from=frontend /app/public/assets ./public/assets
