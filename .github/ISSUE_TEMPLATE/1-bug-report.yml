@@ -14,7 +14,7 @@ body:
       attributes:
           label: Rockdactyl version
           description: Use the installed release tag or full commit identifier.
-          placeholder: v2.1.0
+          placeholder: v2.1.1
       validations:
           required: true
 

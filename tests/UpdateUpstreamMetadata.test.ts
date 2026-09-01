@@ -19,12 +19,16 @@ const synchronizedVersionFiles: VersionFile[] = [
     { path: '.github/workflows/upstream-autopilot.yaml', upstream: true },
     { path: 'docker-compose.example.yml', theme: true },
     { path: 'docs/development/UPSTREAM_AUTOMATION.md', upstream: true },
+    { path: 'website/app/page.tsx', theme: true, upstream: true },
+    { path: 'website/lib/docs.ts', theme: true, upstream: true },
 ];
 const fixtureFiles = [
     '.rock/upstream-version',
     'config/app.php',
     'package.json',
     'scripts/update-upstream-metadata.js',
+    'website/package.json',
+    'website/package-lock.json',
     ...synchronizedVersionFiles.map((file) => file.path),
 ];
 
@@ -162,6 +166,11 @@ describe('update-upstream-metadata', () => {
             version: themeVersion,
             description: `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`,
         });
+        expect(JSON.parse(read(root, 'website/package.json')).version).toBe(themeVersion);
+        expect(JSON.parse(read(root, 'website/package-lock.json'))).toMatchObject({
+            version: themeVersion,
+            packages: { '': { version: themeVersion } },
+        });
         expect(read(root, 'config/app.php')).toContain(`'version' => '${upstreamVersion}'`);
         expect(read(root, 'config/app.php')).toContain(`'fork-version' => '${themeVersion}'`);
 
@@ -224,5 +233,26 @@ describe('update-upstream-metadata', () => {
         expect(read(root, 'SECURITY.md')).toBe(securityBefore);
         expect(read(root, '.github/ISSUE_TEMPLATE/2-feature-request.yml')).toBe(featureTemplateBefore);
         expect(read(root, 'docker-compose.example.yml')).toContain(`rock-theme:${themeVersion}`);
+    });
+
+    it('rejects stale documentation-site package metadata', () => {
+        const root = createFixture();
+        fixtures.push(root);
+
+        const websiteManifest = JSON.parse(read(root, 'website/package.json')) as { version: string };
+        websiteManifest.version = '0.0.1';
+        fs.writeFileSync(path.join(root, 'website/package.json'), `${JSON.stringify(websiteManifest, null, 4)}\n`);
+
+        const result = spawnSync(
+            process.execPath,
+            [path.join(root, 'scripts/update-upstream-metadata.js'), '--check'],
+            {
+                cwd: root,
+                encoding: 'utf8',
+            }
+        );
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('website/package.json version');
     });
 });

@@ -4,6 +4,26 @@ Rockdactyl follows [Semantic Versioning](https://semver.org/). This file tracks
 Rockdactyl releases; upstream panel history remains in the
 [Pterodactyl changelog](https://github.com/pterodactyl/panel/releases).
 
+## Rockdactyl v2.1.1 — 2026-09-01
+
+### Changed
+
+- Renamed the public project identity, repository links, documentation site,
+  Wiki, roadmap, installer copy, and release surfaces from Rock Theme to
+  Rockdactyl.
+- Preserved existing database, runtime, backup, and container identifiers so
+  current installations continue to update without migration work.
+- Updated `@preact/signals-react` to `1.3.8` and `boring-avatars` to `1.11.2`
+  after frontend, security, backend, and multi-architecture validation.
+
+### Fixed
+
+- Added the documentation website and its package manifests to release
+  metadata synchronization, preventing stale version badges, release links,
+  and package versions during future automated updates.
+- Corrected legacy repository links and release copy while retaining the
+  immutable `v2.1.0` tag and its original artifact provenance.
+
 ## Rockdactyl v2.1.0 — 2026-09-01
 
 ### Added

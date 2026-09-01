@@ -12,7 +12,14 @@ export const metadata: Metadata = {
     description: 'Release notes and compatibility information for Rockdactyl.',
 };
 
-const highlights = [
+const patchHighlights = [
+    'Completed the Rockdactyl rebrand across the panel, installer, repository, documentation site, Wiki, roadmap, and release surfaces.',
+    'Preserved legacy database, runtime, backup, and container identifiers so existing installations update without migration work.',
+    'Added the documentation site and package manifests to automatic release-version synchronization.',
+    'Updated signals and avatar dependencies after frontend, security, backend, and multi-architecture validation.',
+] as const;
+
+const v210Highlights = [
     'Persistent notification read and clear state, mobile positioning, modal focus, file and backup menus, uploads, and stale server navigation were corrected.',
     'Crimson Red and Midnight Blue now share complete parity across charts, dialogs, login, admin, and responsive layouts.',
     'Press and pop motion was removed while keyboard focus and desktop-only hover feedback remain clear.',
@@ -54,6 +61,76 @@ export default function ChangelogPage() {
                                 01 Sep 2026
                             </p>
                             <span className="mt-3 inline-flex rounded-full border border-primary/20 bg-primary/[0.07] px-2.5 py-1 font-mono text-[10px] font-semibold text-primary">
+                                v2.1.1
+                            </span>
+                        </div>
+                        <div>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                                Rockdactyl identity and release consistency
+                            </p>
+                            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.045em]">
+                                One name across every release surface.
+                            </h2>
+                            <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
+                                This compatibility-safe patch completes the
+                                public Rockdactyl rename and closes the last
+                                automated version-sync gap.
+                            </p>
+                            <ul className="mt-7 space-y-4">
+                                {patchHighlights.map((item) => (
+                                    <li
+                                        key={item}
+                                        className="flex gap-3 text-sm leading-6 text-muted-foreground"
+                                    >
+                                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="mt-8 grid gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 sm:grid-cols-4">
+                                <ReleaseFact label="Panel" value="1.15.1" />
+                                <ReleaseFact label="PHP" value="8.2 / 8.3" />
+                                <ReleaseFact label="Node" value="22+" />
+                                <ReleaseFact label="Upgrade" value="In place" />
+                            </div>
+                            <div className="mt-7 flex flex-wrap gap-3">
+                                <a
+                                    href="https://github.com/devrock07/Rockdactyl/releases/tag/v2.1.1"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={cn(
+                                        buttonVariants({ size: 'lg' }),
+                                        'h-10 rounded-xl px-4',
+                                    )}
+                                >
+                                    Release assets <ArrowUpRightIcon />
+                                </a>
+                                <a
+                                    href="https://github.com/devrock07/Rockdactyl/compare/v2.1.0...v2.1.1"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={cn(
+                                        buttonVariants({
+                                            variant: 'outline',
+                                            size: 'lg',
+                                        }),
+                                        'h-10 rounded-xl border-white/10 bg-white/[0.025] px-4',
+                                    )}
+                                >
+                                    Full diff
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article className="border-t border-white/[0.075] py-12">
+                    <div className="grid gap-8 md:grid-cols-[160px_1fr]">
+                        <div>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                                01 Sep 2026
+                            </p>
+                            <span className="mt-3 inline-flex rounded-full border border-primary/20 bg-primary/[0.07] px-2.5 py-1 font-mono text-[10px] font-semibold text-primary">
                                 v2.1.0
                             </span>
                         </div>
@@ -70,7 +147,7 @@ export default function ChangelogPage() {
                                 before the documentation launch.
                             </p>
                             <ul className="mt-7 space-y-4">
-                                {highlights.map((item) => (
+                                {v210Highlights.map((item) => (
                                     <li
                                         key={item}
                                         className="flex gap-3 text-sm leading-6 text-muted-foreground"

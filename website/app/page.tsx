@@ -79,7 +79,7 @@ export default function Home() {
                             className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.07] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-primary transition hover:border-primary/35 hover:bg-primary/[0.1]"
                         >
                             <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.75)]" />
-                            v2.1.0 · Pterodactyl 1.15.1
+                            v2.1.1 · Pterodactyl 1.15.1
                         </Link>
                         <h1 className="max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.87] tracking-[-0.078em]">
                             Pterodactyl,

@@ -18,7 +18,11 @@ const synchronizedVersionFiles = [
     { path: '.github/workflows/upstream-autopilot.yaml', upstream: true },
     { path: 'docker-compose.example.yml', theme: true },
     { path: 'docs/development/UPSTREAM_AUTOMATION.md', upstream: true },
+    { path: 'website/app/page.tsx', theme: true, upstream: true },
+    { path: 'website/lib/docs.ts', theme: true, upstream: true },
 ];
+
+const websiteManifestFiles = ['website/package.json', 'website/package-lock.json'];
 
 const replacePatternOnce = (contents, pattern, replacement, label) => {
     const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
@@ -65,6 +69,8 @@ const readReleaseMetadata = (root) => {
 const checkReleaseMetadata = (root) => {
     const metadata = readReleaseMetadata(root);
     const errors = [];
+    const websiteManifest = JSON.parse(fs.readFileSync(path.join(root, 'website', 'package.json'), 'utf8'));
+    const websiteLock = JSON.parse(fs.readFileSync(path.join(root, 'website', 'package-lock.json'), 'utf8'));
     const exactChecks = [
         ['README.md', /Rockdactyl `v([^`]+)` is based on and supports/, metadata.themeVersion, 'release heading'],
         ['README.md', /\| Rockdactyl\s*\| `([^`]+)`/, metadata.themeVersion, 'compatibility table'],
@@ -144,6 +150,18 @@ const checkReleaseMetadata = (root) => {
             metadata.upstreamVersion,
             'autopilot documentation',
         ],
+        [
+            'website/app/page.tsx',
+            /v([^\s]+) · Pterodactyl/,
+            metadata.themeVersion,
+            'release badge',
+        ],
+        [
+            'website/lib/docs.ts',
+            /releases\/tag\/v([^`';]+)[`';]/,
+            metadata.themeVersion,
+            'release link',
+        ],
     ];
 
     if (metadata.configUpstreamVersion !== metadata.upstreamVersion) {
@@ -158,6 +176,15 @@ const checkReleaseMetadata = (root) => {
     }
     if (!metadata.description.includes(`Pterodactyl Panel ${metadata.upstreamVersion}`)) {
         errors.push('package.json description does not match the configured Pterodactyl version.');
+    }
+    if (websiteManifest.version !== metadata.themeVersion) {
+        errors.push(`website/package.json version does not match ${metadata.themeTag}.`);
+    }
+    if (
+        websiteLock.version !== metadata.themeVersion ||
+        websiteLock.packages?.['']?.version !== metadata.themeVersion
+    ) {
+        errors.push(`website/package-lock.json version does not match ${metadata.themeTag}.`);
     }
 
     for (const file of synchronizedVersionFiles) {
@@ -241,6 +268,22 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
         packageManifest.description = `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`;
         return `${JSON.stringify(packageManifest, null, 4)}\n`;
     });
+
+    if (themeChanged) {
+        for (const manifestPath of websiteManifestFiles) {
+            update(manifestPath, (contents) => {
+                const websiteManifest = JSON.parse(contents);
+                websiteManifest.version = themeVersion;
+                if (manifestPath.endsWith('package-lock.json')) {
+                    if (!websiteManifest.packages?.['']) {
+                        throw new Error(`${manifestPath} is missing its root package metadata.`);
+                    }
+                    websiteManifest.packages[''].version = themeVersion;
+                }
+                return `${JSON.stringify(websiteManifest, null, 4)}\n`;
+            });
+        }
+    }
 
     for (const file of synchronizedVersionFiles) {
         if ((!file.theme || !themeChanged) && (!file.upstream || !upstreamChanged)) continue;

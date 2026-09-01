@@ -1,6 +1,6 @@
 {
     "name": "rockdactyl",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "private": true,
     "description": "Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel 1.15.1.",
     "author": {
