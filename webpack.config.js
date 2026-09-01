@@ -25,7 +25,7 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                exclude: /node_modules|\.spec\.tsx?$/,
+                exclude: [/node_modules/, /\.spec\.tsx?$/],
                 loader: 'babel-loader',
             },
             {
@@ -80,11 +80,9 @@ module.exports = {
             },
         ],
     },
-    stats: {
-        // Ignore warnings emitted by "source-map-loader" when trying to parse source maps from
-        // JS plugins we use, namely brace editor.
-        warningsFilter: [/Failed to parse source map/],
-    },
+    // Ignore warnings emitted by "source-map-loader" when trying to parse source maps from
+    // JS plugins we use, namely brace editor.
+    ignoreWarnings: [/Failed to parse source map/],
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
         alias: {

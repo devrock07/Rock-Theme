@@ -2,7 +2,7 @@
 # Build the assets that are needed for the frontend. This build stage is then discarded
 # since we won't need NodeJS anymore in the future. This Docker image ships a final production
 # level distribution of Pterodactyl.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS frontend
 WORKDIR /app
 COPY . ./
 RUN yarn install --frozen-lockfile \
@@ -10,17 +10,21 @@ RUN yarn install --frozen-lockfile \
 
 # Stage 1:
 # Build the actual container with all of the needed PHP dependencies that will run the application.
-FROM --platform=$TARGETOS/$TARGETARCH php:8.3-fpm-alpine
+FROM --platform=$TARGETOS/$TARGETARCH php:8.3-fpm-alpine@sha256:bf90236449d333cef008b1f01c72a3d4f11a6470a74629665e4c6b6158f03fc8
 WORKDIR /app
 COPY . ./
 COPY --from=frontend /app/public/assets ./public/assets
 RUN apk add --no-cache --update ca-certificates dcron curl git supervisor tar unzip nginx libpng-dev libxml2-dev libzip-dev certbot certbot-nginx mysql-client \
     && docker-php-ext-configure zip \
     && docker-php-ext-install bcmath gd pdo_mysql zip \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && curl -fsSL https://composer.github.io/installer.sig -o /tmp/composer-setup.sig \
+    && php -r 'if (!hash_equals(trim(file_get_contents("/tmp/composer-setup.sig")), hash_file("sha384", "/tmp/composer-setup.php"))) { fwrite(STDERR, "Invalid Composer installer signature.\n"); exit(1); }' \
+    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm -f /tmp/composer-setup.php /tmp/composer-setup.sig \
     && cp .env.example .env \
     && mkdir -p bootstrap/cache/ storage/logs storage/framework/sessions storage/framework/views storage/framework/cache \
-    && chmod 777 -R bootstrap storage \
+    && chmod -R u=rwX,g=rX,o=rX bootstrap storage \
     && composer install --no-dev --optimize-autoloader \
     && rm -rf .env bootstrap/cache/*.php \
     && mkdir -p /app/storage/logs/ \

@@ -1,9 +1,10 @@
 #!/bin/ash -e
 cd /app
 
-mkdir -p /var/log/panel/logs/ /var/log/supervisord/ /var/log/nginx/ /var/log/php7/ \
-  && chmod 777 /var/log/panel/logs/ \
-  && ln -s /app/storage/logs/ /var/log/panel/
+mkdir -p /var/log/panel/ /var/log/supervisord/ /var/log/nginx/ /var/log/php7/ /app/storage/logs/ \
+  && chown -R nginx:nginx /app/storage/logs/ \
+  && chmod 0750 /app/storage/logs/ \
+  && ln -sfn /app/storage/logs/ /var/log/panel/logs
 
 ## check for .env file and generate app keys if missing
 if [ -f /app/var/.env ]; then
@@ -17,24 +18,24 @@ else
 
   ## manually generate a key because key generate --force fails
   if [ -z "${APP_KEY:-}" ]; then
-     echo -e "Generating key."
+     echo "Generating key."
      APP_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-     echo -e "Generated app key."
-     echo -e "APP_KEY=$APP_KEY" > /app/var/.env
+     echo "Generated app key."
+     printf 'APP_KEY=%s\n' "$APP_KEY" > /app/var/.env
   else
-    echo -e "APP_KEY exists in environment, using that."
-    echo -e "APP_KEY=$APP_KEY" > /app/var/.env
+    echo "APP_KEY exists in environment, using that."
+    printf 'APP_KEY=%s\n' "$APP_KEY" > /app/var/.env
   fi
 
   ## generate a random salt for hashids if not provided
   if [ -z "${HASHIDS_SALT:-}" ]; then
-     echo -e "Generating hashids salt."
+     echo "Generating hashids salt."
      HASHIDS_SALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#$%^&*()_+?><~' | fold -w 20 | head -n 1)
-     echo -e "Generated hashids salt."
-     echo -e "HASHIDS_SALT=$HASHIDS_SALT" >> /app/var/.env
+     echo "Generated hashids salt."
+     printf 'HASHIDS_SALT=%s\n' "$HASHIDS_SALT" >> /app/var/.env
   else
-    echo -e "HASHIDS_SALT exists in environment, using that."
-    echo -e "HASHIDS_SALT=$HASHIDS_SALT" >> /app/var/.env
+    echo "HASHIDS_SALT exists in environment, using that."
+    printf 'HASHIDS_SALT=%s\n' "$HASHIDS_SALT" >> /app/var/.env
   fi
 
   ln -s /app/var/.env /app/
@@ -67,15 +68,15 @@ else
 fi
 
 if [ -z "${DB_PORT:-}" ]; then
-  echo -e "DB_PORT not specified, defaulting to 3306"
+  echo "DB_PORT not specified, defaulting to 3306"
   DB_PORT=3306
 fi
 
 ## check log folder permissions
 echo "Checking log folder permissions."
-if [ "$(stat -c %U:%G /app/storage/logs)" != "nginx" ]; then
+if [ "$(stat -c %U:%G /app/storage/logs)" != "nginx:nginx" ]; then
   echo "Fixing log folder permissions."
-  chown -R nginx: /app/storage/logs/
+  chown -R nginx:nginx /app/storage/logs/
 fi
 
 ## check for DB up before starting the panel
@@ -88,12 +89,12 @@ do
 done
 
 ## make sure the db is set up
-echo -e "Migrating and Seeding D.B"
+echo "Migrating and Seeding D.B"
 php artisan migrate --seed --force
 
 ## start cronjobs for the queue
-echo -e "Starting cron jobs."
+echo "Starting cron jobs."
 crond -L /var/log/crond -l 5
 
-echo -e "Starting supervisord."
+echo "Starting supervisord."
 exec "$@"

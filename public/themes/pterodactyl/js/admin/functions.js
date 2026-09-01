@@ -17,7 +17,31 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-$.urlParam=function(name){var results=new RegExp("[\\?&]"+name+"=([^&#]*)").exec(decodeURIComponent(window.location.href));if(results==null){return null}else{return results[1]||0}};function getPageName(url){var index=url.lastIndexOf("/")+1;var filenameWithExtension=url.substr(index);var filename=filenameWithExtension.split(".")[0];return filename}
-// Remeber Active Tab and Navigate to it on Reload
-for(var queryParameters={},queryString=location.search.substring(1),re=/([^&=]+)=([^&]*)/g,m;m=re.exec(queryString);)queryParameters[decodeURIComponent(m[1])]=decodeURIComponent(m[2]);$("a[data-toggle='tab']").click(function(){queryParameters.tab=$(this).attr("href").substring(1),window.history.pushState(null,null,location.pathname+"?"+$.param(queryParameters))});
-if($.urlParam('tab') != null){$('.nav.nav-tabs a[href="#' + $.urlParam('tab') + '"]').tab('show');}
+$.urlParam = function (name) {
+    return new URLSearchParams(window.location.search).get(name);
+};
+
+function getPageName(url) {
+    var index = url.lastIndexOf('/') + 1;
+    var filenameWithExtension = url.substr(index);
+    return filenameWithExtension.split('.')[0];
+}
+
+// Remember the active tab and navigate to it on reload without assigning
+// untrusted query-string keys onto a plain JavaScript object.
+var queryParameters = new URLSearchParams(window.location.search);
+$("a[data-toggle='tab']").click(function () {
+    queryParameters.set('tab', $(this).attr('href').substring(1));
+    var query = queryParameters.toString();
+    window.history.pushState(null, null, location.pathname + (query ? '?' + query : ''));
+});
+
+var activeTab = $.urlParam('tab');
+if (activeTab !== null) {
+    $('.nav.nav-tabs a')
+        .filter(function () {
+            return $(this).attr('href') === '#' + activeTab;
+        })
+        .first()
+        .tab('show');
+}

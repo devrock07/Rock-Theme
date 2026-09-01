@@ -20,7 +20,7 @@ jest.mock('styled-components/macro', () => {
             React.createElement(element, { ...props, ref }, children)
         );
     const styled = new Proxy(createStyledComponent, {
-        get: (_target, element: string) => createStyledComponent(element),
+        get: (_target, element: string) => createStyledComponent(element as React.ElementType),
     });
 
     return { __esModule: true, default: styled };

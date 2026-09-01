@@ -34,17 +34,45 @@ jobs:
             - name: Review dependency changes
               uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
               with:
-                  fail-on-severity: high
+                  fail-on-severity: moderate
                   comment-summary-in-pr: never
 
+    composer-audit:
+        name: Composer audit
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
+        permissions:
+            contents: read
+        steps:
+            - name: Check out source
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+              with:
+                  php-version: '8.3'
+                  tools: composer:v2
+                  coverage: none
+
+            - name: Audit locked Composer dependencies
+              run: composer audit --locked
+
     codeql:
-        name: CodeQL (JavaScript/TypeScript)
+        name: CodeQL (${{ matrix.language }})
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         permissions:
             actions: read # Required by CodeQL to read workflow metadata.
             contents: read
             security-events: write # Required to upload CodeQL results.
+        strategy:
+            fail-fast: false
+            matrix:
+                language:
+                    - javascript-typescript
+                    - actions
         steps:
             - name: Check out source
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,11 +82,11 @@ jobs:
             - name: Initialize CodeQL
               uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
               with:
-                  languages: javascript-typescript
+                  languages: ${{ matrix.language }}
                   build-mode: none
                   queries: security-extended
 
             - name: Analyze source
               uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
               with:
-                  category: /language:javascript-typescript
+                  category: /language:${{ matrix.language }}

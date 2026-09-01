@@ -92,3 +92,7 @@ updates:
           container-base-images:
               patterns:
                   - '*'
+      ignore:
+          - dependency-name: '*'
+            update-types:
+                - version-update:semver-major
