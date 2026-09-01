@@ -164,7 +164,7 @@ describe('update-upstream-metadata', () => {
         expect(read(root, '.rock/upstream-version')).toBe(`v${upstreamVersion}\n`);
         expect(JSON.parse(read(root, 'package.json'))).toMatchObject({
             version: themeVersion,
-            description: `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`,
+            description: `Rockdactyl, a polished interface and release system for Pterodactyl Panel ${upstreamVersion}.`,
         });
         expect(JSON.parse(read(root, 'website/package.json')).version).toBe(themeVersion);
         expect(JSON.parse(read(root, 'website/package-lock.json'))).toMatchObject({

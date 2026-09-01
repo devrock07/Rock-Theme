@@ -1,21 +1,31 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, Pixelify_Sans, Roboto_Mono } from 'next/font/google';
 
 import { siteUrl } from '@/lib/site';
 
 import './globals.css';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
+const inter = Inter({
+    variable: '--font-inter',
     subsets: ['latin'],
+    display: 'swap',
+});
+const robotoMono = Roboto_Mono({
+    variable: '--font-roboto-mono',
+    subsets: ['latin'],
+    display: 'swap',
+});
+const pixelify = Pixelify_Sans({
+    variable: '--font-pixelify',
+    subsets: ['latin'],
+    display: 'swap',
 });
 
 export const metadata: Metadata = {
     metadataBase: new URL(`${siteUrl}/`),
     title: 'Rockdactyl — Pterodactyl, refined.',
     description:
-        'A polished, responsive theme and release system for Pterodactyl Panel.',
+        'A polished interface and release system for Pterodactyl Panel.',
     keywords: [
         'Pterodactyl',
         'Pterodactyl theme',
@@ -32,13 +42,13 @@ export const metadata: Metadata = {
         type: 'website',
         title: 'Rockdactyl — Pterodactyl, refined.',
         description:
-            'A polished, responsive, operator-configurable interface distribution for Pterodactyl Panel.',
+            'A polished interface and release system for Pterodactyl Panel.',
         images: [
             {
                 url: `${siteUrl}/screenshots/dashboard-crimson.webp`,
                 width: 1268,
                 height: 713,
-                alt: 'The real Rockdactyl dashboard running locally in Crimson Red.',
+                alt: 'The real Rockdactyl dashboard running locally.',
             },
         ],
     },
@@ -46,7 +56,7 @@ export const metadata: Metadata = {
         card: 'summary_large_image',
         title: 'Rockdactyl — Pterodactyl, refined.',
         description:
-            'A polished, responsive interface distribution for Pterodactyl Panel.',
+            'A polished interface and release system for Pterodactyl Panel.',
         images: [`${siteUrl}/screenshots/dashboard-crimson.webp`],
     },
 };
@@ -55,12 +65,11 @@ export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang="en" className="dark">
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-            >
-                {children}
-            </body>
+        <html
+            lang="en"
+            className={`dark ${inter.variable} ${robotoMono.variable} ${pixelify.variable}`}
+        >
+            <body className="antialiased">{children}</body>
         </html>
     );
 }

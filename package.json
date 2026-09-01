@@ -2,7 +2,7 @@
     "name": "rockdactyl",
     "version": "2.1.1",
     "private": true,
-    "description": "Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel 1.15.1.",
+    "description": "Rockdactyl, a polished interface and release system for Pterodactyl Panel 1.15.1.",
     "author": {
         "name": "DevRock",
         "url": "https://github.com/devrock07"
@@ -34,10 +34,10 @@
         "@headlessui/react": "^1.6.4",
         "@heroicons/react": "^1.0.6",
         "@hot-loader/react-dom": "16.14.0",
-        "@preact/signals-react": "1.3.8",
+        "@preact/signals-react": "1.2.1",
         "@tailwindcss/forms": "^0.5.2",
         "axios": "^1.18.0",
-        "boring-avatars": "1.11.2",
+        "boring-avatars": "1.7.0",
         "chart.js": "^3.8.0",
         "classnames": "^2.3.1",
         "codemirror": "^5.65.20",

@@ -12,8 +12,8 @@ export function SiteFooter() {
                         <span className="font-semibold">Rockdactyl</span>
                     </Link>
                     <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                        A responsive, operator-configurable interface
-                        distribution for Pterodactyl Panel.
+                        A polished interface and release system for Pterodactyl
+                        Panel.
                     </p>
                 </div>
                 <FooterGroup

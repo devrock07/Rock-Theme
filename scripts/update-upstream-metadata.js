@@ -150,18 +150,8 @@ const checkReleaseMetadata = (root) => {
             metadata.upstreamVersion,
             'autopilot documentation',
         ],
-        [
-            'website/app/page.tsx',
-            /v([^\s]+) · Pterodactyl/,
-            metadata.themeVersion,
-            'release badge',
-        ],
-        [
-            'website/lib/docs.ts',
-            /releases\/tag\/v([^`';]+)[`';]/,
-            metadata.themeVersion,
-            'release link',
-        ],
+        ['website/app/page.tsx', /ROCKDACTYL ([0-9]+\.[0-9]+\.[0-9]+)/, metadata.themeVersion, 'release badge'],
+        ['website/lib/docs.ts', /releases\/tag\/v([^`';]+)[`';]/, metadata.themeVersion, 'release link'],
     ];
 
     if (metadata.configUpstreamVersion !== metadata.upstreamVersion) {
@@ -174,7 +164,10 @@ const checkReleaseMetadata = (root) => {
             `config/app.php Rockdactyl version ${metadata.configThemeVersion} does not match ${metadata.themeTag}.`
         );
     }
-    if (!metadata.description.includes(`Pterodactyl Panel ${metadata.upstreamVersion}`)) {
+    if (
+        metadata.description !==
+        `Rockdactyl, a polished interface and release system for Pterodactyl Panel ${metadata.upstreamVersion}.`
+    ) {
         errors.push('package.json description does not match the configured Pterodactyl version.');
     }
     if (websiteManifest.version !== metadata.themeVersion) {
@@ -265,7 +258,7 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
     update('package.json', (contents) => {
         const packageManifest = JSON.parse(contents);
         packageManifest.version = themeVersion;
-        packageManifest.description = `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`;
+        packageManifest.description = `Rockdactyl, a polished interface and release system for Pterodactyl Panel ${upstreamVersion}.`;
         return `${JSON.stringify(packageManifest, null, 4)}\n`;
     });
 

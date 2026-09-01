@@ -124,7 +124,7 @@ export function SiteHeader() {
                         aria-label="Rockdactyl home"
                     >
                         <BrandMark />
-                        <span className="text-sm font-semibold tracking-[-0.025em]">
+                        <span className="text-sm font-semibold tracking-[-0.035em]">
                             Rockdactyl
                         </span>
                     </Link>
@@ -230,7 +230,7 @@ export function BrandMark({ className }: { className?: string }) {
     return (
         <span
             className={cn(
-                'grid size-8 shrink-0 place-items-center rounded-[10px] border border-primary/35 bg-primary/10 text-[13px] font-black text-primary shadow-[0_0_24px_color-mix(in_oklch,var(--primary)_18%,transparent)]',
+                'font-pixel grid size-8 shrink-0 place-items-center rounded-[10px] border border-primary/35 bg-primary/10 text-[15px] font-bold text-primary shadow-[0_0_24px_color-mix(in_oklch,var(--primary)_18%,transparent)]',
                 className,
             )}
         >

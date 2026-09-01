@@ -2,7 +2,7 @@
 
 # Rockdactyl
 
-A polished, operator-configurable interface distribution for Pterodactyl Panel.
+A polished interface and release system for Pterodactyl Panel.
 
 Formerly **Rock Theme**. Existing installer, backup, and container identifiers
 remain compatible.
@@ -13,7 +13,7 @@ remain compatible.
 [![Pterodactyl 1.15.1](https://img.shields.io/badge/Pterodactyl-1.15.1-10529f?style=flat-square)](https://github.com/pterodactyl/panel/releases/tag/v1.15.1)
 [![GPLv3](https://img.shields.io/github/license/devrock07/Rockdactyl?style=flat-square&color=c94f59)](./LICENSE)
 
-<img src="./website/public/screenshots/dashboard-crimson.webp" alt="The real Rockdactyl dashboard running in Crimson Red" width="100%">
+<img src="./website/public/screenshots/dashboard-crimson.webp" alt="The real Rockdactyl dashboard" width="100%">
 
 **Rockdactyl `v2.1.1` · Pterodactyl Panel `v1.15.1`**
 

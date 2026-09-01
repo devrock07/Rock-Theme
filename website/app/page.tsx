@@ -4,7 +4,6 @@ import Link from 'next/link';
 import {
     ArrowRightIcon,
     BoxesIcon,
-    CheckCircle2Icon,
     GaugeIcon,
     PaletteIcon,
     ShieldCheckIcon,
@@ -15,7 +14,7 @@ import {
 import { CopyCommand } from '@/components/copy-command';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { PanelScreenshot, ThemePreview } from '@/components/theme-preview';
+import { PanelScreenshot } from '@/components/panel-screenshot';
 import { buttonVariants } from '@/components/ui/button';
 import { releaseUrl } from '@/lib/docs';
 import { withBasePath } from '@/lib/site';
@@ -24,14 +23,14 @@ import { cn } from '@/lib/utils';
 export const metadata: Metadata = {
     title: 'Rockdactyl — Pterodactyl, refined.',
     description:
-        'A polished, responsive, operator-configurable interface distribution for Pterodactyl Panel.',
+        'A polished interface and release system for Pterodactyl Panel.',
 };
 
 const features = [
     {
         icon: PaletteIcon,
-        eyebrow: 'Theme Studio',
-        title: 'Brand the whole panel.',
+        eyebrow: 'Brand controls',
+        title: 'Make the panel yours.',
         body: 'Identity, logo, favicons, dashboard artwork, login media, console media, glass, radius, and motion—all from Admin Settings.',
     },
     {
@@ -76,21 +75,27 @@ export default function Home() {
                     <div className="max-w-[600px]">
                         <Link
                             href={releaseUrl}
-                            className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.07] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.17em] text-primary transition hover:border-primary/35 hover:bg-primary/[0.1]"
+                            className="release-pill mb-8 inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary/[0.07] px-3.5 py-2 text-primary transition-colors hover:border-primary/35 hover:bg-primary/[0.1]"
                         >
                             <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.75)]" />
-                            v2.1.1 · Pterodactyl 1.15.1
+                            <span className="font-pixel text-[11px] font-semibold tracking-[0.08em]">
+                                ROCKDACTYL 2.1.1
+                            </span>
+                            <span className="hidden h-3 w-px bg-white/15 sm:block" />
+                            <span className="hidden font-mono text-[9px] uppercase tracking-[0.13em] text-muted-foreground sm:block">
+                                Pterodactyl 1.15.1
+                            </span>
                         </Link>
-                        <h1 className="max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.87] tracking-[-0.078em]">
+                        <h1 className="hero-copy max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.9] tracking-[-0.068em]">
                             Pterodactyl,
                             <span className="block bg-gradient-to-r from-[#ff9aaa] via-[#f24963] to-[#9f1029] bg-clip-text text-transparent">
                                 refined.
                             </span>
                         </h1>
                         <p className="mt-7 max-w-[540px] text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
-                            A complete panel distribution with a precise
-                            interface, native operator controls, and a release
-                            path built to be reversed.
+                            A modern control layer for Pterodactyl—built for
+                            operators, responsive everywhere, and safe to
+                            update.
                         </p>
                         <div className="mt-9 flex flex-wrap items-center gap-3">
                             <Link
@@ -117,17 +122,18 @@ export default function Home() {
                             </Link>
                         </div>
                         <dl className="mt-12 grid max-w-lg grid-cols-3 gap-3 border-t border-white/8 pt-6">
-                            <Metric label="Presets" value="2 finished" />
+                            <Metric label="Surfaces" value="End to end" />
                             <Metric label="Telemetry" value="7 days" />
-                            <Metric label="Containers" value="2 arches" />
+                            <Metric label="Delivery" value="Verified" />
                         </dl>
                     </div>
 
                     <div className="relative mx-auto w-full max-w-[760px] lg:translate-x-8">
                         <PanelScreenshot
                             src="/screenshots/dashboard-crimson.webp"
-                            alt="Rockdactyl dashboard running locally in Crimson Red"
-                            label="Local panel · Crimson"
+                            alt="Rockdactyl dashboard running locally"
+                            label="Live dashboard"
+                            priority
                         />
                         <div
                             className="absolute -bottom-9 left-[10%] right-[10%] -z-10 h-20 rounded-full bg-primary/22 blur-3xl"
@@ -182,73 +188,48 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="border-y border-white/[0.07] bg-[#0b0809]/80">
-                    <div className="mx-auto grid max-w-[1220px] gap-14 px-5 py-24 sm:px-6 lg:grid-cols-[0.42fr_0.58fr] lg:px-8 lg:py-32">
-                        <div className="lg:sticky lg:top-28 lg:self-start">
-                            <SectionIntro
-                                eyebrow="Two finished presets"
-                                title="One interface. Two temperatures."
-                                body="Crimson Red is the signature. Midnight Blue is the calm alternative. Both reach every panel surface and interaction state."
-                            />
-                            <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
-                                {[
-                                    'Client and admin share the preset',
-                                    'Saved centrally in Panel Settings',
-                                    'Reduced motion and mobile-safe behavior',
-                                ].map((item) => (
-                                    <li
-                                        key={item}
-                                        className="flex items-center gap-3"
-                                    >
-                                        <CheckCircle2Icon className="size-4 text-primary" />
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <ThemePreview />
-                    </div>
-                </section>
-
-                <section className="mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
-                    <SectionIntro
-                        eyebrow="Real panel surfaces"
-                        title="The details operators actually touch."
-                        body="Console telemetry, theme controls, responsive navigation, file actions, and administration modals are designed and tested as part of the same release."
-                    />
-                    <div className="mt-12 grid gap-5 lg:grid-cols-2">
-                        <PanelScreenshot
-                            src="/screenshots/console.webp"
-                            alt="Rockdactyl server console with resource telemetry"
-                            label="Server console"
+                <section className="border-t border-white/[0.07] bg-[#0b0809]/45">
+                    <div className="mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
+                        <SectionIntro
+                            eyebrow="Real panel surfaces"
+                            title="The details operators actually touch."
+                            body="Console telemetry, responsive navigation, file actions, public status, and administration flows are designed and tested as one release."
                         />
-                        <PanelScreenshot
-                            src="/screenshots/theme-studio.webp"
-                            alt="Rockdactyl administration Theme Studio"
-                            label="Admin · Theme Studio"
-                        />
-                        <div className="lg:col-span-2 grid gap-5 lg:grid-cols-[1fr_0.46fr]">
-                            <PanelScreenshot
-                                src="/screenshots/status.webp"
-                                alt="Rockdactyl public status page"
-                                label="Public status"
-                            />
-                            <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2 shadow-[0_30px_90px_rgba(0,0,0,.45)]">
-                                <div
-                                    className="mx-auto mb-2 h-5 w-24 rounded-full bg-white/[0.065]"
-                                    aria-hidden="true"
+                        <div className="mt-12 grid items-start gap-5 lg:grid-cols-[minmax(0,1.34fr)_minmax(280px,.54fr)]">
+                            <div className="grid gap-5">
+                                <PanelScreenshot
+                                    src="/screenshots/console.webp"
+                                    alt="Rockdactyl server console with resource telemetry"
+                                    label="Server console"
                                 />
-                                <Image
-                                    src={withBasePath(
-                                        '/screenshots/mobile-dashboard.webp',
-                                    )}
-                                    alt="Rockdactyl dashboard at a mobile viewport"
-                                    width={390}
-                                    height={844}
-                                    sizes="370px"
-                                    className="aspect-[9/18] w-full rounded-[23px] border border-white/[0.06] object-cover object-top"
+                                <PanelScreenshot
+                                    src="/screenshots/status.webp"
+                                    alt="Rockdactyl public status page"
+                                    label="Public status"
                                 />
-                            </figure>
+                            </div>
+                            <div className="lg:sticky lg:top-24">
+                                <p className="mb-4 font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground lg:text-center">
+                                    Mobile · 390 px
+                                </p>
+                                <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2 shadow-[0_30px_90px_rgba(0,0,0,.45)]">
+                                    <div
+                                        className="mx-auto mb-2 h-5 w-24 rounded-full bg-white/[0.065]"
+                                        aria-hidden="true"
+                                    />
+                                    <Image
+                                        src={withBasePath(
+                                            '/screenshots/mobile-dashboard.webp',
+                                        )}
+                                        alt="Rockdactyl dashboard at a mobile viewport"
+                                        width={390}
+                                        height={844}
+                                        sizes="370px"
+                                        loading="eager"
+                                        className="aspect-[9/18] w-full rounded-[23px] border border-white/[0.06] object-cover object-top"
+                                    />
+                                </figure>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -308,7 +289,7 @@ export default function Home() {
                         Open source · operator controlled
                     </p>
                     <h2 className="mx-auto mt-5 max-w-4xl text-balance text-[clamp(2.7rem,6vw,5.8rem)] font-semibold leading-[0.93] tracking-[-0.065em]">
-                        A panel theme that behaves like a product.
+                        A panel experience built like a product.
                     </h2>
                     <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
                         Read the source, verify the release, configure the
