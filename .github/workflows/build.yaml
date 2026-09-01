@@ -65,3 +65,43 @@ jobs:
 
             - name: Build production assets
               run: yarn build:production
+
+    documentation-site:
+        name: Documentation site
+        runs-on: ubuntu-24.04
+        timeout-minutes: 20
+        env:
+            CI: true
+        defaults:
+            run:
+                working-directory: website
+        steps:
+            - name: Check out source
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Set up Node.js
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: website/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Audit dependencies
+              run: npm audit --audit-level=high
+
+            - name: Typecheck
+              run: npm run typecheck
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Check formatting
+              run: npm run format:check
+
+            - name: Build site
+              run: npm run build

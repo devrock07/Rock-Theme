@@ -1,0 +1,191 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+:root,
+.dark {
+    --background: oklch(0.105 0.012 15);
+    --foreground: oklch(0.974 0.008 15);
+    --card: oklch(0.145 0.014 15);
+    --card-foreground: var(--foreground);
+    --popover: oklch(0.13 0.014 15);
+    --popover-foreground: var(--foreground);
+    --primary: oklch(0.64 0.225 18);
+    --primary-foreground: oklch(0.99 0.005 15);
+    --secondary: oklch(0.19 0.016 15);
+    --secondary-foreground: var(--foreground);
+    --muted: oklch(0.18 0.013 15);
+    --muted-foreground: oklch(0.69 0.02 15);
+    --accent: oklch(0.23 0.04 15);
+    --accent-foreground: var(--foreground);
+    --destructive: oklch(0.63 0.24 25);
+    --border: oklch(1 0 0 / 9%);
+    --input: oklch(1 0 0 / 12%);
+    --ring: oklch(0.64 0.225 18);
+    --radius: 0.75rem;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        @apply scroll-smooth font-sans;
+        color-scheme: dark;
+    }
+    body {
+        @apply min-w-[320px] bg-background text-foreground;
+    }
+    ::selection {
+        background: color-mix(in oklch, var(--primary) 45%, transparent);
+        color: white;
+    }
+}
+
+.site-grid {
+    background-image:
+        radial-gradient(
+            circle at 28% 22%,
+            rgba(213, 32, 64, 0.1),
+            transparent 31rem
+        ),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size:
+        auto,
+        48px 48px,
+        48px 48px;
+    mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        rgba(0, 0, 0, 0.4) 72%,
+        transparent 100%
+    );
+}
+
+.hero-glow {
+    background: radial-gradient(
+        circle,
+        rgba(230, 40, 72, 0.16),
+        transparent 66%
+    );
+    filter: blur(12px);
+}
+
+.screen-shell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+        115deg,
+        rgba(255, 255, 255, 0.08),
+        transparent 26%,
+        transparent 72%,
+        rgba(225, 36, 68, 0.07)
+    );
+}
+
+.screen-shell img,
+.mobile-shot img {
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.008)
+    );
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at 0 0,
+        rgba(234, 56, 84, 0.075),
+        transparent 44%
+    );
+    opacity: 0.65;
+    transition: opacity 180ms ease;
+}
+
+.feature-card:hover::before {
+    opacity: 1;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0809;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 3px solid #0b0809;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(240, 74, 99, 0.38);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .screen-shell {
+        animation: settle 900ms cubic-bezier(0.2, 0.75, 0.2, 1) both;
+    }
+    @keyframes settle {
+        from {
+            opacity: 0;
+            transform: translateY(16px) scale(0.985);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

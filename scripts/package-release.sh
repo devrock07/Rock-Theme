@@ -58,7 +58,7 @@ prepare_staging() {
         printf 'Release source contains an unsupported symbolic link: %s\n' "${unsafe_link#"$staging/"}" >&2
         return 1
     fi
-    rm -rf "$staging/.github" "$staging/tests" "$staging/storage"
+    rm -rf "$staging/.github" "$staging/tests" "$staging/storage" "$staging/website"
     rm -f -- "$staging/.env"
     mkdir -p "$staging/public/assets"
     node "$staging/scripts/copy-compiled-assets.js" public/assets "$staging/public/assets"

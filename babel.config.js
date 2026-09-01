@@ -1,9 +1,9 @@
 module.exports = function (api) {
+    const environment = api.env();
     let targets = {};
     const plugins = [
         'babel-plugin-macros',
         'styled-components',
-        'react-hot-loader/babel',
         '@babel/transform-runtime',
         '@babel/transform-react-jsx',
         '@babel/proposal-class-properties',
@@ -13,7 +13,11 @@ module.exports = function (api) {
         '@babel/syntax-dynamic-import',
     ];
 
-    if (api.env('test')) {
+    if (environment === 'development') {
+        plugins.splice(2, 0, 'react-hot-loader/babel');
+    }
+
+    if (environment === 'test') {
         targets = { node: 'current' };
         plugins.push('@babel/transform-modules-commonjs');
     }

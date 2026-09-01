@@ -14,7 +14,7 @@ cleanup_test() {
 }
 trap cleanup_test EXIT
 
-mkdir -p "$fixture/.rock" "$fixture/public/assets" "$fixture/scripts" "$fixture/storage/private"
+mkdir -p "$fixture/.rock" "$fixture/public/assets" "$fixture/scripts" "$fixture/storage/private" "$fixture/website"
 cp "$root/scripts/copy-compiled-assets.js" "$fixture/scripts/copy-compiled-assets.js"
 cp "$root/scripts/package-release.sh" "$fixture/scripts/package-release.sh"
 printf '#!/usr/bin/env php\n' >"$fixture/artisan"
@@ -23,6 +23,7 @@ printf 'v1.15.1\n' >"$fixture/.rock/upstream-version"
 printf '*\n!.gitignore\n' >"$fixture/public/assets/.gitignore"
 printf 'APP_KEY=must-not-ship\n' >"$fixture/.env"
 printf 'private-runtime-data\n' >"$fixture/storage/private/runtime.txt"
+printf 'documentation-only\n' >"$fixture/website/index.html"
 
 (
     cd "$fixture"
@@ -49,8 +50,8 @@ first_sha="${first_sha%% *}"
 tar -tzf "$artifact" >"$workspace/archive-list"
 grep -Eq '^\./artisan$' "$workspace/archive-list"
 grep -Eq '^\./public/assets/app\.js$' "$workspace/archive-list"
-if grep -Eq '^\./\.env$|^\./storage(/|$)' "$workspace/archive-list"; then
-    printf 'Release package contains a protected live path.\n' >&2
+if grep -Eq '^\./\.env$|^\./storage(/|$)|^\./website(/|$)' "$workspace/archive-list"; then
+    printf 'Release package contains a protected or deployment-only path.\n' >&2
     exit 1
 fi
 provenance="$(tar -xOf "$artifact" ./.rock/release.json)"

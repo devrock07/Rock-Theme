@@ -180,7 +180,7 @@ describe('update-upstream-metadata', () => {
         const readme = read(root, 'README.md');
         expect(readme).toContain(`/pterodactyl/panel/releases/tag/v${upstreamVersion}`);
         expect(readme).toContain(`Rock Theme \`v${themeVersion}\``);
-        expect(readme).toContain(`| Rock Theme        | \`${themeVersion}\``);
+        expect(readme).toContain(`| Rock Theme | \`${themeVersion}\``);
     });
 
     it('does not partially write metadata when a tracked marker is missing', () => {
