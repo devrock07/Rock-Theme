@@ -17,6 +17,8 @@ updates:
           actions:
               patterns:
                   - '*'
+      cooldown:
+          default-days: 7
 
     - package-ecosystem: npm
       directory: /
@@ -46,6 +48,8 @@ updates:
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
+      cooldown:
+          default-days: 7
 
     - package-ecosystem: composer
       directory: /
@@ -75,6 +79,8 @@ updates:
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
+      cooldown:
+          default-days: 7
 
     - package-ecosystem: docker
       directory: /
@@ -96,3 +102,5 @@ updates:
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
+      cooldown:
+          default-days: 7
