@@ -166,7 +166,7 @@ const checkReleaseMetadata = (root) => {
     }
     if (
         metadata.description !==
-        `Rockdactyl, a polished interface and release system for Pterodactyl Panel ${metadata.upstreamVersion}.`
+        `Rockdactyl, a polished and responsive UI mod for Pterodactyl Panel ${metadata.upstreamVersion}.`
     ) {
         errors.push('package.json description does not match the configured Pterodactyl version.');
     }
@@ -258,7 +258,7 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
     update('package.json', (contents) => {
         const packageManifest = JSON.parse(contents);
         packageManifest.version = themeVersion;
-        packageManifest.description = `Rockdactyl, a polished interface and release system for Pterodactyl Panel ${upstreamVersion}.`;
+        packageManifest.description = `Rockdactyl, a polished and responsive UI mod for Pterodactyl Panel ${upstreamVersion}.`;
         return `${JSON.stringify(packageManifest, null, 4)}\n`;
     });
 

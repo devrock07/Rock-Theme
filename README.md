@@ -2,7 +2,7 @@
 
 # Rockdactyl
 
-A polished interface and release system for Pterodactyl Panel.
+A polished, responsive UI mod for Pterodactyl Panel.
 
 Formerly **Rock Theme**. Existing installer, backup, and container identifiers
 remain compatible.

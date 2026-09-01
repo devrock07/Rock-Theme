@@ -22,8 +22,7 @@ import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
     title: 'Rockdactyl — Pterodactyl, refined.',
-    description:
-        'A polished interface and release system for Pterodactyl Panel.',
+    description: 'A polished, responsive UI mod for Pterodactyl Panel.',
 };
 
 const features = [

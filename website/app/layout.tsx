@@ -24,8 +24,7 @@ const pixelify = Pixelify_Sans({
 export const metadata: Metadata = {
     metadataBase: new URL(`${siteUrl}/`),
     title: 'Rockdactyl — Pterodactyl, refined.',
-    description:
-        'A polished interface and release system for Pterodactyl Panel.',
+    description: 'A polished, responsive UI mod for Pterodactyl Panel.',
     keywords: [
         'Pterodactyl',
         'Pterodactyl theme',
@@ -41,8 +40,7 @@ export const metadata: Metadata = {
         url: `${siteUrl}/`,
         type: 'website',
         title: 'Rockdactyl — Pterodactyl, refined.',
-        description:
-            'A polished interface and release system for Pterodactyl Panel.',
+        description: 'A polished, responsive UI mod for Pterodactyl Panel.',
         images: [
             {
                 url: `${siteUrl}/screenshots/dashboard-crimson.webp`,
@@ -55,8 +53,7 @@ export const metadata: Metadata = {
     twitter: {
         card: 'summary_large_image',
         title: 'Rockdactyl — Pterodactyl, refined.',
-        description:
-            'A polished interface and release system for Pterodactyl Panel.',
+        description: 'A polished, responsive UI mod for Pterodactyl Panel.',
         images: [`${siteUrl}/screenshots/dashboard-crimson.webp`],
     },
 };
