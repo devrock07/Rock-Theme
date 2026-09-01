@@ -18,6 +18,7 @@ import { SiteHeader } from '@/components/site-header';
 import { PanelScreenshot, ThemePreview } from '@/components/theme-preview';
 import { buttonVariants } from '@/components/ui/button';
 import { releaseUrl } from '@/lib/docs';
+import { withBasePath } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -238,7 +239,9 @@ export default function Home() {
                                     aria-hidden="true"
                                 />
                                 <Image
-                                    src="/screenshots/mobile-dashboard.webp"
+                                    src={withBasePath(
+                                        '/screenshots/mobile-dashboard.webp',
+                                    )}
                                     alt="Rock Theme dashboard at a mobile viewport"
                                     width={390}
                                     height={844}

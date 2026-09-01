@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { withBasePath } from '@/lib/site';
 
 export function ThemePreview() {
     return (
@@ -66,7 +67,7 @@ export function PanelScreenshot({
                 </span>
             </div>
             <Image
-                src={src}
+                src={withBasePath(src)}
                 alt={alt}
                 width={1440}
                 height={900}

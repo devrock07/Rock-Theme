@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+
+import { siteUrl } from '@/lib/site';
+
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -9,6 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+    metadataBase: new URL(`${siteUrl}/`),
     title: 'Rock Theme — Pterodactyl, refined.',
     description:
         'A polished, responsive theme and release system for Pterodactyl Panel.',
@@ -20,14 +24,18 @@ export const metadata: Metadata = {
     ],
     authors: [{ name: 'DevRock', url: 'https://github.com/devrock07' }],
     creator: 'DevRock',
+    alternates: {
+        canonical: `${siteUrl}/`,
+    },
     openGraph: {
+        url: `${siteUrl}/`,
         type: 'website',
         title: 'Rock Theme — Pterodactyl, refined.',
         description:
             'A polished, responsive, operator-configurable interface distribution for Pterodactyl Panel.',
         images: [
             {
-                url: 'https://raw.githubusercontent.com/devrock07/Rock-Theme/main/website/public/screenshots/dashboard-crimson.webp',
+                url: `${siteUrl}/screenshots/dashboard-crimson.webp`,
                 width: 1268,
                 height: 713,
                 alt: 'The real Rock Theme dashboard running locally in Crimson Red.',
@@ -39,9 +47,7 @@ export const metadata: Metadata = {
         title: 'Rock Theme — Pterodactyl, refined.',
         description:
             'A polished, responsive interface distribution for Pterodactyl Panel.',
-        images: [
-            'https://raw.githubusercontent.com/devrock07/Rock-Theme/main/website/public/screenshots/dashboard-crimson.webp',
-        ],
+        images: [`${siteUrl}/screenshots/dashboard-crimson.webp`],
     },
 };
 
