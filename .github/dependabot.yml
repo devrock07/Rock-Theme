@@ -97,6 +97,12 @@ updates:
                   - minor
                   - patch
       ignore:
+          # Newer minor releases change the enforced formatting rules across
+          # upstream Pterodactyl. Keep receiving fixes on the 3.64 line until
+          # a deliberate formatter migration is scheduled.
+          - dependency-name: friendsofphp/php-cs-fixer
+            update-types:
+                - version-update:semver-minor
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
@@ -120,6 +126,11 @@ updates:
               patterns:
                   - '*'
       ignore:
+          # Pterodactyl v1.15.1 targets PHP 8.3 and the compatibility matrix
+          # covers PHP 8.2/8.3. Digest refreshes remain enabled on this line.
+          - dependency-name: php
+            update-types:
+                - version-update:semver-minor
           - dependency-name: '*'
             update-types:
                 - version-update:semver-major
