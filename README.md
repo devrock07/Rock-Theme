@@ -14,7 +14,7 @@ A polished, operator-configurable interface distribution for Pterodactyl Panel.
 
 **Rock Theme `v2.1.0` · Pterodactyl Panel `v1.15.1`**
 
-[Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Configure](./docs/CONFIGURATION.md) · [Releases](https://github.com/devrock07/Rock-Theme/releases)
+[Website](https://rock-theme.noobpro.chatgpt.site) · [Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Configure](./docs/CONFIGURATION.md) · [Releases](https://github.com/devrock07/Rock-Theme/releases)
 
 </div>
 
