@@ -40,7 +40,7 @@ export function SiteFooter() {
                         ],
                         [
                             'Contributing',
-                            'https://github.com/devrock07/Rock-Theme/blob/main/CONTRIBUTING.md',
+                            'https://github.com/devrock07/Rock-Theme/blob/main/.github/CONTRIBUTING.md',
                         ],
                     ]}
                 />

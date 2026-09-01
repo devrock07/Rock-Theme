@@ -13,6 +13,16 @@ describe('Upstream Autopilot safety invariants', () => {
         expect(workflow).toContain('An upstream release tag moved after detection; refusing the candidate.');
     });
 
+    it('preserves Rock Theme documentation and legal files during upstream merges', () => {
+        expect(workflow).toContain('CHANGELOG.md');
+        expect(workflow).toContain('PTERODACTYL_LICENSE.md');
+        expect(workflow).toContain('THIRD_PARTY_NOTICES.md');
+        expect(workflow).toContain('.github/CONTRIBUTING.md');
+        expect(workflow).toContain('docs');
+        expect(workflow).toContain('retired_paths=(');
+        expect(workflow).toContain('git rm -f --ignore-unmatch -- "${retired_paths[@]}"');
+    });
+
     it('uses Rock Theme release records instead of the shared Git tag namespace', () => {
         expect(workflow).toContain('repos/${GITHUB_REPOSITORY}/releases?per_page=100');
         expect(workflow).not.toContain("git tag --list 'v[0-9]*'");

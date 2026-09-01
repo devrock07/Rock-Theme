@@ -14,31 +14,16 @@ A polished, operator-configurable interface distribution for Pterodactyl Panel.
 
 **Rock Theme `v2.1.0` · Pterodactyl Panel `v1.15.1`**
 
-[Website](https://devrock07.github.io/Rock-Theme/) · [Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Configure](./docs/CONFIGURATION.md) · [Releases](https://github.com/devrock07/Rock-Theme/releases)
+[Website](https://devrock07.github.io/Rock-Theme/) · [Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Releases](https://github.com/devrock07/Rock-Theme/releases)
 
 </div>
 
-## Built for real panels
-
-Rock Theme modernizes the client, server, login, status, and administration interfaces while preserving the familiar Pterodactyl workflow. It is a complete panel distribution—not a CSS patch or runtime plugin.
-
-Rock Theme `v2.1.0` is based on and supports [Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
-
-| Capability | Included |
-| --- | --- |
-| Visual systems | Crimson Red and Midnight Blue across client and admin surfaces |
-| Theme Studio | Identity, logo, favicons, dashboard and login media, console appearance, glass, radius, and motion |
-| Faster control | Search, command palette, favorites, server groups, quick actions, and mobile navigation |
-| Operational insight | Live resource graphs, retained telemetry, persistent notifications, announcements, and public status |
-| Responsive behavior | Desktop and mobile layouts, coarse-pointer fallbacks, and reduced-motion support |
-| Safer delivery | Verified releases, rollback snapshots, recovery guards, and upstream compatibility automation |
-
-## Quick install
+## Install
 
 > [!CAUTION]
-> Use a tested backup. The installer snapshots panel files, but you must back up the database and `.env` separately.
+> Back up the panel database and `.env` before installing.
 
-Run these commands on an existing Pterodactyl `1.15.1` installation:
+Run on an existing Pterodactyl `1.15.1` installation:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \
@@ -46,9 +31,27 @@ curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.s
 sudo bash /tmp/rock-theme-install.sh install
 ```
 
-The manager verifies release checksums and archive structure before modifying the panel. See the [installation guide](./docs/INSTALLATION.md) for updates, restore, custom paths, and manual deployment.
+The manager verifies checksums and archive structure before changing the panel. See the [installation guide](./docs/INSTALLATION.md) for updates, restore, custom paths, and manual deployment.
 
-## Compatibility
+<details>
+<summary><strong>What Rock Theme includes</strong></summary>
+
+Rock Theme modernizes the client, server, login, status, and administration interfaces while preserving the familiar Pterodactyl workflow. It is a complete panel distribution—not a CSS patch or runtime plugin.
+
+Rock Theme `v2.1.0` is based on and supports [Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
+
+| Area | Included |
+| --- | --- |
+| Visual system | Crimson Red and Midnight Blue across client and admin surfaces |
+| Theme Studio | Identity, media, glass, radius, motion, favicons, and console appearance |
+| Panel controls | Search, command palette, favorites, groups, quick actions, and mobile navigation |
+| Operations | Resource history, persistent notifications, announcements, and public status |
+| Delivery | Verified releases, rollback snapshots, recovery guards, and upstream automation |
+
+</details>
+
+<details>
+<summary><strong>Compatibility</strong></summary>
 
 | Component | Supported |
 | --- | --- |
@@ -60,29 +63,37 @@ The manager verifies release checksums and archive structure before modifying th
 
 Upgrade themed installations through a compatible Rock Theme release. Do not run the official Pterodactyl updater directly over theme files.
 
-## Documentation
+</details>
 
-- [Installation](./docs/INSTALLATION.md)
+<details>
+<summary><strong>Documentation and project guides</strong></summary>
+
+- [Documentation index](./docs/README.md)
 - [Configuration](./docs/CONFIGURATION.md)
 - [Operator recipes](./docs/RECIPES.md)
 - [Upgrading and recovery](./docs/UPGRADING.md)
 - [Troubleshooting](./docs/TROUBLESHOOTING.md)
 - [Architecture](./docs/ARCHITECTURE.md)
-- [Building from source](./BUILDING.md)
-- [Roadmap](./ROADMAP.md)
+- [Building from source](./docs/development/BUILDING.md)
+- [Contributing](./.github/CONTRIBUTING.md)
+- [Roadmap](./docs/project/ROADMAP.md)
+- [Changelog](./CHANGELOG.md)
 
-The documentation website source lives in [`website/`](./website) and uses only screenshots captured from the running local panel.
+The documentation website source lives in [`website/`](./website) and uses only real screenshots captured from the running panel.
 
-## Support and security
+</details>
 
-Use [GitHub Issues](https://github.com/devrock07/Rock-Theme/issues) for reproducible bugs and [GitHub Discussions](https://github.com/devrock07/Rock-Theme/discussions) for usage questions. Never disclose vulnerabilities publicly; follow the [security policy](./SECURITY.md) and use [private vulnerability reporting](https://github.com/devrock07/Rock-Theme/security/advisories/new).
+<details>
+<summary><strong>Support, security, and licensing</strong></summary>
 
-## License and attribution
+Use [GitHub Issues](https://github.com/devrock07/Rock-Theme/issues) for reproducible bugs, [GitHub Discussions](https://github.com/devrock07/Rock-Theme/discussions) for usage questions, and the [support guide](./.github/SUPPORT.md) to choose the right channel. Report vulnerabilities through the [security policy](./SECURITY.md), never a public issue.
 
 Rock Theme is a derivative Pterodactyl panel distribution containing NookTheme-derived work and adapted third-party interface components. It is not affiliated with Pterodactyl, Nookure, or React Bits.
 
 - Rock Theme and applicable NookTheme-derived modifications are distributed under [GNU GPLv3](./LICENSE), subject to third-party terms.
 - Pterodactyl code retains its [MIT license](./PTERODACTYL_LICENSE.md).
-- Component licenses and attribution are documented in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+- Component licenses and attribution are in the [third-party notices](./THIRD_PARTY_NOTICES.md).
 
 Copyright © 2022–2026 DevRock. Upstream notices remain with their respective owners.
+
+</details>

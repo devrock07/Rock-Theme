@@ -29,8 +29,8 @@ dependency directories, generated frontend bundles, or production data.
 
 ## Development setup
 
-Follow [BUILDING.md](./BUILDING.md) for the complete environment and build
-instructions. The short path is:
+Follow the [building guide](../docs/development/BUILDING.md) for the complete
+environment and build instructions. The short path is:
 
 ```bash
 yarn install --frozen-lockfile
@@ -93,4 +93,4 @@ smaller change or additional tests before merging.
 ## Security
 
 Never report a suspected vulnerability in a public issue. Follow the private
-reporting process in [SECURITY.md](./SECURITY.md).
+reporting process in the [security policy](../SECURITY.md).

@@ -36,7 +36,7 @@ proposals should be contributed upstream whenever appropriate.
 ## Community participation
 
 Anyone may report issues, propose focused improvements, or submit pull
-requests. Participation is governed by [CONTRIBUTING.md](./CONTRIBUTING.md) and
-[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md). Maintainer status is not currently
+requests. Participation is governed by the [contribution guide](../../.github/CONTRIBUTING.md) and
+[Code of Conduct](../../.github/CODE_OF_CONDUCT.md). Maintainer status is not currently
 delegated, but sustained, high-quality participation may lead to broader review
 or triage responsibilities in the future.

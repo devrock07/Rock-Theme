@@ -450,6 +450,15 @@ jobs:
                   latest_ref="refs/rock-upstream/latest"
                   protected_paths=(
                       README.md
+                      CHANGELOG.md
+                      LICENSE
+                      SECURITY.md
+                      PTERODACTYL_LICENSE.md
+                      THIRD_PARTY_NOTICES.md
+                      docs
+                      .github/CODE_OF_CONDUCT.md
+                      .github/CONTRIBUTING.md
+                      .github/SUPPORT.md
                       .github/workflows
                       install.sh
                       release.sh
@@ -460,6 +469,12 @@ jobs:
                       tests/InstallerSmokeTest.sh
                       tests/ReleaseToolingSmokeTest.sh
                       tests/UpstreamAutopilotWorkflow.test.ts
+                  )
+                  retired_paths=(
+                      BRANDING.md
+                      CODE_OF_CONDUCT.md
+                      CONTRIBUTING.md
+                      SUPPORT.md
                   )
 
                   git config user.name "rock-theme-autopilot[bot]"
@@ -495,7 +510,7 @@ jobs:
 
                   if [ "$merge_status" -ne 0 ]; then
                       conflicts="$(printf '%s\n' "$merge_output" | sed -n '2,/^$/p' | sed '/^$/d')"
-                      unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|\.github/workflows/.*|install\.sh|release\.sh|scripts/(copy-compiled-assets|update-upstream-metadata)\.js|scripts/(package-release|verify-release-assets)\.sh|tests/(InstallerSmokeTest|ReleaseToolingSmokeTest)\.sh|tests/UpstreamAutopilotWorkflow\.test\.ts)$' || true)"
+                      unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md|PTERODACTYL_LICENSE\.md|THIRD_PARTY_NOTICES\.md|BRANDING\.md|CODE_OF_CONDUCT\.md|CONTRIBUTING\.md|SUPPORT\.md|docs/.*|\.github/(CODE_OF_CONDUCT|CONTRIBUTING|SUPPORT)\.md|\.github/workflows/.*|install\.sh|release\.sh|scripts/(copy-compiled-assets|update-upstream-metadata)\.js|scripts/(package-release|verify-release-assets)\.sh|tests/(InstallerSmokeTest|ReleaseToolingSmokeTest)\.sh|tests/UpstreamAutopilotWorkflow\.test\.ts)$' || true)"
                       if [ -z "$conflicts" ] || [ -n "$unexpected" ]; then
                           echo "$merge_output" >&2
                           echo "The upstream release has genuine application conflicts with Rock Theme." >&2
@@ -509,6 +524,7 @@ jobs:
                   git checkout -B "$branch"
                   git read-tree --reset -u "$merged_tree"
                   git restore --source="$theme_commit" --staged --worktree -- "${protected_paths[@]}"
+                  git rm -f --ignore-unmatch -- "${retired_paths[@]}"
                   if git grep -nE '^(<<<<<<<|=======|>>>>>>>)' -- .; then
                       echo "Merge markers remain after resolving protected fork files." >&2
                       exit 1

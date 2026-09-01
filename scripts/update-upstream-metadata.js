@@ -17,7 +17,7 @@ const synchronizedVersionFiles = [
     { path: '.github/docker/README.md', theme: true },
     { path: '.github/workflows/upstream-autopilot.yaml', upstream: true },
     { path: 'docker-compose.example.yml', theme: true },
-    { path: 'UPSTREAM_AUTOMATION.md', upstream: true },
+    { path: 'docs/development/UPSTREAM_AUTOMATION.md', upstream: true },
 ];
 
 const replacePatternOnce = (contents, pattern, replacement, label) => {
@@ -139,7 +139,7 @@ const checkReleaseMetadata = (root) => {
             'autopilot example',
         ],
         [
-            'UPSTREAM_AUTOMATION.md',
+            'docs/development/UPSTREAM_AUTOMATION.md',
             /tag such as\s+`v([^`]+)` for a controlled retry/,
             metadata.upstreamVersion,
             'autopilot documentation',

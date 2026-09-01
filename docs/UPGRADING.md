@@ -222,4 +222,4 @@ for human review.
 Automatic compatibility is a release-engineering safety net, not a substitute
 for staging. Review each generated release before production deployment. The
 implementation and required repository permissions are documented in
-[UPSTREAM_AUTOMATION.md](../UPSTREAM_AUTOMATION.md).
+[Upstream Autopilot](./development/UPSTREAM_AUTOMATION.md).

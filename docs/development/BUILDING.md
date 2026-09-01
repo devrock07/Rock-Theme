@@ -75,7 +75,7 @@ ROCK_VISUAL_BASE_URL=http://127.0.0.1:8000 yarn test:responsive
 ```
 
 Protected routes also require a least-privilege test account. See
-[`tests/visual/README.md`](./tests/visual/README.md) for local variables and the
+[`tests/visual/README.md`](../../tests/visual/README.md) for local variables and the
 protected GitHub environment setup. The matrix checks HTTP and browser errors,
 horizontal overflow, clipped primary controls, and captures review screenshots;
 it is not a replacement for functional tests or a manual release review.

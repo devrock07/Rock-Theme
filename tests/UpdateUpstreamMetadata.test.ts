@@ -18,7 +18,7 @@ const synchronizedVersionFiles: VersionFile[] = [
     { path: '.github/docker/README.md', theme: true },
     { path: '.github/workflows/upstream-autopilot.yaml', upstream: true },
     { path: 'docker-compose.example.yml', theme: true },
-    { path: 'UPSTREAM_AUTOMATION.md', upstream: true },
+    { path: 'docs/development/UPSTREAM_AUTOMATION.md', upstream: true },
 ];
 const fixtureFiles = [
     '.rock/upstream-version',

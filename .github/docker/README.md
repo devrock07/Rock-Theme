@@ -73,7 +73,8 @@ environment variables to the container. The most important values are:
 | `LE_EMAIL`                                                 | Enables built-in Let's Encrypt provisioning        | Optional          |
 
 All Rock Theme environment defaults are documented in
-[`.env.example`](../../.env.example) and [BRANDING.md](../../BRANDING.md).
+[`.env.example`](../../.env.example) and the
+[configuration reference](../../docs/CONFIGURATION.md).
 Settings saved in **Admin → Settings** take precedence over branding defaults.
 
 ## TLS and reverse proxies

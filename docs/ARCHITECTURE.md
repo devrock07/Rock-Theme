@@ -188,7 +188,7 @@ markers. Later runs compare the tag, release assets, and GHCR aliases with the
 exact `main` commit and reconcile incomplete publication without rebuilding a
 healthy release. Downgrades and tag movement are rejected.
 
-See [UPSTREAM_AUTOMATION.md](../UPSTREAM_AUTOMATION.md) for repository
+See [Upstream Autopilot](./development/UPSTREAM_AUTOMATION.md) for repository
 permissions and the manual dispatch procedure.
 
 ## Security and privacy boundaries
@@ -221,5 +221,5 @@ Contributions should preserve these boundaries:
     behavior; and
 -   database-backed additions require migrations, failure isolation, and tests.
 
-Use [BUILDING.md](../BUILDING.md) for required checks and
-[CONTRIBUTING.md](../CONTRIBUTING.md) for pull-request expectations.
+Use the [building guide](./development/BUILDING.md) for required checks and
+[contribution guide](../.github/CONTRIBUTING.md) for pull-request expectations.

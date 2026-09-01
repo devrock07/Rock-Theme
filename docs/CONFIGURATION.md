@@ -228,3 +228,13 @@ BRAND_ANNOUNCEMENT_MESSAGE=""
 BRAND_ANNOUNCEMENT_TYPE=notice
 BRAND_ANNOUNCEMENT_LINK=""
 ```
+
+## Theme source map
+
+These are the primary implementation locations for maintainers extending the
+visual system:
+
+-   Client color tokens: `resources/scripts/assets/css/GlobalStylesheet.ts`
+-   Client effects: `resources/scripts/components/elements/reactbits/`
+-   Admin styles: `public/themes/pterodactyl/css/admin-rockvps.css`
+-   Admin effects: `public/themes/pterodactyl/js/admin/reactbits-effects.js`
