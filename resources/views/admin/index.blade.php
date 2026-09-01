@@ -39,7 +39,7 @@
                     <span class="release-line">Panel <code>{{ config('app.version') }}</code></span>
                     <span class="release-state"><i class="fa fa-check"></i> Current</span>
                 @else
-                    Your panel is <strong>not up-to-date!</strong> The latest version is <a href="https://github.com/Pterodactyl/Panel/releases/v{{ $version->getPanel() }}" target="_blank" rel="noopener noreferrer"><code>{{ $version->getPanel() }}</code></a> and you are currently running version <code>{{ config('app.version') }}</code>. Review the Rock Theme update notes on <a href="https://github.com/devrock07/Rock-Theme" target="_blank" rel="noopener noreferrer">GitHub</a>.
+                    Your panel is <strong>not up-to-date!</strong> The latest version is <a href="https://github.com/Pterodactyl/Panel/releases/v{{ $version->getPanel() }}" target="_blank" rel="noopener noreferrer"><code>{{ $version->getPanel() }}</code></a> and you are currently running version <code>{{ config('app.version') }}</code>. Review the Rockdactyl update notes on <a href="https://github.com/devrock07/Rockdactyl" target="_blank" rel="noopener noreferrer">GitHub</a>.
                 @endif
             </div>
         </div>

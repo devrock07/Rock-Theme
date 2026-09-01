@@ -2,7 +2,7 @@
 
 ## Our standard
 
-Rock Theme is built in public. Contributors, users, and maintainers are expected
+Rockdactyl is built in public. Contributors, users, and maintainers are expected
 to communicate with respect, assume good intent, and focus criticism on the
 work. Harassment, threats, discriminatory language, sexualized conduct,
 doxxing, spam, and sustained personal attacks are not acceptable.
@@ -14,7 +14,7 @@ to the wider community.
 ## Scope
 
 This standard applies to repository issues, pull requests, discussions, Wiki
-edits, and other spaces where someone is representing Rock Theme.
+edits, and other spaces where someone is representing Rockdactyl.
 
 ## Enforcement
 

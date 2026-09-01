@@ -45,7 +45,7 @@ export type DocNavGroup = {
     items: readonly DocNavItem[];
 };
 
-export const repositoryUrl = 'https://github.com/devrock07/Rock-Theme';
+export const repositoryUrl = 'https://github.com/devrock07/Rockdactyl';
 export const releaseUrl = `${repositoryUrl}/releases/tag/v2.1.0`;
 
 export const docsNavigation: readonly DocNavGroup[] = [
@@ -55,7 +55,7 @@ export const docsNavigation: readonly DocNavGroup[] = [
             {
                 href: '/docs',
                 title: 'Overview',
-                description: 'How Rock Theme fits together',
+                description: 'How Rockdactyl fits together',
             },
             {
                 href: '/docs/installation',
@@ -113,7 +113,7 @@ export const searchablePages = [
     {
         href: '/changelog',
         title: 'Changelog',
-        description: 'What shipped in Rock Theme',
+        description: 'What shipped in Rockdactyl',
         group: 'Project',
     },
 ] as const;
@@ -123,7 +123,7 @@ const overview: DocPage = {
     eyebrow: 'Documentation',
     title: 'Operate the theme, not a pile of patches.',
     description:
-        'Rock Theme is a complete Pterodactyl distribution: interface, operator settings, release tooling, telemetry, and recovery are shipped as one tested unit.',
+        'Rockdactyl is a complete Pterodactyl distribution: interface, operator settings, release tooling, telemetry, and recovery are shipped as one tested unit.',
     sections: [
         {
             id: 'what-you-get',
@@ -142,11 +142,11 @@ const overview: DocPage = {
             id: 'compatibility',
             title: 'Compatibility contract',
             body: [
-                'Rock Theme v2.1.0 is built on Pterodactyl Panel v1.15.1. Upgrade through a compatible Rock Theme release so the theme, database migrations, and panel source move together.',
+                'Rockdactyl v2.1.0 is built on Pterodactyl Panel v1.15.1. Upgrade through a compatible Rockdactyl release so the theme, database migrations, and panel source move together.',
             ],
             callout: {
                 title: 'Do not run the vanilla updater over a themed install',
-                body: 'The official updater can replace Rock Theme files without applying the matching theme release. Use the Rock Theme manager for updates and recovery.',
+                body: 'The official updater can replace Rockdactyl files without applying the matching theme release. Use the Rockdactyl manager for updates and recovery.',
                 tone: 'warning',
             },
         },
@@ -197,18 +197,18 @@ const installation: DocPage = {
             id: 'install',
             title: 'Install',
             body: [
-                'Download the manager first so you can inspect it before running it. Rock Theme does not recommend piping a network response directly into a privileged shell.',
+                'Download the manager first so you can inspect it before running it. Rockdactyl does not recommend piping a network response directly into a privileged shell.',
             ],
             code: [
                 {
                     label: 'Download',
                     language: 'bash',
-                    value: 'curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \\\n  -o /tmp/rock-theme-install.sh',
+                    value: 'curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \\\n  -o /tmp/rockdactyl-install.sh',
                 },
                 {
                     label: 'Run',
                     language: 'bash',
-                    value: 'sudo bash /tmp/rock-theme-install.sh install',
+                    value: 'sudo bash /tmp/rockdactyl-install.sh install',
                 },
             ],
         },
@@ -266,11 +266,11 @@ const configuration: DocPage = {
             id: 'presets',
             title: 'Visual preset',
             body: [
-                'Choose Crimson Red for the default Rock Theme identity or Midnight Blue for a cooler operator surface. Both presets style client and admin states; the selection is not a dashboard-only color swap.',
+                'Choose Crimson Red for the default Rockdactyl identity or Midnight Blue for a cooler operator surface. Both presets style client and admin states; the selection is not a dashboard-only color swap.',
             ],
             callout: {
                 title: 'Two presets by design',
-                body: 'Rock Theme intentionally ships two finished presets instead of a long list of partially themed accent colors.',
+                body: 'Rockdactyl intentionally ships two finished presets instead of a long list of partially themed accent colors.',
                 tone: 'info',
             },
         },
@@ -309,7 +309,7 @@ const operations: DocPage = {
     eyebrow: 'Operate',
     title: 'See what matters, keep the noise down.',
     description:
-        'Rock Theme adds operational context without replacing Pterodactyl permissions or Wings. Telemetry and notifications remain scoped to the signed-in user and the servers they can access.',
+        'Rockdactyl adds operational context without replacing Pterodactyl permissions or Wings. Telemetry and notifications remain scoped to the signed-in user and the servers they can access.',
     sections: [
         {
             id: 'telemetry',
@@ -350,7 +350,7 @@ const operations: DocPage = {
             ],
             callout: {
                 title: 'Permission boundary',
-                body: 'Rock Theme reuses Pterodactyl authentication and server-access middleware. It does not create a parallel account or authorization system.',
+                body: 'Rockdactyl reuses Pterodactyl authentication and server-access middleware. It does not create a parallel account or authorization system.',
                 tone: 'success',
             },
         },
@@ -373,7 +373,7 @@ const updates: DocPage = {
     sections: [
         {
             id: 'update',
-            title: 'Update Rock Theme',
+            title: 'Update Rockdactyl',
             body: [
                 'Refresh the manager, inspect it if needed, then run the update operation from the panel host.',
             ],
@@ -381,12 +381,12 @@ const updates: DocPage = {
                 {
                     label: 'Download',
                     language: 'bash',
-                    value: 'curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \\\n  -o /tmp/rock-theme-install.sh',
+                    value: 'curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \\\n  -o /tmp/rockdactyl-install.sh',
                 },
                 {
                     label: 'Update',
                     language: 'bash',
-                    value: 'sudo bash /tmp/rock-theme-install.sh update',
+                    value: 'sudo bash /tmp/rockdactyl-install.sh update',
                 },
             ],
         },
@@ -400,7 +400,7 @@ const updates: DocPage = {
                 {
                     label: 'Restore',
                     language: 'bash',
-                    value: 'sudo bash /tmp/rock-theme-install.sh restore',
+                    value: 'sudo bash /tmp/rockdactyl-install.sh restore',
                 },
             ],
             callout: {
@@ -438,7 +438,7 @@ const troubleshooting: DocPage = {
             steps: [
                 {
                     title: 'Confirm the release',
-                    body: 'Verify the panel files and public/assets/manifest.json came from the same Rock Theme release.',
+                    body: 'Verify the panel files and public/assets/manifest.json came from the same Rockdactyl release.',
                 },
                 {
                     title: 'Clear Laravel caches',
@@ -496,7 +496,7 @@ const development: DocPage = {
     eyebrow: 'Contribute',
     title: 'Keep the panel upgradeable.',
     description:
-        'Rock Theme extends Pterodactyl rather than replacing its security model. Contributions should keep authorization, data ownership, and release boundaries explicit.',
+        'Rockdactyl extends Pterodactyl rather than replacing its security model. Contributions should keep authorization, data ownership, and release boundaries explicit.',
     sections: [
         {
             id: 'stack',
@@ -534,7 +534,7 @@ const development: DocPage = {
             title: 'Architecture boundaries',
             bullets: [
                 'Client endpoints remain behind Pterodactyl authentication and server-access middleware.',
-                'User preferences, telemetry, and notifications use dedicated Rock Theme tables with explicit ownership.',
+                'User preferences, telemetry, and notifications use dedicated Rockdactyl tables with explicit ownership.',
                 'Admin settings are persisted server-side and exposed to clients through sanitized branding state.',
                 'Release archives are generated from committed source and validated before publication.',
             ],

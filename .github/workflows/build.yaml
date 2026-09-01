@@ -32,7 +32,7 @@ jobs:
             - name: Validate installer scripts
               run: |
                   bash -n install.sh release.sh scripts/package-release.sh scripts/verify-release-assets.sh tests/ReleaseToolingSmokeTest.sh
-                  bash install.sh --help | grep -q 'Rock Theme installer'
+                  bash install.sh --help | grep -q 'Rockdactyl installer'
                   bash tests/InstallerSmokeTest.sh
 
             - name: Set up Node.js

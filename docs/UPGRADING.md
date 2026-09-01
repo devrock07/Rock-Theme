@@ -1,23 +1,23 @@
 # Upgrading and recovery
 
-Rock Theme versions and Pterodactyl versions are related but independent. Check
+Rockdactyl versions and Pterodactyl versions are related but independent. Check
 both before every update.
 
 | Installed component | Current supported release |
 | ------------------- | ------------------------- |
-| Rock Theme          | `v2.1.0`                  |
+| Rockdactyl          | `v2.1.0`                  |
 | Pterodactyl base    | `v1.15.1`                 |
 
 The supported Pterodactyl base is recorded in `.rock/upstream-version` and the
 application version is recorded in `config/app.php`. Do not run the official
-Pterodactyl self-updater directly over Rock Theme: it can overwrite theme code
+Pterodactyl self-updater directly over Rockdactyl: it can overwrite theme code
 without applying the corresponding compatibility work.
 
 ## Update checklist
 
 Before updating a production panel:
 
-1. Read the [Rock Theme release notes](https://github.com/devrock07/Rock-Theme/releases).
+1. Read the [Rockdactyl release notes](https://github.com/devrock07/Rockdactyl/releases).
 2. Confirm that the target release declares the same Pterodactyl base or a newer
    base in the same major release line.
 3. Export the database and copy `.env` outside the panel directory.
@@ -35,9 +35,9 @@ inside a production panel are not merged and may be overwritten.
 Download the current manager, inspect it, and run the update action:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \
-  -o /tmp/rock-theme-install.sh
-sudo bash /tmp/rock-theme-install.sh update
+curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \
+  -o /tmp/rockdactyl-install.sh
+sudo bash /tmp/rockdactyl-install.sh update
 ```
 
 The update action creates a timestamped snapshot under
@@ -48,7 +48,7 @@ The update action creates a timestamped snapshot under
 sudo env \
   PANEL_DIR=/srv/pterodactyl \
   ROCK_BACKUP_ROOT=/srv/backups/rock-theme \
-  bash /tmp/rock-theme-install.sh update
+  bash /tmp/rockdactyl-install.sh update
 ```
 
 The manager always installs the latest non-draft GitHub release. Use the manual
@@ -78,7 +78,7 @@ The manager uses these file snapshots:
 
 | Snapshot                            | Created when                                                                               | Used automatically by `restore` |
 | ----------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------- |
-| `original-panel.tar.gz`             | First managed installation, unless a Rock Theme marker or original snapshot already exists | Yes                             |
+| `original-panel.tar.gz`             | First managed installation, unless a Rockdactyl marker or original snapshot already exists | Yes                             |
 | `before-install-<timestamp>.tar.gz` | A later install when the original slot is already occupied                                 | No                              |
 | `before-update-<timestamp>.tar.gz`  | Every managed update                                                                       | No                              |
 | `before-restore-<timestamp>.tar.gz` | Immediately before restoring the original panel                                            | No                              |
@@ -98,7 +98,7 @@ retention policy.
 To return to the manager-created pre-theme panel files:
 
 ```bash
-sudo bash /tmp/rock-theme-install.sh restore
+sudo bash /tmp/rockdactyl-install.sh restore
 ```
 
 The restore action:
@@ -110,7 +110,7 @@ The restore action:
 -   reinstalls PHP dependencies, clears caches, restarts the queue, repairs
     permissions, and returns the panel online.
 
-It intentionally preserves the current database. If a Rock Theme migration or
+It intentionally preserves the current database. If a Rockdactyl migration or
 later application change must also be reversed, use the matching independent
 database backup and a reviewed recovery plan. Do not restore an old database
 over a live panel without first protecting the current state.
@@ -151,7 +151,7 @@ contains:
 -   `panel.tar.gz.sha256` — SHA-256 verification file; and
 -   generated GitHub release notes.
 
-The archive also contains `.rock/release.json`, binding its Rock Theme version,
+The archive also contains `.rock/release.json`, binding its Rockdactyl version,
 Pterodactyl base, and source commit to the checksum-protected payload. Release
 automation downloads and validates these fields before treating an existing
 release as healthy. Archive entries use stable ordering, normalized ownership
@@ -168,8 +168,8 @@ Verify a pinned release before extraction:
 
 ```bash
 release=v2.1.0
-curl -fL -O "https://github.com/devrock07/Rock-Theme/releases/download/$release/panel.tar.gz"
-curl -fL -O "https://github.com/devrock07/Rock-Theme/releases/download/$release/panel.tar.gz.sha256"
+curl -fL -O "https://github.com/devrock07/Rockdactyl/releases/download/$release/panel.tar.gz"
+curl -fL -O "https://github.com/devrock07/Rockdactyl/releases/download/$release/panel.tar.gz.sha256"
 sha256sum --check panel.tar.gz.sha256
 tar -tzf panel.tar.gz >/dev/null
 ```
@@ -184,7 +184,7 @@ release daily and can also be run manually with a specific stable tag. When an
 update exists, it:
 
 1. performs a three-tree merge using the old official release as the base, the
-   Rock Theme tree as the customized side, and the new official release as the
+   Rockdactyl tree as the customized side, and the new official release as the
    upstream side;
 2. updates version metadata and exports an isolated, read-only candidate bundle;
 3. runs TypeScript, ESLint, Jest, and two matching production Webpack builds;
@@ -201,9 +201,9 @@ A failed merge or validation leaves `main` and the latest release unchanged and
 opens one actionable GitHub issue. After promotion starts, the exact validated
 commit remains on `automation/upstream-candidate` until its tag, release assets,
 and container channels are verified. Retries use that preserved commit even if
-`main` later advances without changing the Rock Theme version, and a newer
+`main` later advances without changing the Rockdactyl version, and a newer
 upstream release waits for the incomplete publication to finish. If `main` moves
-to another Rock Theme version or a newer release appears, the older pending
+to another Rockdactyl version or a newer release appears, the older pending
 candidate is blocked rather than allowed to move GitHub or container `latest`
 aliases backwards. Healthy runs use the immutable version tag as their release
 source and `main` as their `edge` source, so ordinary post-release commits do not

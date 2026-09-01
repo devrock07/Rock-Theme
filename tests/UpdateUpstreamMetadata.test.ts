@@ -120,8 +120,8 @@ describe('update-upstream-metadata', () => {
         fixtures.push(root);
         const manifest = JSON.parse(read(root, 'package.json')) as { version: string };
         const readme = read(root, 'README.md').replace(
-            `Rock Theme \`v${manifest.version}\` is based on and supports`,
-            `Rock Theme \`v0.0.1\` is based on and supports`
+            `Rockdactyl \`v${manifest.version}\` is based on and supports`,
+            `Rockdactyl \`v0.0.1\` is based on and supports`
         );
         fs.writeFileSync(path.join(root, 'README.md'), `${readme}\nExpected elsewhere: ${manifest.version}\n`);
         const result = spawnSync(
@@ -160,7 +160,7 @@ describe('update-upstream-metadata', () => {
         expect(read(root, '.rock/upstream-version')).toBe(`v${upstreamVersion}\n`);
         expect(JSON.parse(read(root, 'package.json'))).toMatchObject({
             version: themeVersion,
-            description: `A responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`,
+            description: `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`,
         });
         expect(read(root, 'config/app.php')).toContain(`'version' => '${upstreamVersion}'`);
         expect(read(root, 'config/app.php')).toContain(`'fork-version' => '${themeVersion}'`);
@@ -179,8 +179,8 @@ describe('update-upstream-metadata', () => {
 
         const readme = read(root, 'README.md');
         expect(readme).toContain(`/pterodactyl/panel/releases/tag/v${upstreamVersion}`);
-        expect(readme).toContain(`Rock Theme \`v${themeVersion}\``);
-        expect(readme).toContain(`| Rock Theme | \`${themeVersion}\``);
+        expect(readme).toContain(`Rockdactyl \`v${themeVersion}\``);
+        expect(readme).toContain(`| Rockdactyl | \`${themeVersion}\``);
     });
 
     it('does not partially write metadata when a tracked marker is missing', () => {

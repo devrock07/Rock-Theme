@@ -103,7 +103,7 @@ module.exports = {
             NODE_ENV: process.env.NODE_ENV || 'development',
             DEBUG: process.env.NODE_ENV !== 'production',
             // Keep production output reproducible while still invalidating locale
-            // caches for each tagged Rock Theme release. Development HMR uses its
+            // caches for each tagged Rockdactyl release. Development HMR uses its
             // own per-page value in resources/scripts/i18n.ts.
             WEBPACK_BUILD_HASH: process.env.WEBPACK_BUILD_HASH || version,
         }),

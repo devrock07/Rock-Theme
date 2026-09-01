@@ -1,6 +1,6 @@
-# Contributing to Rock Theme
+# Contributing to Rockdactyl
 
-Rock Theme welcomes focused bug fixes, accessibility work, responsive-layout
+Rockdactyl welcomes focused bug fixes, accessibility work, responsive-layout
 improvements, documentation, tests, and carefully scoped interface features.
 Every contribution should preserve normal Pterodactyl behavior and remain
 usable on both desktop and mobile.
@@ -11,7 +11,7 @@ Questions and installation help belong in the channels described in
 
 ## Before you start
 
-Search [existing issues](https://github.com/devrock07/Rock-Theme/issues) and
+Search [existing issues](https://github.com/devrock07/Rockdactyl/issues) and
 open a feature request before beginning a large visual, architectural, or
 dependency change. Changes to Pterodactyl core behavior or Wings should usually
 be proposed to the relevant upstream project instead.

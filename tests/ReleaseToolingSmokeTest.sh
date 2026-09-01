@@ -28,7 +28,7 @@ printf 'documentation-only\n' >"$fixture/website/index.html"
 (
     cd "$fixture"
     git init -q
-    git config user.name 'Rock Theme Tests'
+    git config user.name 'Rockdactyl Tests'
     git config user.email 'tests@rock-theme.invalid'
     git add .
     git add -f .env storage/private/runtime.txt
@@ -122,7 +122,7 @@ chmod +x "$verifier_bin/yarn"
 (
     cd "$verifier"
     git init -q
-    git config user.name 'Rock Theme Tests'
+    git config user.name 'Rockdactyl Tests'
     git config user.email 'tests@rock-theme.invalid'
     git add .
     git commit -qm 'verifier fixture'
@@ -184,7 +184,7 @@ chmod +x "$publisher/scripts/verify-release-assets.sh" "$publisher/scripts/packa
 (
     cd "$publisher"
     git init -q
-    git config user.name 'Rock Theme Tests'
+    git config user.name 'Rockdactyl Tests'
     git config user.email 'tests@rock-theme.invalid'
     git add .
     git commit -qm 'publisher fixture'

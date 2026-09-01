@@ -1,8 +1,8 @@
-# Rock Theme container image
+# Rockdactyl container image
 
-Rock Theme publishes a production panel image to
+Rockdactyl publishes a production panel image to
 `ghcr.io/devrock07/rock-theme` for `linux/amd64` and `linux/arm64`. The image
-contains the complete Pterodactyl application, compiled Rock Theme assets,
+contains the complete Pterodactyl application, compiled Rockdactyl assets,
 nginx, PHP-FPM, the scheduler, and a queue worker. Wings is deployed separately.
 
 ## Image tags
@@ -11,7 +11,7 @@ nginx, PHP-FPM, the scheduler, and a queue worker. Wings is deployed separately.
 | -------- | --------------------------------------------- |
 | `2.1.0`  | Immutable release; recommended for production |
 | `2.1`    | Latest compatible patch in a release line     |
-| `latest` | Latest stable Rock Theme release              |
+| `latest` | Latest stable Rockdactyl release              |
 | `edge`   | Current `main`; testing only                  |
 
 Pin a full release version in production. Pulling `latest` or `edge` can change
@@ -72,7 +72,7 @@ environment variables to the container. The most important values are:
 | `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` | SMTP connection                                    | When using SMTP   |
 | `LE_EMAIL`                                                 | Enables built-in Let's Encrypt provisioning        | Optional          |
 
-All Rock Theme environment defaults are documented in
+All Rockdactyl environment defaults are documented in
 [`.env.example`](../../.env.example) and the
 [configuration reference](../../docs/CONFIGURATION.md).
 Settings saved in **Admin → Settings** take precedence over branding defaults.
@@ -96,7 +96,7 @@ docker compose -f docker-compose.example.yml logs -f panel
 ```
 
 Confirm the login page, one server view, the queue worker, and the scheduler
-after every update. Do not mix a Rock Theme application image with a different
+after every update. Do not mix a Rockdactyl application image with a different
 Pterodactyl database compatibility level.
 
 ## Troubleshooting

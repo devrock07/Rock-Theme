@@ -1,17 +1,17 @@
 blank_issues_enabled: false
 contact_links:
-    - name: Rock Theme Wiki
-      url: https://github.com/devrock07/Rock-Theme/wiki
+    - name: Rockdactyl Wiki
+      url: https://github.com/devrock07/Rockdactyl/wiki
       about: Read installation, configuration, update, and troubleshooting guidance.
     - name: Support guide
-      url: https://github.com/devrock07/Rock-Theme/blob/main/.github/SUPPORT.md
+      url: https://github.com/devrock07/Rockdactyl/blob/main/.github/SUPPORT.md
       about: Check what information to collect and where to ask for help.
     - name: Community Q&A
-      url: https://github.com/devrock07/Rock-Theme/discussions/categories/q-a
+      url: https://github.com/devrock07/Rockdactyl/discussions/categories/q-a
       about: Ask general usage questions and share operator knowledge.
     - name: Pterodactyl documentation
       url: https://pterodactyl.io
       about: Use the upstream documentation for panel, Wings, node, and game-server configuration.
     - name: Report a security vulnerability
-      url: https://github.com/devrock07/Rock-Theme/security/advisories/new
-      about: Report suspected Rock Theme vulnerabilities privately.
+      url: https://github.com/devrock07/Rockdactyl/security/advisories/new
+      about: Report suspected Rockdactyl vulnerabilities privately.

@@ -45,7 +45,7 @@ jobs:
             - name: Build static site
               run: npm run build
               env:
-                  NEXT_PUBLIC_BASE_PATH: /Rock-Theme
+                  NEXT_PUBLIC_BASE_PATH: /Rockdactyl
 
             - name: Upload Pages artifact
               uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

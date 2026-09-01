@@ -8,8 +8,8 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-    title: 'Changelog — Rock Theme',
-    description: 'Release notes and compatibility information for Rock Theme.',
+    title: 'Changelog — Rockdactyl',
+    description: 'Release notes and compatibility information for Rockdactyl.',
 };
 
 const highlights = [
@@ -88,7 +88,7 @@ export default function ChangelogPage() {
                             </div>
                             <div className="mt-7 flex flex-wrap gap-3">
                                 <a
-                                    href="https://github.com/devrock07/Rock-Theme/releases/tag/v2.1.0"
+                                    href="https://github.com/devrock07/Rockdactyl/releases/tag/v2.1.0"
                                     target="_blank"
                                     rel="noreferrer"
                                     className={cn(
@@ -99,7 +99,7 @@ export default function ChangelogPage() {
                                     Release assets <ArrowUpRightIcon />
                                 </a>
                                 <a
-                                    href="https://github.com/devrock07/Rock-Theme/compare/v2.0.3...v2.1.0"
+                                    href="https://github.com/devrock07/Rockdactyl/compare/v2.0.3...v2.1.0"
                                     target="_blank"
                                     rel="noreferrer"
                                     className={cn(
@@ -122,7 +122,7 @@ export default function ChangelogPage() {
                         Need an older build or its checksum?
                     </p>
                     <Link
-                        href="https://github.com/devrock07/Rock-Theme/releases"
+                        href="https://github.com/devrock07/Rockdactyl/releases"
                         className="mt-2 inline-block text-sm font-semibold text-primary hover:text-primary/80"
                     >
                         Browse every GitHub release →

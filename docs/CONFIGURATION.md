@@ -1,6 +1,6 @@
 # Configuration reference
 
-Rock Theme configuration is available under **Admin → Settings**. Saving the
+Rockdactyl configuration is available under **Admin → Settings**. Saving the
 form writes values to the panel's settings table and restarts the queue worker
 when possible.
 
@@ -159,7 +159,7 @@ Favorites and server groups are stored per account in
 retains a local copy during a temporary storage outage and reconciles it after
 the API becomes available.
 
-Unread Rock Theme notifications are stored per account in
+Unread Rockdactyl notifications are stored per account in
 `rock_notifications`. The notification center retrieves the latest 30 unread
 items and persists read or clear actions. Current automated events include:
 
@@ -196,7 +196,7 @@ See [Troubleshooting](./TROUBLESHOOTING.md) if history remains empty.
 
 ## Default environment block
 
-These are the Rock Theme fallbacks recognized by `config/branding.php`:
+These are the Rockdactyl fallbacks recognized by `config/branding.php`:
 
 ```env
 BRAND_OWNER="DevRock"

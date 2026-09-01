@@ -29,7 +29,7 @@ assert_clean_source() {
 trap cleanup_package EXIT
 
 git rev-parse --verify HEAD >/dev/null 2>&1 || {
-    printf 'Rock Theme must be committed before creating a release package.\n' >&2
+    printf 'Rockdactyl must be committed before creating a release package.\n' >&2
     exit 1
 }
 assert_clean_source

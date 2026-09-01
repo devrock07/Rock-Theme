@@ -1,15 +1,15 @@
 # Upstream Autopilot
 
-Rock Theme checks the official `pterodactyl/panel` releases every day. When a
+Rockdactyl checks the official `pterodactyl/panel` releases every day. When a
 new stable tag appears, the `Upstream Autopilot` GitHub Actions workflow:
 
 1. reads the supported base from `.rock/upstream-version`;
 2. resolves and pins the peeled commits for the old and new official
    Pterodactyl tags before fetching either tree;
 3. performs a true three-tree merge using the old official tree as the base,
-   the current Rock Theme tree as the customized side, and the new official
+   the current Rockdactyl tree as the customized side, and the new official
    tree as the upstream side;
-4. updates the displayed panel, package, compatibility, and Rock Theme
+4. updates the displayed panel, package, compatibility, and Rockdactyl
    versions;
 5. tests the candidate with TypeScript, ESLint, Jest, two matching production
    Webpack builds, PHP 8.2 and 8.3, MySQL 8 and 9, MariaDB 10 and 11, and a
@@ -25,8 +25,8 @@ after `main` advances, the exact validated commit remains on the reserved
 repairs only the missing tag, release asset, or source-marked GHCR channel, and
 then removes the reserved branch with an exact-SHA compare-and-delete. Newer
 upstream releases wait until that publication is complete. A pending candidate
-is rejected instead of republished if `main` has moved to a different Rock Theme
-version or a newer semantic Rock Theme release already exists. Healthy
+is rejected instead of republished if `main` has moved to a different Rockdactyl
+version or a newer semantic Rockdactyl release already exists. Healthy
 scheduled runs do not rebuild or republish anything. One GitHub issue tracks
 failures until the desired release state is verified.
 
@@ -53,7 +53,7 @@ repository permissions. They exchange an SHA-verified Git bundle and inert
 release artifacts; candidate files are never checked out or executed in the
 write-capable promotion job. Promotion must be exactly one commit above the
 validated `main`, and atomically advances `main` while preserving the candidate
-on a reserved recovery branch. Rock Theme version discovery uses GitHub release
+on a reserved recovery branch. Rockdactyl version discovery uses GitHub release
 records rather than the repository's shared Pterodactyl tag namespace. Existing
 release tags are immutable and remain the release source when later commits
 advance `main`; only `edge` follows the newer main commit. Official upstream tag

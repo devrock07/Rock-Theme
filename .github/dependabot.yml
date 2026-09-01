@@ -46,7 +46,7 @@ updates:
                   - patch
       ignore:
           # These pre-1.0 libraries use minor releases for breaking API changes.
-          # Rock Theme upgrades them with the matching Pterodactyl migration
+          # Rockdactyl upgrades them with the matching Pterodactyl migration
           # instead of accepting an unsafe grouped Dependabot update.
           - dependency-name: '@floating-ui/react-dom-interactions'
             update-types:

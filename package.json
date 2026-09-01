@@ -1,19 +1,19 @@
 {
-    "name": "rock-theme",
+    "name": "rockdactyl",
     "version": "2.1.0",
     "private": true,
-    "description": "A responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel 1.15.1.",
+    "description": "Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel 1.15.1.",
     "author": {
         "name": "DevRock",
         "url": "https://github.com/devrock07"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/devrock07/Rock-Theme.git"
+        "url": "git+https://github.com/devrock07/Rockdactyl.git"
     },
-    "homepage": "https://github.com/devrock07/Rock-Theme#readme",
+    "homepage": "https://github.com/devrock07/Rockdactyl#readme",
     "bugs": {
-        "url": "https://github.com/devrock07/Rock-Theme/issues"
+        "url": "https://github.com/devrock07/Rockdactyl/issues"
     },
     "license": "GPL-3.0-or-later",
     "keywords": [

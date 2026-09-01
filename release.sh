@@ -6,12 +6,12 @@ root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$root"
 
 if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
-    echo "Rock Theme must be committed before creating a release archive." >&2
+    echo "Rockdactyl must be committed before creating a release archive." >&2
     exit 1
 fi
 
 if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
-    echo "Rock Theme releases must be created from a clean working tree." >&2
+    echo "Rockdactyl releases must be created from a clean working tree." >&2
     exit 1
 fi
 
@@ -52,7 +52,7 @@ cleanup_release() {
 
 assert_clean_source() {
     if [ -n "$(git status --porcelain --untracked-files=normal)" ]; then
-        printf 'Rock Theme releases must be created from a clean working tree.\n' >&2
+        printf 'Rockdactyl releases must be created from a clean working tree.\n' >&2
         return 1
     fi
 }
@@ -127,7 +127,7 @@ tar -tzf "$root/release/panel.tar.gz" >/dev/null
 publication_complete=true
 
 finished_at="$(date +%s)"
-printf 'Rock Theme release created in %s seconds.\n' "$((finished_at - started_at))"
+printf 'Rockdactyl release created in %s seconds.\n' "$((finished_at - started_at))"
 printf '  Theme:    %s\n' "$theme_version"
 printf '  Base:     %s\n' "$pterodactyl_version"
 printf '  Source:   %s\n' "$source_commit"

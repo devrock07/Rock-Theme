@@ -89,7 +89,7 @@ export function SiteHeader() {
                                 <SheetHeader className="border-b border-white/8 px-5 py-5 text-left">
                                     <SheetTitle className="flex items-center gap-3">
                                         <BrandMark />
-                                        Rock Theme
+                                        Rockdactyl
                                     </SheetTitle>
                                     <SheetDescription>
                                         Documentation and releases.
@@ -121,11 +121,11 @@ export function SiteHeader() {
                     <Link
                         href="/"
                         className="mr-auto flex items-center gap-3"
-                        aria-label="Rock Theme home"
+                        aria-label="Rockdactyl home"
                     >
                         <BrandMark />
                         <span className="text-sm font-semibold tracking-[-0.025em]">
-                            Rock Theme
+                            Rockdactyl
                         </span>
                     </Link>
 
@@ -172,7 +172,7 @@ export function SiteHeader() {
                     </Button>
 
                     <a
-                        href="https://github.com/devrock07/Rock-Theme"
+                        href="https://github.com/devrock07/Rockdactyl"
                         target="_blank"
                         rel="noreferrer"
                         className={cn(
@@ -189,7 +189,7 @@ export function SiteHeader() {
             <CommandDialog
                 open={searchOpen}
                 onOpenChange={setSearchOpen}
-                title="Search Rock Theme documentation"
+                title="Search Rockdactyl documentation"
                 description="Find installation, configuration, operations, and project pages."
                 className="top-[22%] max-w-xl border border-white/10 bg-[#100c0e]/98 shadow-2xl"
             >

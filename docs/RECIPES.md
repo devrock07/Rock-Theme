@@ -1,6 +1,6 @@
 # Operator recipes
 
-These recipes are starting points for common Rock Theme deployments. Apply
+These recipes are starting points for common Rockdactyl deployments. Apply
 them in **Admin → Settings**, save once, and verify the result in a private
 browser window and at a phone-sized viewport. Database-backed admin values take
 precedence over matching `.env` fallbacks.
@@ -38,7 +38,7 @@ cache for that path and perform a hard browser refresh.
 
 ## Crimson Red or Midnight Blue
 
-Rock Theme intentionally ships two complete presets. Select **Crimson Red** for
+Rockdactyl intentionally ships two complete presets. Select **Crimson Red** for
 the default warm interface or **Midnight Blue** for a cooler operations-focused
 interface.
 

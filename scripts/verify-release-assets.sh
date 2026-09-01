@@ -73,7 +73,7 @@ prepare_source() {
 trap cleanup_assets EXIT
 
 git rev-parse --verify HEAD >/dev/null 2>&1 || {
-    printf 'Rock Theme must be committed before checking reproducible assets.\n' >&2
+    printf 'Rockdactyl must be committed before checking reproducible assets.\n' >&2
     exit 1
 }
 assert_clean_source

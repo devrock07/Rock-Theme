@@ -1,6 +1,6 @@
-# Building Rock Theme
+# Building Rockdactyl
 
-Rock Theme uses the Pterodactyl React and Laravel application with webpack for
+Rockdactyl uses the Pterodactyl React and Laravel application with webpack for
 frontend assets.
 
 ## Requirements

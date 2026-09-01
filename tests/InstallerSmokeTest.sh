@@ -424,7 +424,7 @@ assert_panel_online_and_original() {
 # Syntax, help, and the interactive-free happy path on paths containing spaces.
 clear_mocks
 bash -n "$root/install.sh" "$root/release.sh" "$root/scripts/package-release.sh" "$root/scripts/verify-release-assets.sh" "$root/tests/InstallerSmokeTest.sh"
-bash "$root/install.sh" --help | grep -q 'Rock Theme installer'
+bash "$root/install.sh" --help | grep -q 'Rockdactyl installer'
 reset_panel "$workspace/unsafe-lock-panel" "$workspace/unsafe-lock-backups"
 set +e
 ROCK_LOCK_ROOT=/ bash "$root/install.sh" update >"$workspace/unsafe-lock-root.log" 2>&1
@@ -519,7 +519,7 @@ bash "$root/install.sh" update >"$workspace/lock-contender.log" 2>&1
 lock_contender_status=$?
 set -e
 [ "$lock_contender_status" -ne 0 ]
-grep -q 'Another Rock Theme manager is already operating' "$workspace/lock-contender.log"
+grep -q 'Another Rockdactyl manager is already operating' "$workspace/lock-contender.log"
 kill -TERM "$lock_owner_pid"
 set +e
 wait "$lock_owner_pid"
@@ -552,7 +552,7 @@ lock_key="${lock_key%% *}"
 recent_empty_lock="$ROCK_LOCK_ROOT/rock-theme-manager-${lock_key}.lock.d"
 mkdir -- "$recent_empty_lock"
 expect_failure "$workspace/recent-empty-lock.log" update
-grep -q 'Another Rock Theme manager is already operating' "$workspace/recent-empty-lock.log"
+grep -q 'Another Rockdactyl manager is already operating' "$workspace/recent-empty-lock.log"
 rm -rf -- "$recent_empty_lock"
 
 # Download and archive failures happen before maintenance mode or a snapshot.
@@ -789,7 +789,7 @@ printf '/release/\n' >"$release_repo/.gitignore"
 (
     cd "$release_repo"
     git init -q
-    git config user.name 'Rock Theme Tests'
+    git config user.name 'Rockdactyl Tests'
     git config user.email 'tests@rock-theme.invalid'
     git add .
     git commit -qm 'fixture'

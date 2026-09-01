@@ -1,10 +1,10 @@
 # Changelog
 
-Rock Theme follows [Semantic Versioning](https://semver.org/). This file tracks
-Rock Theme releases; upstream panel history remains in the
+Rockdactyl follows [Semantic Versioning](https://semver.org/). This file tracks
+Rockdactyl releases; upstream panel history remains in the
 [Pterodactyl changelog](https://github.com/pterodactyl/panel/releases).
 
-## Rock Theme v2.1.0 — 2026-09-01
+## Rockdactyl v2.1.0 — 2026-09-01
 
 ### Added
 
@@ -49,7 +49,7 @@ Rock Theme releases; upstream panel history remains in the
 - Restored accessible, theme-aware file and backup menus across mobile dialogs
   and portal-based dropdowns.
 
-## Rock Theme v2.0.3 — 2026-09-01
+## Rockdactyl v2.0.3 — 2026-09-01
 
 ### Added
 
@@ -70,7 +70,7 @@ Rock Theme releases; upstream panel history remains in the
 - Made automatic releases recover safely from partial tag, asset, or container
   publication without moving immutable tags or rebuilding healthy channels.
 - Made container publication follow verified commits, validated
-  multi-architecture candidates before promotion, and documented a Rock Theme
+  multi-architecture candidates before promotion, and documented a Rockdactyl
   Compose deployment.
 - Expanded upstream metadata synchronization so future Pterodactyl and
   theme-only releases update every published compatibility surface atomically.

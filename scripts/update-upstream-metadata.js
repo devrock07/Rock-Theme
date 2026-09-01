@@ -47,7 +47,7 @@ const readReleaseMetadata = (root) => {
     const themeMatch = appConfig.match(/'fork-version'\s*=>\s*'([^']+)'/);
 
     if (!versionPattern.test(upstreamTag) || !versionPattern.test(`v${manifest.version || ''}`)) {
-        throw new Error('The panel or Rock Theme version is not valid semantic version metadata.');
+        throw new Error('The panel or Rockdactyl version is not valid semantic version metadata.');
     }
     if (!upstreamMatch || !themeMatch) throw new Error('config/app.php is missing release version metadata.');
 
@@ -66,24 +66,24 @@ const checkReleaseMetadata = (root) => {
     const metadata = readReleaseMetadata(root);
     const errors = [];
     const exactChecks = [
-        ['README.md', /Rock Theme `v([^`]+)` is based on and supports/, metadata.themeVersion, 'release heading'],
-        ['README.md', /\| Rock Theme\s*\| `([^`]+)`/, metadata.themeVersion, 'compatibility table'],
+        ['README.md', /Rockdactyl `v([^`]+)` is based on and supports/, metadata.themeVersion, 'release heading'],
+        ['README.md', /\| Rockdactyl\s*\| `([^`]+)`/, metadata.themeVersion, 'compatibility table'],
         ['README.md', /\| Pterodactyl Panel\s*\| `([^`]+)`/, metadata.upstreamVersion, 'compatibility table'],
         [
             'docs/README.md',
-            /documentation covers Rock Theme `v([^`]+)`, based on Pterodactyl Panel\s+`v[^`]+`/,
+            /documentation covers Rockdactyl `v([^`]+)`, based on Pterodactyl Panel\s+`v[^`]+`/,
             metadata.themeVersion,
             'documentation release',
         ],
         [
             'docs/README.md',
-            /documentation covers Rock Theme `v[^`]+`, based on Pterodactyl Panel\s+`v([^`]+)`/,
+            /documentation covers Rockdactyl `v[^`]+`, based on Pterodactyl Panel\s+`v([^`]+)`/,
             metadata.upstreamVersion,
             'documentation base',
         ],
         [
             'docs/INSTALLATION.md',
-            /Rock Theme `v([^`]+)` is a complete Pterodactyl Panel distribution/,
+            /Rockdactyl `v([^`]+)` is a complete Pterodactyl Panel distribution/,
             metadata.themeVersion,
             'installation release',
         ],
@@ -93,7 +93,7 @@ const checkReleaseMetadata = (root) => {
             metadata.upstreamVersion,
             'installation base',
         ],
-        ['docs/UPGRADING.md', /\| Rock Theme\s*\| `v([^`]+)`/, metadata.themeVersion, 'upgrade table'],
+        ['docs/UPGRADING.md', /\| Rockdactyl\s*\| `v([^`]+)`/, metadata.themeVersion, 'upgrade table'],
         ['docs/UPGRADING.md', /\| Pterodactyl base\s*\| `v([^`]+)`/, metadata.upstreamVersion, 'upgrade table'],
         ['SECURITY.md', /\| Latest `2\.x` release \| `([^`]+)`/, metadata.upstreamVersion, 'support table'],
         [
@@ -153,7 +153,7 @@ const checkReleaseMetadata = (root) => {
     }
     if (metadata.configThemeVersion !== metadata.themeVersion) {
         errors.push(
-            `config/app.php Rock Theme version ${metadata.configThemeVersion} does not match ${metadata.themeTag}.`
+            `config/app.php Rockdactyl version ${metadata.configThemeVersion} does not match ${metadata.themeTag}.`
         );
     }
     if (!metadata.description.includes(`Pterodactyl Panel ${metadata.upstreamVersion}`)) {
@@ -163,7 +163,7 @@ const checkReleaseMetadata = (root) => {
     for (const file of synchronizedVersionFiles) {
         const contents = fs.readFileSync(path.join(root, file.path), 'utf8');
         if (file.theme && !contents.includes(metadata.themeVersion)) {
-            errors.push(`${file.path} does not reference Rock Theme ${metadata.themeVersion}.`);
+            errors.push(`${file.path} does not reference Rockdactyl ${metadata.themeVersion}.`);
         }
         if (file.upstream && !contents.includes(metadata.upstreamVersion)) {
             errors.push(`${file.path} does not reference Pterodactyl ${metadata.upstreamVersion}.`);
@@ -205,10 +205,10 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
     const pendingWrites = new Map();
 
     if (!versionPattern.test(`v${previousUpstreamVersion}`) || !versionPattern.test(`v${previousThemeVersion}`)) {
-        throw new Error('The current panel or Rock Theme version is not valid semantic version metadata.');
+        throw new Error('The current panel or Rockdactyl version is not valid semantic version metadata.');
     }
     if (!upstreamChanged && !themeChanged) {
-        throw new Error('The requested panel and Rock Theme versions are already current.');
+        throw new Error('The requested panel and Rockdactyl versions are already current.');
     }
 
     const update = (relativePath, transform) => {
@@ -231,14 +231,14 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
             ),
             /('fork-version'\s*=>\s*')[^']+(')/,
             `$1${themeVersion}$2`,
-            'Rock Theme version'
+            'Rockdactyl version'
         )
     );
 
     update('package.json', (contents) => {
         const packageManifest = JSON.parse(contents);
         packageManifest.version = themeVersion;
-        packageManifest.description = `A responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`;
+        packageManifest.description = `Rockdactyl, a responsive Crimson Red and Midnight Blue interface for Pterodactyl Panel ${upstreamVersion}.`;
         return `${JSON.stringify(packageManifest, null, 4)}\n`;
     });
 
@@ -252,7 +252,7 @@ const updateUpstreamMetadata = (root, upstreamTag, themeTag) => {
                     next,
                     previousThemeVersion,
                     themeVersion,
-                    `${file.path} Rock Theme version`
+                    `${file.path} Rockdactyl version`
                 );
                 if (file.path === '.github/docker/README.md') {
                     const previousMinor = previousThemeVersion.split('.').slice(0, 2).join('.');
@@ -292,7 +292,7 @@ const main = () => {
             return;
         }
         const result = updateUpstreamMetadata(path.resolve(__dirname, '..'), upstreamTag, themeTag);
-        console.log(`Prepared Rock Theme ${result.themeTag} for Pterodactyl ${result.upstreamTag}.`);
+        console.log(`Prepared Rockdactyl ${result.themeTag} for Pterodactyl ${result.upstreamTag}.`);
     } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

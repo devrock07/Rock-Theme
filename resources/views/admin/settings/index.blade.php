@@ -120,7 +120,7 @@
                         </div>
                         <div id="theme-preview" style="padding: 22px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: linear-gradient(135deg, rgba(201,79,89,.14), #0d0d0f); box-shadow: 0 18px 50px rgba(0,0,0,.24);">
                             <small style="letter-spacing:.14em;text-transform:uppercase;opacity:.55">Live preview</small>
-                            <h3 style="margin:8px 0 5px">Rock Theme</h3>
+                            <h3 style="margin:8px 0 5px">Rockdactyl</h3>
                             <span id="theme-preview-chip" style="display:inline-block;padding:5px 10px;border-radius:999px;background:#c94f5922;color:#f08a90;border:1px solid #c94f5955">Premium control</span>
                         </div>
                     </div>

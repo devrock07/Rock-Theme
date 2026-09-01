@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 PANEL_DIR="${PANEL_DIR:-/var/www/pterodactyl}"
 BACKUP_ROOT="${ROCK_BACKUP_ROOT:-/var/backups/rock-theme}"
-REPOSITORY='devrock07/Rock-Theme'
+REPOSITORY='devrock07/Rockdactyl'
 RELEASE_API="https://api.github.com/repos/${REPOSITORY}/releases/latest"
 
 TEMP_DIR=''
@@ -175,7 +175,7 @@ banner() {
     [ "$BANNER_SHOWN" = false ] || return 0
     BANNER_SHOWN=true
 
-    printf '\n  %bROCK THEME%b\n' "$WHITE" "$NC"
+    printf '\n  %bROCKDACTYL%b\n' "$WHITE" "$NC"
     printf '  %bPterodactyl panel manager%b\n' "$GRAY" "$NC"
     printf '  %b----------------------------------------%b\n\n' "$CRIMSON" "$NC"
 }
@@ -497,7 +497,7 @@ acquire_manager_lock() {
         fi
 
         if lock_owner_active "$LOCK_DIR/owner" || lock_owner_recent "$LOCK_DIR/owner"; then
-            printf 'Another Rock Theme manager is already operating on %s.\n' "$panel_resolved" >&2
+            printf 'Another Rockdactyl manager is already operating on %s.\n' "$panel_resolved" >&2
             return 1
         fi
 
@@ -506,7 +506,7 @@ acquire_manager_lock() {
             if lock_owner_active "$LOCK_DIR/owner" ||
                 lock_owner_recent "$LOCK_DIR/owner" ||
                 lock_owner_recent "$LOCK_DIR"; then
-                printf 'Another Rock Theme manager is already operating on %s.\n' "$panel_resolved" >&2
+                printf 'Another Rockdactyl manager is already operating on %s.\n' "$panel_resolved" >&2
                 return 1
             fi
         fi
@@ -517,7 +517,7 @@ acquire_manager_lock() {
         fi
     done
 
-    printf 'Unable to acquire the Rock Theme manager lock for %s.\n' "$panel_resolved" >&2
+    printf 'Unable to acquire the Rockdactyl manager lock for %s.\n' "$panel_resolved" >&2
     return 1
 }
 
@@ -933,7 +933,7 @@ install_or_update() {
     owner="$(web_user)" || fail 'Unable to detect the web-server user (www-data, nginx, or apache).'
     run_step 'Resolving the latest release' resolve_latest_release
     release="$(<"$TEMP_DIR/latest-tag")"
-    print_operation "${mode^^} ROCK THEME" "$release"
+    print_operation "${mode^^} ROCKDACTYL" "$release"
     run_step 'Downloading release and checksum' download_release "$release"
     run_step 'Verifying SHA-256 checksum' verify_release_checksum
     run_step 'Inspecting release archive' validate_release_archive
@@ -952,7 +952,7 @@ install_or_update() {
     run_step 'Saving a rollback snapshot' backup_panel_to "$backup_target"
     PENDING_BACKUP=''
     ROLLBACK_SNAPSHOT="$backup_target"
-    run_step 'Staging Rock Theme files' stage_release
+    run_step 'Staging Rockdactyl files' stage_release
 
     if [ "$PANEL_STARTED_DOWN" != true ]; then
         PANEL_WAS_DOWN=true
@@ -960,7 +960,7 @@ install_or_update() {
     run_step 'Entering maintenance mode' enter_maintenance
     RECOVERY_PHASE='files'
     run_step 'Preparing a clean application tree' remove_current_panel_files
-    run_step 'Deploying Rock Theme files' deploy_staged_release
+    run_step 'Deploying Rockdactyl files' deploy_staged_release
     run_step 'Installing PHP dependencies' composer_install
     run_step 'Clearing pre-migration caches' artisan_command optimize:clear
     RECOVERY_PHASE='database'
@@ -971,9 +971,9 @@ install_or_update() {
     leave_maintenance
 
     if [ "$PANEL_STARTED_DOWN" = true ]; then
-        print_success "Rock Theme ${release} installed; maintenance mode preserved."
+        print_success "Rockdactyl ${release} installed; maintenance mode preserved."
     else
-        print_success "Rock Theme ${release} is installed and online."
+        print_success "Rockdactyl ${release} is installed and online."
     fi
 }
 
@@ -1115,7 +1115,7 @@ show_menu() {
 
 usage() {
     cat <<'EOF'
-Rock Theme installer
+Rockdactyl installer
 
 Usage:
   install.sh [install|update|restore] [--no-animation] [--verbose]

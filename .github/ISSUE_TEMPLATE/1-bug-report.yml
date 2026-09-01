@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible Rock Theme defect or regression.
+description: Report a reproducible Rockdactyl defect or regression.
 title: '[Bug]: '
 labels:
     - bug
@@ -7,12 +7,12 @@ body:
     - type: markdown
       attributes:
           value: |
-              Thank you for reporting a Rock Theme issue. For Pterodactyl core, Wings, node, or game-server support, use the upstream Pterodactyl support channels.
+              Thank you for reporting a Rockdactyl issue. For Pterodactyl core, Wings, node, or game-server support, use the upstream Pterodactyl support channels.
 
     - type: input
       id: theme-version
       attributes:
-          label: Rock Theme version
+          label: Rockdactyl version
           description: Use the installed release tag or full commit identifier.
           placeholder: v2.1.0
       validations:
@@ -31,7 +31,7 @@ body:
       attributes:
           label: Installation method
           options:
-              - Rock Theme installer
+              - Rockdactyl installer
               - Manual release archive
               - Container image
               - Development checkout
@@ -102,11 +102,11 @@ body:
       attributes:
           label: Pre-submission checks
           options:
-              - label: I searched existing Rock Theme issues.
+              - label: I searched existing Rockdactyl issues.
                 required: true
-              - label: I reproduced this on the latest supported Rock Theme release.
+              - label: I reproduced this on the latest supported Rockdactyl release.
                 required: true
-              - label: This report concerns Rock Theme rather than an upstream Pterodactyl or Wings problem.
+              - label: This report concerns Rockdactyl rather than an upstream Pterodactyl or Wings problem.
                 required: true
               - label: I removed credentials, tokens, IP addresses, and personal data from this report.
                 required: true

@@ -9,7 +9,7 @@ export function SiteFooter() {
                 <div className="max-w-sm">
                     <Link href="/" className="inline-flex items-center gap-3">
                         <BrandMark />
-                        <span className="font-semibold">Rock Theme</span>
+                        <span className="font-semibold">Rockdactyl</span>
                     </Link>
                     <p className="mt-4 text-sm leading-6 text-muted-foreground">
                         A responsive, operator-configurable interface
@@ -23,7 +23,7 @@ export function SiteFooter() {
                         ['Changelog', '/changelog'],
                         [
                             'Releases',
-                            'https://github.com/devrock07/Rock-Theme/releases',
+                            'https://github.com/devrock07/Rockdactyl/releases',
                         ],
                     ]}
                 />
@@ -32,15 +32,15 @@ export function SiteFooter() {
                     links={[
                         [
                             'Issues',
-                            'https://github.com/devrock07/Rock-Theme/issues',
+                            'https://github.com/devrock07/Rockdactyl/issues',
                         ],
                         [
                             'Discussions',
-                            'https://github.com/devrock07/Rock-Theme/discussions',
+                            'https://github.com/devrock07/Rockdactyl/discussions',
                         ],
                         [
                             'Contributing',
-                            'https://github.com/devrock07/Rock-Theme/blob/main/.github/CONTRIBUTING.md',
+                            'https://github.com/devrock07/Rockdactyl/blob/main/.github/CONTRIBUTING.md',
                         ],
                     ]}
                 />
@@ -49,15 +49,15 @@ export function SiteFooter() {
                     links={[
                         [
                             'Security',
-                            'https://github.com/devrock07/Rock-Theme/security/policy',
+                            'https://github.com/devrock07/Rockdactyl/security/policy',
                         ],
                         [
                             'License',
-                            'https://github.com/devrock07/Rock-Theme/blob/main/LICENSE',
+                            'https://github.com/devrock07/Rockdactyl/blob/main/LICENSE',
                         ],
                         [
                             'Attribution',
-                            'https://github.com/devrock07/Rock-Theme/blob/main/THIRD_PARTY_NOTICES.md',
+                            'https://github.com/devrock07/Rockdactyl/blob/main/THIRD_PARTY_NOTICES.md',
                         ],
                     ]}
                 />

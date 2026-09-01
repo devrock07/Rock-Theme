@@ -1,9 +1,9 @@
 # Roadmap
 
-Rock Theme follows the latest verified Pterodactyl release while treating
+Rockdactyl follows the latest verified Pterodactyl release while treating
 stability, accessibility, and responsive behavior as release requirements.
 The live planning board is available in the repository's
-[Rock Theme Roadmap](https://github.com/users/devrock07/projects/3) on GitHub.
+[Rockdactyl Roadmap](https://github.com/users/devrock07/projects/3) on GitHub.
 
 ## v2.1.0 delivery
 
@@ -60,5 +60,5 @@ Pterodactyl compatibility, accessibility, mobile regressions, and focused
 enhancements. A roadmap item is not a promise of a specific delivery date.
 
 Proposals should start with a
-[feature request](https://github.com/devrock07/Rock-Theme/issues/new?template=2-feature-request.yml)
+[feature request](https://github.com/devrock07/Rockdactyl/issues/new?template=2-feature-request.yml)
 that explains the user problem, affected views, and expected behavior.

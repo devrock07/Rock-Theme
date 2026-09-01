@@ -1,6 +1,6 @@
-# Rock Theme documentation
+# Rockdactyl documentation
 
-This documentation covers Rock Theme `v2.1.0`, based on Pterodactyl Panel
+This documentation covers Rockdactyl `v2.1.0`, based on Pterodactyl Panel
 `v1.15.1`.
 
 <details>
@@ -44,11 +44,11 @@ This documentation covers Rock Theme `v2.1.0`, based on Pterodactyl Panel
 <details>
 <summary><strong>Project links</strong></summary>
 
-- [Latest release](https://github.com/devrock07/Rock-Theme/releases/latest)
-- [Issue tracker](https://github.com/devrock07/Rock-Theme/issues)
-- [Community discussions](https://github.com/devrock07/Rock-Theme/discussions)
+- [Latest release](https://github.com/devrock07/Rockdactyl/releases/latest)
+- [Issue tracker](https://github.com/devrock07/Rockdactyl/issues)
+- [Community discussions](https://github.com/devrock07/Rockdactyl/discussions)
 - [GitHub Project roadmap](https://github.com/users/devrock07/projects/3)
-- [Private vulnerability reporting](https://github.com/devrock07/Rock-Theme/security/advisories/new)
+- [Private vulnerability reporting](https://github.com/devrock07/Rockdactyl/security/advisories/new)
 - [Pterodactyl documentation](https://pterodactyl.io)
 
 </details>

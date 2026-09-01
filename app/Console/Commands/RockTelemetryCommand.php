@@ -12,7 +12,7 @@ use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 class RockTelemetryCommand extends Command
 {
     protected $signature = 'rock:telemetry {--prune-only}';
-    protected $description = 'Collect and prune Rock Theme server telemetry.';
+    protected $description = 'Collect and prune Rockdactyl server telemetry.';
 
     public function handle(DaemonServerRepository $repository, TelemetryRecorder $recorder): int
     {

@@ -18,7 +18,7 @@ php artisan about
 
 Also capture:
 
--   the installed Rock Theme and Pterodactyl versions;
+-   the installed Rockdactyl and Pterodactyl versions;
 -   the operating system, PHP version, and web-server account;
 -   the affected URL and approximate time of failure;
 -   the browser, viewport size, and whether the problem occurs in a private window;
@@ -33,14 +33,14 @@ This usually means an HTTP error response was piped into `tar`. Download the
 files separately with `curl --fail`, then verify them:
 
 ```bash
-curl -fL -O https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz
-curl -fL -O https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz.sha256
+curl -fL -O https://github.com/devrock07/Rockdactyl/releases/latest/download/panel.tar.gz
+curl -fL -O https://github.com/devrock07/Rockdactyl/releases/latest/download/panel.tar.gz.sha256
 sha256sum --check panel.tar.gz.sha256
 tar -tzf panel.tar.gz >/dev/null
 ```
 
 If `curl` reports 404, confirm that a non-draft release exists and contains both
-assets at the [latest release](https://github.com/devrock07/Rock-Theme/releases/latest).
+assets at the [latest release](https://github.com/devrock07/Rockdactyl/releases/latest).
 
 ### Checksum verification fails
 
@@ -60,7 +60,7 @@ PHP-FPM and the web server.
 Run the manager with `--verbose` to expose the complete Composer error:
 
 ```bash
-sudo bash /tmp/rock-theme-install.sh update --verbose
+sudo bash /tmp/rockdactyl-install.sh update --verbose
 ```
 
 Check PHP version and extensions, Composer 2 availability, free disk space,
@@ -192,7 +192,7 @@ at the input rather than by editing the preference JSON directly.
 ## Read notifications return after refresh
 
 Notification read and clear operations are persisted in
-`rock_notifications`. Confirm the Rock Theme migration has run, then inspect
+`rock_notifications`. Confirm the Rockdactyl migration has run, then inspect
 PATCH or DELETE requests under `/api/client/account/rock/notifications`.
 
 -   HTTP 204 indicates that the read state was accepted.
@@ -206,7 +206,7 @@ will legitimately create a new notification when server state changes again.
 
 ## Resource history is empty
 
-Rock Theme records scheduled samples every five minutes and retains them for
+Rockdactyl records scheduled samples every five minutes and retains them for
 seven days. Check the normal Laravel scheduler:
 
 ```bash
@@ -217,7 +217,7 @@ php artisan rock:telemetry
 Then confirm:
 
 -   the one-minute Pterodactyl cron entry is running as the correct account;
--   the Rock Theme data migration has run;
+-   the Rockdactyl data migration has run;
 -   the panel can reach each node's Wings API; and
 -   the server is installed and not in an installation, suspension, or restoration
     state that excludes it from collection.
@@ -255,9 +255,9 @@ separates data/permission failures from dropdown positioning or clipping.
 
 ## Preparing a useful bug report
 
-Open a [GitHub issue](https://github.com/devrock07/Rock-Theme/issues) with:
+Open a [GitHub issue](https://github.com/devrock07/Rockdactyl/issues) with:
 
--   exact Rock Theme and Pterodactyl versions;
+-   exact Rockdactyl and Pterodactyl versions;
 -   installation method and panel path;
 -   route, account role, browser, viewport, and theme preset;
 -   minimal reproduction steps and expected/actual behavior;

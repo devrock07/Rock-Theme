@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     metadataBase: new URL(`${siteUrl}/`),
-    title: 'Rock Theme — Pterodactyl, refined.',
+    title: 'Rockdactyl — Pterodactyl, refined.',
     description:
         'A polished, responsive theme and release system for Pterodactyl Panel.',
     keywords: [
         'Pterodactyl',
         'Pterodactyl theme',
         'game server panel',
-        'Rock Theme',
+        'Rockdactyl',
     ],
     authors: [{ name: 'DevRock', url: 'https://github.com/devrock07' }],
     creator: 'DevRock',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     openGraph: {
         url: `${siteUrl}/`,
         type: 'website',
-        title: 'Rock Theme — Pterodactyl, refined.',
+        title: 'Rockdactyl — Pterodactyl, refined.',
         description:
             'A polished, responsive, operator-configurable interface distribution for Pterodactyl Panel.',
         images: [
@@ -38,13 +38,13 @@ export const metadata: Metadata = {
                 url: `${siteUrl}/screenshots/dashboard-crimson.webp`,
                 width: 1268,
                 height: 713,
-                alt: 'The real Rock Theme dashboard running locally in Crimson Red.',
+                alt: 'The real Rockdactyl dashboard running locally in Crimson Red.',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Rock Theme — Pterodactyl, refined.',
+        title: 'Rockdactyl — Pterodactyl, refined.',
         description:
             'A polished, responsive interface distribution for Pterodactyl Panel.',
         images: [`${siteUrl}/screenshots/dashboard-crimson.webp`],

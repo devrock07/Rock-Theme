@@ -196,7 +196,7 @@ export function DocumentationPage({ doc }: { doc: DocPageType }) {
                             ))}
                         </ul>
                         <a
-                            href="https://github.com/devrock07/Rock-Theme/edit/main/website/lib/docs.ts"
+                            href="https://github.com/devrock07/Rockdactyl/edit/main/website/lib/docs.ts"
                             target="_blank"
                             rel="noreferrer"
                             className="mt-8 inline-block text-xs text-muted-foreground transition-colors hover:text-primary"

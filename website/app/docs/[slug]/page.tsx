@@ -18,7 +18,7 @@ export async function generateMetadata({
     const { slug } = await params;
     const doc = docs[slug];
     if (!doc) return {};
-    return { title: `${doc.title} — Rock Theme`, description: doc.description };
+    return { title: `${doc.title} — Rockdactyl`, description: doc.description };
 }
 
 export default async function DocsPage({ params }: PageProps) {

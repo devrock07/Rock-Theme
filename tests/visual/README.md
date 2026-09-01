@@ -1,6 +1,6 @@
 # Responsive browser checks
 
-The Playwright suite checks Rock Theme at four maintained viewport contracts:
+The Playwright suite checks Rockdactyl at four maintained viewport contracts:
 
 | Project     | Viewport    | Primary use                                          |
 | ----------- | ----------- | ---------------------------------------------------- |

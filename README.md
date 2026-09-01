@@ -1,20 +1,23 @@
 <div align="center">
 
-# Rock Theme
+# Rockdactyl
 
 A polished, operator-configurable interface distribution for Pterodactyl Panel.
 
-[![Latest release](https://img.shields.io/github/v/release/devrock07/Rock-Theme?display_name=tag&sort=semver&style=flat-square&color=c94f59)](https://github.com/devrock07/Rock-Theme/releases/latest)
-[![Frontend](https://github.com/devrock07/Rock-Theme/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/devrock07/Rock-Theme/actions/workflows/build.yaml)
-[![Backend](https://github.com/devrock07/Rock-Theme/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/devrock07/Rock-Theme/actions/workflows/ci.yaml)
+Formerly **Rock Theme**. Existing installer, backup, and container identifiers
+remain compatible.
+
+[![Latest release](https://img.shields.io/github/v/release/devrock07/Rockdactyl?display_name=tag&sort=semver&style=flat-square&color=c94f59)](https://github.com/devrock07/Rockdactyl/releases/latest)
+[![Frontend](https://github.com/devrock07/Rockdactyl/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/devrock07/Rockdactyl/actions/workflows/build.yaml)
+[![Backend](https://github.com/devrock07/Rockdactyl/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/devrock07/Rockdactyl/actions/workflows/ci.yaml)
 [![Pterodactyl 1.15.1](https://img.shields.io/badge/Pterodactyl-1.15.1-10529f?style=flat-square)](https://github.com/pterodactyl/panel/releases/tag/v1.15.1)
-[![GPLv3](https://img.shields.io/github/license/devrock07/Rock-Theme?style=flat-square&color=c94f59)](./LICENSE)
+[![GPLv3](https://img.shields.io/github/license/devrock07/Rockdactyl?style=flat-square&color=c94f59)](./LICENSE)
 
-<img src="./website/public/screenshots/dashboard-crimson.webp" alt="The real Rock Theme dashboard running in Crimson Red" width="100%">
+<img src="./website/public/screenshots/dashboard-crimson.webp" alt="The real Rockdactyl dashboard running in Crimson Red" width="100%">
 
-**Rock Theme `v2.1.0` · Pterodactyl Panel `v1.15.1`**
+**Rockdactyl `v2.1.0` · Pterodactyl Panel `v1.15.1`**
 
-[Website](https://devrock07.github.io/Rock-Theme/) · [Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Releases](https://github.com/devrock07/Rock-Theme/releases)
+[Website](https://devrock07.github.io/Rockdactyl/) · [Documentation](./docs/README.md) · [Install](./docs/INSTALLATION.md) · [Releases](https://github.com/devrock07/Rockdactyl/releases)
 
 </div>
 
@@ -26,19 +29,19 @@ A polished, operator-configurable interface distribution for Pterodactyl Panel.
 Run on an existing Pterodactyl `1.15.1` installation:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \
-  -o /tmp/rock-theme-install.sh
-sudo bash /tmp/rock-theme-install.sh install
+curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \
+  -o /tmp/rockdactyl-install.sh
+sudo bash /tmp/rockdactyl-install.sh install
 ```
 
 The manager verifies checksums and archive structure before changing the panel. See the [installation guide](./docs/INSTALLATION.md) for updates, restore, custom paths, and manual deployment.
 
 <details>
-<summary><strong>What Rock Theme includes</strong></summary>
+<summary><strong>What Rockdactyl includes</strong></summary>
 
-Rock Theme modernizes the client, server, login, status, and administration interfaces while preserving the familiar Pterodactyl workflow. It is a complete panel distribution—not a CSS patch or runtime plugin.
+Rockdactyl modernizes the client, server, login, status, and administration interfaces while preserving the familiar Pterodactyl workflow. It is a complete panel distribution—not a CSS patch or runtime plugin.
 
-Rock Theme `v2.1.0` is based on and supports [Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
+Rockdactyl `v2.1.0` is based on and supports [Pterodactyl Panel `v1.15.1`](https://github.com/pterodactyl/panel/releases/tag/v1.15.1).
 
 | Area | Included |
 | --- | --- |
@@ -55,13 +58,13 @@ Rock Theme `v2.1.0` is based on and supports [Pterodactyl Panel `v1.15.1`](https
 
 | Component | Supported |
 | --- | --- |
-| Rock Theme | `2.1.0` |
+| Rockdactyl | `2.1.0` |
 | Pterodactyl Panel | `1.15.1` |
 | PHP | `8.2` and `8.3` |
 | Source builds | Node.js `22+` and Yarn Classic `1.x` |
 | Containers | `linux/amd64` and `linux/arm64` |
 
-Upgrade themed installations through a compatible Rock Theme release. Do not run the official Pterodactyl updater directly over theme files.
+Upgrade themed installations through a compatible Rockdactyl release. Do not run the official Pterodactyl updater directly over theme files.
 
 </details>
 
@@ -86,11 +89,11 @@ The documentation website source lives in [`website/`](./website) and uses only 
 <details>
 <summary><strong>Support, security, and licensing</strong></summary>
 
-Use [GitHub Issues](https://github.com/devrock07/Rock-Theme/issues) for reproducible bugs, [GitHub Discussions](https://github.com/devrock07/Rock-Theme/discussions) for usage questions, and the [support guide](./.github/SUPPORT.md) to choose the right channel. Report vulnerabilities through the [security policy](./SECURITY.md), never a public issue.
+Use [GitHub Issues](https://github.com/devrock07/Rockdactyl/issues) for reproducible bugs, [GitHub Discussions](https://github.com/devrock07/Rockdactyl/discussions) for usage questions, and the [support guide](./.github/SUPPORT.md) to choose the right channel. Report vulnerabilities through the [security policy](./SECURITY.md), never a public issue.
 
-Rock Theme is a derivative Pterodactyl panel distribution containing NookTheme-derived work and adapted third-party interface components. It is not affiliated with Pterodactyl, Nookure, or React Bits.
+Rockdactyl is a derivative Pterodactyl panel distribution containing NookTheme-derived work and adapted third-party interface components. It is not affiliated with Pterodactyl, Nookure, or React Bits.
 
-- Rock Theme and applicable NookTheme-derived modifications are distributed under [GNU GPLv3](./LICENSE), subject to third-party terms.
+- Rockdactyl and applicable NookTheme-derived modifications are distributed under [GNU GPLv3](./LICENSE), subject to third-party terms.
 - Pterodactyl code retains its [MIT license](./PTERODACTYL_LICENSE.md).
 - Component licenses and attribution are in the [third-party notices](./THIRD_PARTY_NOTICES.md).
 

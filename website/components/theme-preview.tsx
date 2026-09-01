@@ -25,14 +25,14 @@ export function ThemePreview() {
             <TabsContent value="crimson">
                 <PanelScreenshot
                     src="/screenshots/dashboard-crimson.webp"
-                    alt="Rock Theme dashboard using the Crimson Red preset"
+                    alt="Rockdactyl dashboard using the Crimson Red preset"
                     label="Crimson Red"
                 />
             </TabsContent>
             <TabsContent value="blue">
                 <PanelScreenshot
                     src="/screenshots/dashboard-blue.webp"
-                    alt="Rock Theme dashboard using the Midnight Blue preset"
+                    alt="Rockdactyl dashboard using the Midnight Blue preset"
                     label="Midnight Blue"
                 />
             </TabsContent>

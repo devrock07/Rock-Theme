@@ -1,6 +1,6 @@
 # Installation
 
-Rock Theme `v2.1.0` is a complete Pterodactyl Panel distribution based on
+Rockdactyl `v2.1.0` is a complete Pterodactyl Panel distribution based on
 Pterodactyl `v1.15.1`. Install it over a working panel on that base, or use the
 manager for a verified forward upgrade from an older `1.x` base. It is not a
 plugin that can be added to an arbitrary Pterodactyl release.
@@ -28,27 +28,27 @@ validate your external backup system.
 Download the manager so it can be reviewed before execution:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \
-  -o /tmp/rock-theme-install.sh
-less /tmp/rock-theme-install.sh
-sudo bash /tmp/rock-theme-install.sh install
+curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \
+  -o /tmp/rockdactyl-install.sh
+less /tmp/rockdactyl-install.sh
+sudo bash /tmp/rockdactyl-install.sh install
 ```
 
 Omit `install` to use the interactive menu:
 
 ```bash
-sudo bash /tmp/rock-theme-install.sh
+sudo bash /tmp/rockdactyl-install.sh
 ```
 
 ### Manager operations
 
 | Operation | Command                                        | Behavior                                                                                             |
 | --------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Install   | `sudo bash /tmp/rock-theme-install.sh install` | Saves the first manager-created original snapshot, then installs the latest verified release         |
-| Update    | `sudo bash /tmp/rock-theme-install.sh update`  | Creates a timestamped pre-update file snapshot, then installs the latest verified release            |
-| Restore   | `sudo bash /tmp/rock-theme-install.sh restore` | Restores the original pre-theme snapshot while preserving the current `.env` and `storage` directory |
+| Install   | `sudo bash /tmp/rockdactyl-install.sh install` | Saves the first manager-created original snapshot, then installs the latest verified release         |
+| Update    | `sudo bash /tmp/rockdactyl-install.sh update`  | Creates a timestamped pre-update file snapshot, then installs the latest verified release            |
+| Restore   | `sudo bash /tmp/rockdactyl-install.sh restore` | Restores the original pre-theme snapshot while preserving the current `.env` and `storage` directory |
 
-`restore` also preserves database changes. It does not reverse Rock Theme
+`restore` also preserves database changes. It does not reverse Rockdactyl
 migrations. Keep the independent database backup created before installation
 if a full point-in-time rollback may be required.
 
@@ -98,7 +98,7 @@ Pass alternatives as environment variables:
 sudo env \
   PANEL_DIR=/srv/pterodactyl \
   ROCK_BACKUP_ROOT=/srv/backups/rock-theme \
-  bash /tmp/rock-theme-install.sh install
+  bash /tmp/rockdactyl-install.sh install
 ```
 
 Both paths are resolved before any destructive step. The panel path must contain
@@ -108,9 +108,9 @@ not be located inside the panel tree.
 For automation or detailed diagnosis:
 
 ```bash
-sudo bash /tmp/rock-theme-install.sh update --no-animation
-sudo bash /tmp/rock-theme-install.sh update --verbose
-sudo env NO_COLOR=1 bash /tmp/rock-theme-install.sh update
+sudo bash /tmp/rockdactyl-install.sh update --no-animation
+sudo bash /tmp/rockdactyl-install.sh update --verbose
+sudo env NO_COLOR=1 bash /tmp/rockdactyl-install.sh update
 ```
 
 `--verbose` streams command output. Without it, a failed stage prints the last
@@ -156,9 +156,9 @@ rock_download_dir="$(mktemp -d)"
 cd "$rock_download_dir"
 
 curl -fL -O \
-  https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz
+  https://github.com/devrock07/Rockdactyl/releases/latest/download/panel.tar.gz
 curl -fL -O \
-  https://github.com/devrock07/Rock-Theme/releases/latest/download/panel.tar.gz.sha256
+  https://github.com/devrock07/Rockdactyl/releases/latest/download/panel.tar.gz.sha256
 
 sha256sum --check panel.tar.gz.sha256
 tar -tzf panel.tar.gz > archive-list.txt
@@ -218,7 +218,7 @@ session:
 
 -   the login page loads without missing assets;
 -   the client dashboard works at desktop and mobile widths;
--   **Admin → Settings** saves and reloads Rock Theme values;
+-   **Admin → Settings** saves and reloads Rockdactyl values;
 -   a server's console, files, backups, databases, schedules, and startup pages
     still perform their normal actions;
 -   the worker is processing jobs;

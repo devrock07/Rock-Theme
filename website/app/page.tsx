@@ -22,7 +22,7 @@ import { withBasePath } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-    title: 'Rock Theme — Pterodactyl, refined.',
+    title: 'Rockdactyl — Pterodactyl, refined.',
     description:
         'A polished, responsive, operator-configurable interface distribution for Pterodactyl Panel.',
 };
@@ -54,9 +54,9 @@ const features = [
     },
 ] as const;
 
-const installCommand = `curl -fsSL https://raw.githubusercontent.com/devrock07/Rock-Theme/main/install.sh \\
-  -o /tmp/rock-theme-install.sh
-sudo bash /tmp/rock-theme-install.sh install`;
+const installCommand = `curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \\
+  -o /tmp/rockdactyl-install.sh
+sudo bash /tmp/rockdactyl-install.sh install`;
 
 export default function Home() {
     return (
@@ -100,7 +100,7 @@ export default function Home() {
                                 )}
                                 href="/docs/installation"
                             >
-                                Install Rock Theme
+                                Install Rockdactyl
                                 <ArrowRightIcon />
                             </Link>
                             <Link
@@ -126,7 +126,7 @@ export default function Home() {
                     <div className="relative mx-auto w-full max-w-[760px] lg:translate-x-8">
                         <PanelScreenshot
                             src="/screenshots/dashboard-crimson.webp"
-                            alt="Rock Theme dashboard running locally in Crimson Red"
+                            alt="Rockdactyl dashboard running locally in Crimson Red"
                             label="Local panel · Crimson"
                         />
                         <div
@@ -149,7 +149,7 @@ export default function Home() {
                     <SectionIntro
                         eyebrow="One system"
                         title="Designed past the dashboard."
-                        body="Rock Theme carries the same visual, responsive, and interaction rules through the client, server, status, login, and administration interfaces."
+                        body="Rockdactyl carries the same visual, responsive, and interaction rules through the client, server, status, login, and administration interfaces."
                     />
                     <div className="mt-12 grid gap-4 md:grid-cols-2">
                         {features.map((feature, index) => (
@@ -219,18 +219,18 @@ export default function Home() {
                     <div className="mt-12 grid gap-5 lg:grid-cols-2">
                         <PanelScreenshot
                             src="/screenshots/console.webp"
-                            alt="Rock Theme server console with resource telemetry"
+                            alt="Rockdactyl server console with resource telemetry"
                             label="Server console"
                         />
                         <PanelScreenshot
                             src="/screenshots/theme-studio.webp"
-                            alt="Rock Theme administration Theme Studio"
+                            alt="Rockdactyl administration Theme Studio"
                             label="Admin · Theme Studio"
                         />
                         <div className="lg:col-span-2 grid gap-5 lg:grid-cols-[1fr_0.46fr]">
                             <PanelScreenshot
                                 src="/screenshots/status.webp"
-                                alt="Rock Theme public status page"
+                                alt="Rockdactyl public status page"
                                 label="Public status"
                             />
                             <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2 shadow-[0_30px_90px_rgba(0,0,0,.45)]">
@@ -242,7 +242,7 @@ export default function Home() {
                                     src={withBasePath(
                                         '/screenshots/mobile-dashboard.webp',
                                     )}
-                                    alt="Rock Theme dashboard at a mobile viewport"
+                                    alt="Rockdactyl dashboard at a mobile viewport"
                                     width={390}
                                     height={844}
                                     sizes="370px"
@@ -325,7 +325,7 @@ export default function Home() {
                             Explore documentation <ArrowRightIcon />
                         </Link>
                         <a
-                            href="https://github.com/devrock07/Rock-Theme"
+                            href="https://github.com/devrock07/Rockdactyl"
                             target="_blank"
                             rel="noreferrer"
                             className={cn(

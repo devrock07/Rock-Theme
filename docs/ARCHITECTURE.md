@@ -1,6 +1,6 @@
 # Architecture
 
-Rock Theme is a maintained fork and full distribution of Pterodactyl Panel,
+Rockdactyl is a maintained fork and full distribution of Pterodactyl Panel,
 not a detached stylesheet. It combines the upstream Laravel application and
 React client with theme-specific UI, configuration, persistence, telemetry,
 and release engineering.
@@ -56,7 +56,7 @@ capability and reduced-motion fallbacks.
 ### Administration interface
 
 Pterodactyl's server-rendered administration interface remains Blade-based.
-Rock Theme extends it through:
+Rockdactyl extends it through:
 
 ```text
 resources/views/admin/
@@ -90,7 +90,7 @@ The data path is:
 This is why a value already saved in Admin Settings takes precedence over a
 later `.env` edit.
 
-## Rock Theme data model
+## Rockdactyl data model
 
 Migration `2026_08_03_000001_create_rock_theme_data_tables` adds three tables.
 

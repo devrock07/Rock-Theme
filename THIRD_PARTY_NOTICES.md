@@ -1,6 +1,6 @@
 # Third-party notices
 
-Rock Theme includes Pterodactyl and NookTheme-derived code. Their license
+Rockdactyl includes Pterodactyl and NookTheme-derived code. Their license
 notices are retained in [PTERODACTYL_LICENSE.md](./PTERODACTYL_LICENSE.md) and
 [LICENSE](./LICENSE).
 

@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a focused Rock Theme improvement.
+description: Suggest a focused Rockdactyl improvement.
 title: '[Feature]: '
 labels:
     - enhancement
@@ -7,7 +7,7 @@ body:
     - type: markdown
       attributes:
           value: |
-              Keep requests focused on the Rock Theme interface. Propose Pterodactyl core or Wings functionality to the appropriate upstream project.
+              Keep requests focused on the Rockdactyl interface. Propose Pterodactyl core or Wings functionality to the appropriate upstream project.
 
     - type: textarea
       id: problem
@@ -57,7 +57,7 @@ body:
       attributes:
           label: Pre-submission checks
           options:
-              - label: I searched existing Rock Theme issues and requests.
+              - label: I searched existing Rockdactyl issues and requests.
                 required: true
               - label: This request is compatible with Pterodactyl Panel 1.15.1 or explains the required compatibility change.
                 required: true

@@ -2,16 +2,16 @@
 
 ## Supported versions
 
-Security fixes are provided for the latest tagged Rock Theme release on
-Pterodactyl Panel `1.15.1`. Older Rock Theme releases and unsupported
+Security fixes are provided for the latest tagged Rockdactyl release on
+Pterodactyl Panel `1.15.1`. Older Rockdactyl releases and unsupported
 Pterodactyl bases may be asked to upgrade before a report is investigated.
 
-| Rock Theme           | Pterodactyl base | Security support |
+| Rockdactyl           | Pterodactyl base | Security support |
 | -------------------- | ---------------- | ---------------- |
 | Latest `2.x` release | `1.15.1`         | Supported        |
 | Older releases       | Any              | Upgrade required |
 
-Rock Theme maintains the interface and branding layer. Vulnerabilities in the
+Rockdactyl maintains the interface and branding layer. Vulnerabilities in the
 Pterodactyl core or Wings should also be reported through the
 [Pterodactyl security policy](https://github.com/pterodactyl/panel/security/policy).
 
@@ -20,10 +20,10 @@ Pterodactyl core or Wings should also be reported through the
 Do not open a public issue for a suspected vulnerability.
 
 Use
-[GitHub private vulnerability reporting](https://github.com/devrock07/Rock-Theme/security/advisories/new)
+[GitHub private vulnerability reporting](https://github.com/devrock07/Rockdactyl/security/advisories/new)
 and include:
 
--   The affected Rock Theme and Pterodactyl versions
+-   The affected Rockdactyl and Pterodactyl versions
 -   The affected route or component
 -   Reproduction steps and impact
 -   Relevant logs or screenshots with credentials and personal data removed
@@ -44,7 +44,7 @@ These are response targets rather than a paid support guarantee.
 
 ## Deployment hardening
 
-Rock Theme inherits Pterodactyl's operational security requirements. Keep the
+Rockdactyl inherits Pterodactyl's operational security requirements. Keep the
 panel, Wings, PHP, the database, and the host operating system patched; use
 HTTPS; restrict administrative access; protect backups; and never expose
 application secrets in screenshots or issue reports.

@@ -1,5 +1,5 @@
 name: Installation or update help
-description: Ask for help with the Rock Theme installer, update, or rollback flow.
+description: Ask for help with the Rockdactyl installer, update, or rollback flow.
 title: '[Support]: '
 labels:
     - question
@@ -7,12 +7,12 @@ body:
     - type: markdown
       attributes:
           value: |
-              This form covers Rock Theme deployment. Use Pterodactyl's support resources for Wings, nodes, eggs, and game-server configuration. Never paste passwords, tokens, `.env` contents, or database dumps.
+              This form covers Rockdactyl deployment. Use Pterodactyl's support resources for Wings, nodes, eggs, and game-server configuration. Never paste passwords, tokens, `.env` contents, or database dumps.
 
     - type: input
       id: theme-version
       attributes:
-          label: Rock Theme version
+          label: Rockdactyl version
           placeholder: v2.1.0, or the version being installed
       validations:
           required: true

@@ -1,6 +1,6 @@
 # Governance
 
-Rock Theme is maintained by [DevRock](https://github.com/devrock07). The
+Rockdactyl is maintained by [DevRock](https://github.com/devrock07). The
 maintainer sets release scope, reviews contributions, manages compatibility,
 and makes final decisions when consensus is not available.
 
@@ -20,7 +20,7 @@ issue so the scope and tradeoffs are visible before implementation.
 
 ## Releases
 
-Rock Theme uses semantic version tags. Patch releases contain compatible fixes
+Rockdactyl uses semantic version tags. Patch releases contain compatible fixes
 and verified upstream ports; minor releases may add features or settings; major
 releases may change installation, configuration, or compatibility expectations.
 Only releases with passing frontend, backend, archive, and container checks are
@@ -28,8 +28,8 @@ published as stable.
 
 ## Upstream relationship
 
-Rock Theme is a derivative distribution, not an official Pterodactyl project.
-Upstream fixes are integrated without removing Rock Theme behavior unless the
+Rockdactyl is a derivative distribution, not an official Pterodactyl project.
+Upstream fixes are integrated without removing Rockdactyl behavior unless the
 upstream change makes that behavior unsafe or incompatible. Core Pterodactyl
 proposals should be contributed upstream whenever appropriate.
 

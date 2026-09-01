@@ -117,11 +117,11 @@ jobs:
                       awk '/^v[0-9]+\.[0-9]+\.[0-9]+$/' | sort -V | tail -n 1)"
                   current_theme="${current_theme:-$package_theme}"
                   if ! [[ "$current_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-                      echo "Unable to resolve the current Rock Theme tag." >&2
+                      echo "Unable to resolve the current Rockdactyl tag." >&2
                       exit 1
                   fi
                   if [ "$(printf '%s\n%s\n' "$current_theme" "$package_theme" | sort -V | tail -n 1)" != "$package_theme" ]; then
-                      echo "Package version $package_theme is older than published Rock Theme release $current_theme." >&2
+                      echo "Package version $package_theme is older than published Rockdactyl release $current_theme." >&2
                       exit 1
                   fi
 
@@ -139,7 +139,7 @@ jobs:
                   if [ "$current" != "$latest" ]; then
                       base_theme="$(printf '%s\n%s\n' "$current_theme" "$package_theme" | sort -V | tail -n 1)"
                       if ! [[ "$base_theme" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-                          echo "Unable to calculate the next Rock Theme version." >&2
+                          echo "Unable to calculate the next Rockdactyl version." >&2
                           exit 1
                       fi
                       theme_tag="v${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))"
@@ -513,7 +513,7 @@ jobs:
                       unexpected="$(printf '%s\n' "$conflicts" | grep -Ev '^(README\.md|CHANGELOG\.md|LICENSE|SECURITY\.md|PTERODACTYL_LICENSE\.md|THIRD_PARTY_NOTICES\.md|BRANDING\.md|CODE_OF_CONDUCT\.md|CONTRIBUTING\.md|SUPPORT\.md|docs/.*|\.github/(CODE_OF_CONDUCT|CONTRIBUTING|SUPPORT)\.md|\.github/workflows/.*|install\.sh|release\.sh|scripts/(copy-compiled-assets|update-upstream-metadata)\.js|scripts/(package-release|verify-release-assets)\.sh|tests/(InstallerSmokeTest|ReleaseToolingSmokeTest)\.sh|tests/UpstreamAutopilotWorkflow\.test\.ts)$' || true)"
                       if [ -z "$conflicts" ] || [ -n "$unexpected" ]; then
                           echo "$merge_output" >&2
-                          echo "The upstream release has genuine application conflicts with Rock Theme." >&2
+                          echo "The upstream release has genuine application conflicts with Rockdactyl." >&2
                           exit 1
                       fi
 
@@ -977,7 +977,7 @@ jobs:
                       else
                           git config user.name "rock-theme-autopilot[bot]"
                           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                          git tag -a "$THEME_TAG" "$target_commit" -m "Rock Theme $THEME_TAG for Pterodactyl $LATEST_TAG"
+                          git tag -a "$THEME_TAG" "$target_commit" -m "Rockdactyl $THEME_TAG for Pterodactyl $LATEST_TAG"
                       fi
                       git push origin "${tag_ref}:${tag_ref}"
                   fi
@@ -1047,7 +1047,7 @@ jobs:
                       gh release create "$THEME_TAG" \
                           "$RELEASE_DIR/panel.tar.gz" "$RELEASE_DIR/panel.tar.gz.sha256" \
                           --draft \
-                          --title "Rock Theme $THEME_TAG" \
+                          --title "Rockdactyl $THEME_TAG" \
                           --notes "$release_notes" \
                           --verify-tag
                       gh release edit "$THEME_TAG" --draft=false --latest
@@ -1192,7 +1192,7 @@ jobs:
                       echo "### Publication complete"
                       echo "- Mode: \`$MODE\`"
                       echo "- Pterodactyl: \`$LATEST_TAG\`"
-                      echo "- Rock Theme: \`$THEME_TAG\`"
+                      echo "- Rockdactyl: \`$THEME_TAG\`"
                       echo "- Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${THEME_TAG}"
                       echo "- Containers: verified \`version/latest/edge\` aliases"
                   } >> "$GITHUB_STEP_SUMMARY"
@@ -1222,7 +1222,7 @@ jobs:
                   done
                   {
                       echo "### Publication healthy"
-                      echo "- Rock Theme: \`$THEME_TAG\`"
+                      echo "- Rockdactyl: \`$THEME_TAG\`"
                       echo "- No repair or republish was required."
                   } >> "$GITHUB_STEP_SUMMARY"
 

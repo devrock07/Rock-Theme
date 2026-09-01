@@ -73,7 +73,7 @@
                         <ul class="nav navbar-nav">
                             <li class="user-menu">
                                 <a href="{{ route('account') }}">
-                                    <img src="/favicons/favicon-32x32.png?v=rock-red-2" class="user-image" alt="Rock Theme">
+                                    <img src="/favicons/favicon-32x32.png?v=rock-red-2" class="user-image" alt="Rockdactyl">
                                     <span class="hidden-xs admin-identity">
                                         <strong>{{ Auth::user()->name_first }} {{ Auth::user()->name_last }}</strong>
                                         <small>Administrator</small>
