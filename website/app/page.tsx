@@ -26,33 +26,6 @@ export const metadata: Metadata = {
     description: 'A polished, responsive UI mod for Pterodactyl Panel.',
 };
 
-const features = [
-    {
-        icon: PaletteIcon,
-        eyebrow: 'Brand controls',
-        title: 'Make the panel yours.',
-        body: 'Identity, logo, favicons, dashboard artwork, login media, console media, glass, radius, and motion—all from Admin Settings.',
-    },
-    {
-        icon: GaugeIcon,
-        eyebrow: 'Telemetry',
-        title: 'Operational context built in.',
-        body: 'Live resource charts, one-hour and 24-hour views, seven-day retention, persistent notifications, and public incidents.',
-    },
-    {
-        icon: SmartphoneIcon,
-        eyebrow: 'Adaptive UI',
-        title: 'Desktop and mobile agree.',
-        body: 'Viewport-safe menus and dialogs, touch-sized actions, a compact header, bottom navigation, and reduced-motion support.',
-    },
-    {
-        icon: ShieldCheckIcon,
-        eyebrow: 'Delivery',
-        title: 'A release you can recover.',
-        body: 'Checksums, archive validation, manager snapshots, restore, reproducible releases, and upstream compatibility automation.',
-    },
-] as const;
-
 const installCommand = `curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \\
   -o /tmp/rockdactyl-install.sh
 sudo bash /tmp/rockdactyl-install.sh install`;
@@ -68,15 +41,22 @@ export default function Home() {
             />
 
             <main id="main-content">
-                <section className="relative mx-auto grid min-h-[calc(100vh-64px)] max-w-[1220px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8 lg:py-24">
+                <section className="hero-stage relative mx-auto grid min-h-[calc(100vh-64px)] max-w-[1280px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-12 lg:px-8 lg:py-24">
                     <div
                         className="hero-glow parallax-layer pointer-events-none absolute -left-56 top-0 -z-10 h-[560px] w-[560px] rounded-full"
                         data-parallax="-12"
                         aria-hidden="true"
                     />
-                    <div className="max-w-[600px]">
+                    <div
+                        className="hero-watermark pointer-events-none absolute right-[-0.04em] top-1/2 -z-10 -translate-y-1/2 select-none"
+                        aria-hidden="true"
+                    >
+                        R
+                    </div>
+                    <div className="hero-copy-panel relative z-20 max-w-[650px] lg:col-span-6 lg:col-start-1 lg:row-start-1">
                         <Link
                             href={releaseUrl}
+                            aria-label="View the Rockdactyl 2.1.1 release notes"
                             className="release-pill mb-8 inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary/[0.07] px-3.5 py-2 text-primary transition-colors hover:border-primary/35 hover:bg-primary/[0.1]"
                         >
                             <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(110,231,183,.75)]" />
@@ -88,16 +68,15 @@ export default function Home() {
                                 Pterodactyl 1.15.1
                             </span>
                         </Link>
-                        <h1 className="hero-copy max-w-[720px] text-balance text-[clamp(3.35rem,7.2vw,6.7rem)] font-semibold leading-[0.93] tracking-[-0.045em]">
+                        <h1 className="hero-copy max-w-[760px] text-balance text-[clamp(3.55rem,7.4vw,7rem)] font-semibold leading-[0.9] tracking-[-0.055em]">
                             Pterodactyl,
                             <span className="block bg-gradient-to-r from-[#ff9aaa] via-[#f24963] to-[#9f1029] bg-clip-text text-transparent">
                                 refined.
                             </span>
                         </h1>
                         <p className="mt-7 max-w-[540px] text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
-                            A modern control layer for Pterodactyl—built for
-                            operators, responsive everywhere, and safe to
-                            update.
+                            A polished, responsive interface mod for every part
+                            of your Pterodactyl panel.
                         </p>
                         <div className="mt-9 flex flex-wrap items-center gap-3">
                             <Link
@@ -123,182 +102,318 @@ export default function Home() {
                                 Read the docs
                             </Link>
                         </div>
-                        <dl className="mt-12 grid max-w-lg grid-cols-3 gap-3 border-t border-white/8 pt-6">
-                            <Metric label="Surfaces" value="End to end" />
-                            <Metric label="Telemetry" value="7 days" />
-                            <Metric label="Delivery" value="Verified" />
+                        <dl className="hero-proof-grid mt-12 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.06]">
+                            <Metric label="Control" value="Admin set" />
+                            <Metric label="Mobile" value="390 px ready" />
+                            <Metric label="Coverage" value="End to end" />
                         </dl>
                     </div>
 
-                    <div className="parallax-layer w-full" data-parallax="26">
-                        <div className="relative mx-auto w-full max-w-[760px] lg:translate-x-8">
-                            <PanelScreenshot
-                                src="/screenshots/dashboard-crimson.webp"
-                                alt="Rockdactyl dashboard running locally"
-                                label="Live dashboard"
-                                className="hero-screen"
-                                priority
-                            />
+                    <div
+                        className="parallax-layer relative z-10 w-full lg:col-span-8 lg:col-start-5 lg:row-start-1"
+                        data-parallax="22"
+                    >
+                        <div className="hero-product-stage relative mx-auto w-full max-w-[850px]">
+                            <div className="hero-orbit" aria-hidden="true" />
+                            <div className="hero-screen-plane relative">
+                                <PanelScreenshot
+                                    src="/screenshots/dashboard-crimson.webp"
+                                    alt="Rockdactyl dashboard running locally"
+                                    label="Live dashboard"
+                                    className="hero-screen"
+                                    priority
+                                />
+                            </div>
                             <div
-                                className="absolute -bottom-9 left-[10%] right-[10%] -z-10 h-20 rounded-full bg-primary/22 blur-3xl"
+                                className="hero-mobile-float parallax-layer absolute -bottom-20 -right-5 z-30 hidden w-[168px] xl:block"
+                                data-parallax="-14"
+                            >
+                                <div className="overflow-hidden rounded-[25px] border border-white/[0.14] bg-[#080607] p-1.5 shadow-[0_28px_80px_rgba(0,0,0,.62)]">
+                                    <div className="mx-auto mb-1.5 h-3 w-14 rounded-full bg-white/[0.07]" />
+                                    <Image
+                                        src={withBasePath(
+                                            '/screenshots/mobile-dashboard.webp',
+                                        )}
+                                        alt="Rockdactyl mobile dashboard"
+                                        width={390}
+                                        height={844}
+                                        sizes="168px"
+                                        className="aspect-[9/18] w-full rounded-[19px] border border-white/[0.06] object-cover object-top"
+                                        priority
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                className="hero-hud hero-hud-top"
+                                aria-hidden="true"
+                            >
+                                <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,.75)]" />
+                                Live interface
+                            </div>
+                            <div
+                                className="hero-hud hero-hud-bottom"
+                                aria-hidden="true"
+                            >
+                                Desktop / Mobile / Status
+                            </div>
+                            <div
+                                className="absolute -bottom-12 left-[12%] right-[12%] -z-10 h-28 rounded-full bg-primary/20 blur-3xl"
                                 aria-hidden="true"
                             />
                         </div>
                     </div>
                 </section>
 
-                <section className="section-seam bg-black/15">
+                <div className="section-seam bg-black/15">
                     <div className="mx-auto grid max-w-[1220px] grid-cols-2 divide-x divide-white/[0.065] px-5 sm:px-6 md:grid-cols-4 lg:px-8">
-                        <Proof label="Panel base" value="1.15.1" />
-                        <Proof label="PHP" value="8.2 / 8.3" />
-                        <Proof label="Containers" value="amd64 / arm64" />
-                        <Proof label="Release" value="SHA-256 checksum" />
+                        <Proof label="Style" value="Admin configurable" />
+                        <Proof label="Layout" value="Responsive by design" />
+                        <Proof label="Coverage" value="Client + server" />
+                        <Proof label="Public" value="Status included" />
                     </div>
-                </section>
+                </div>
 
-                <section className="section-seam mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
-                    <SectionIntro
-                        eyebrow="One system"
-                        title="Designed past the dashboard."
-                        body="Rockdactyl carries the same visual, responsive, and interaction rules through the client, server, status, login, and administration interfaces."
-                    />
-                    <div className="mt-12 grid gap-4 md:grid-cols-2">
-                        {features.map((feature, index) => (
-                            <article
-                                key={feature.title}
-                                data-reveal="true"
-                                className={cn(
-                                    'feature-card group relative overflow-hidden rounded-[24px] border border-white/[0.085] bg-white/[0.025] p-7 sm:p-8',
-                                    index === 0 && 'md:row-span-1',
-                                )}
-                            >
-                                <div className="mb-12 flex items-start justify-between">
-                                    <span className="grid size-11 place-items-center rounded-xl border border-primary/18 bg-primary/[0.065] text-primary">
-                                        <feature.icon className="size-5" />
-                                    </span>
-                                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-                                        0{index + 1}
-                                    </span>
-                                </div>
-                                <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                                    {feature.eyebrow}
-                                </p>
-                                <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em]">
-                                    {feature.title}
-                                </h3>
-                                <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-                                    {feature.body}
-                                </p>
-                            </article>
-                        ))}
-                    </div>
-                </section>
-
-                <section className="section-seam bg-[#0b0809]/45">
-                    <div className="mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
+                <section
+                    id="screens"
+                    className="showcase-section section-seam bg-[#0b0809]/45"
+                >
+                    <div className="mx-auto max-w-[1260px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
                         <SectionIntro
-                            eyebrow="Real panel surfaces"
-                            title="The details operators actually touch."
-                            body="Console telemetry, responsive navigation, file actions, public status, and administration flows are designed and tested as one release."
+                            index="01"
+                            eyebrow="Real panel UI"
+                            title="Pterodactyl, redesigned end to end."
+                            body="Dashboard, console, mobile, and status views—captured from the running mod, never mocked up."
                         />
-                        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-y border-white/[0.07] py-4 font-mono text-[9px] font-medium uppercase tracking-[0.17em] text-muted-foreground">
-                            <span className="inline-flex items-center gap-2 text-foreground/80">
+
+                        <div className="showcase-meta mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 border-y border-white/[0.07] py-4 font-mono text-[9px] font-medium uppercase tracking-[0.17em] text-muted-foreground">
+                            <span className="inline-flex items-center gap-2 text-foreground/85">
                                 <span className="size-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(242,73,99,.7)]" />
-                                Actual panel captures
+                                Real panel captures
                             </span>
-                            <span>Desktop · 1440 px</span>
-                            <span>Mobile · 390 px</span>
+                            <span>Client + Admin</span>
+                            <span>Desktop + Mobile</span>
+                            <span className="sm:ml-auto">No mockups</span>
                         </div>
-                        <div className="surface-gallery relative mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1.34fr)_minmax(280px,.54fr)] lg:gap-6">
+
+                        <div className="showcase-bento mt-6">
                             <div
-                                className="parallax-layer grid gap-5"
-                                data-parallax="12"
+                                className="showcase-tile showcase-dashboard"
+                                data-reveal="true"
                             >
-                                <PanelScreenshot
-                                    src="/screenshots/console.webp"
-                                    alt="Rockdactyl server console with resource telemetry"
-                                    label="Server console"
+                                <SurfaceHeader
+                                    icon={PaletteIcon}
+                                    index="01"
+                                    label="Dashboard"
+                                    title="Your servers, at a glance."
                                 />
-                                <PanelScreenshot
-                                    src="/screenshots/status.webp"
-                                    alt="Rockdactyl public status page"
-                                    label="Public status"
-                                />
+                                <div
+                                    className="parallax-layer showcase-media"
+                                    data-parallax="10"
+                                >
+                                    <PanelScreenshot
+                                        src="/screenshots/dashboard-crimson.webp"
+                                        alt="Rockdactyl dashboard"
+                                        label="Dashboard"
+                                        className="showcase-screen"
+                                    />
+                                </div>
                             </div>
+
                             <div
-                                className="parallax-layer lg:pt-12 xl:pt-16"
-                                data-parallax="-18"
+                                className="showcase-tile showcase-mobile"
+                                data-reveal="true"
                             >
-                                <p className="mb-4 flex items-center justify-between font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                                    <span>Adaptive interface</span>
-                                    <span className="text-primary/80">
-                                        Portrait
+                                <SurfaceHeader
+                                    icon={SmartphoneIcon}
+                                    index="02"
+                                    label="Responsive"
+                                    title="Full control at any size."
+                                />
+                                <div
+                                    className="parallax-layer showcase-phone-wrap"
+                                    data-parallax="-14"
+                                >
+                                    <figure className="mobile-shot mx-auto w-full max-w-[285px] overflow-hidden rounded-[30px] border border-white/[0.13] bg-[#080607] p-2">
+                                        <div
+                                            className="mx-auto mb-2 h-4 w-20 rounded-full bg-white/[0.065]"
+                                            aria-hidden="true"
+                                        />
+                                        <Image
+                                            src={withBasePath(
+                                                '/screenshots/mobile-dashboard.webp',
+                                            )}
+                                            alt="Rockdactyl dashboard at a mobile viewport"
+                                            width={390}
+                                            height={844}
+                                            sizes="285px"
+                                            className="aspect-[9/18] w-full rounded-[23px] border border-white/[0.06] object-cover object-top"
+                                        />
+                                    </figure>
+                                </div>
+                            </div>
+
+                            <div
+                                id="features"
+                                className="showcase-tile showcase-brand"
+                                data-reveal="true"
+                            >
+                                <div className="relative z-10 max-w-sm">
+                                    <span className="grid size-11 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-[#ff9aaa]">
+                                        <PaletteIcon className="size-5" />
                                     </span>
-                                </p>
-                                <figure className="mobile-shot mx-auto w-full max-w-[370px] overflow-hidden rounded-[30px] border border-white/[0.11] bg-[#080607] p-2">
+                                    <p className="mt-8 font-mono text-[9px] uppercase tracking-[0.18em] text-[#ff9aaa]">
+                                        Admin controlled
+                                    </p>
+                                    <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em]">
+                                        Your identity, not ours.
+                                    </h3>
+                                    <p className="mt-3 text-sm leading-6 text-white/60">
+                                        Set your logo, dashboard media, radius,
+                                        glass, motion, and console background
+                                        from Panel Settings.
+                                    </p>
+                                </div>
+                                <div className="brand-orbit" aria-hidden="true">
+                                    <span>LOGO</span>
+                                    <span>MEDIA</span>
+                                    <span>MOTION</span>
+                                </div>
+                            </div>
+
+                            <div
+                                className="showcase-tile showcase-telemetry"
+                                data-reveal="true"
+                            >
+                                <div className="relative z-10">
+                                    <span className="grid size-11 place-items-center rounded-xl border border-primary/15 bg-primary/[0.065] text-primary">
+                                        <GaugeIcon className="size-5" />
+                                    </span>
+                                    <p className="mt-8 font-mono text-[9px] uppercase tracking-[0.18em] text-primary">
+                                        Telemetry
+                                    </p>
+                                    <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em]">
+                                        Resource history, without the clutter.
+                                    </h3>
                                     <div
-                                        className="mx-auto mb-2 h-5 w-24 rounded-full bg-white/[0.065]"
+                                        className="telemetry-signal mt-7"
                                         aria-hidden="true"
+                                    >
+                                        <span />
+                                        <span />
+                                        <span />
+                                        <span />
+                                        <span />
+                                        <span />
+                                    </div>
+                                    <div className="mt-3 flex justify-between font-mono text-[8px] uppercase tracking-[0.15em] text-muted-foreground">
+                                        <span>1 hour</span>
+                                        <span>24 hours</span>
+                                        <span>7 days</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                className="showcase-tile showcase-console"
+                                data-reveal="true"
+                            >
+                                <SurfaceHeader
+                                    icon={TerminalIcon}
+                                    index="03"
+                                    label="Console"
+                                    title="Clear output. Focused controls."
+                                />
+                                <div
+                                    className="parallax-layer showcase-media"
+                                    data-parallax="8"
+                                >
+                                    <PanelScreenshot
+                                        src="/screenshots/console.webp"
+                                        alt="Rockdactyl server console with resource telemetry"
+                                        label="Server console"
+                                        className="showcase-screen"
                                     />
-                                    <Image
-                                        src={withBasePath(
-                                            '/screenshots/mobile-dashboard.webp',
-                                        )}
-                                        alt="Rockdactyl dashboard at a mobile viewport"
-                                        width={390}
-                                        height={844}
-                                        sizes="370px"
-                                        className="aspect-[9/18] w-full rounded-[23px] border border-white/[0.06] object-cover object-top"
+                                </div>
+                            </div>
+
+                            <div
+                                className="showcase-tile showcase-status"
+                                data-reveal="true"
+                            >
+                                <SurfaceHeader
+                                    icon={ShieldCheckIcon}
+                                    index="04"
+                                    label="Public status"
+                                    title="Status without clutter."
+                                />
+                                <div
+                                    className="parallax-layer showcase-media"
+                                    data-parallax="-8"
+                                >
+                                    <PanelScreenshot
+                                        src="/screenshots/status.webp"
+                                        alt="Rockdactyl public status page"
+                                        label="Public status"
+                                        className="showcase-screen"
                                     />
-                                </figure>
-                                <div className="mx-auto mt-4 flex max-w-[340px] items-center justify-between border-t border-white/[0.07] pt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
-                                    <span>Touch ready</span>
-                                    <span>Viewport safe</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="section-seam bg-black/20">
-                    <div className="mx-auto grid max-w-[1220px] gap-12 px-5 py-24 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8 lg:py-28">
-                        <div data-reveal="true">
-                            <div className="mb-6 grid size-12 place-items-center rounded-2xl border border-primary/18 bg-primary/[0.07] text-primary">
-                                <TerminalIcon className="size-5" />
-                            </div>
-                            <SectionIntro
-                                eyebrow="Verified delivery"
-                                title="Install it with a way back."
-                                body="The manager verifies the release, snapshots the existing panel, applies the build, and keeps a restore path. Download first; inspect before running."
-                            />
+                <section id="install" className="install-band section-seam">
+                    <div
+                        className="install-wordmark pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none"
+                        aria-hidden="true"
+                    >
+                        INSTALL
+                    </div>
+                    <div className="relative mx-auto grid max-w-[1260px] items-center gap-12 px-5 py-24 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-32">
+                        <div className="relative z-10" data-reveal="true">
+                            <p className="flex items-center gap-3 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ff9aaa]">
+                                <span className="h-px w-7 bg-[#ff6b82]" />
+                                UI mod for Pterodactyl
+                            </p>
+                            <h2 className="mt-5 max-w-[650px] text-balance text-[clamp(3rem,6.2vw,6.2rem)] font-semibold leading-[0.9] tracking-[-0.055em]">
+                                Install the interface.
+                                <span className="block text-[#ff7f93]">
+                                    Keep the way back.
+                                </span>
+                            </h2>
+                            <p className="mt-6 max-w-[52ch] text-base leading-7 text-white/60">
+                                One manager installs Rockdactyl, verifies the
+                                package, and preserves a rollback snapshot.
+                            </p>
                             <Link
                                 href="/docs/installation"
-                                className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80"
+                                className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-[#ff9aaa]"
                             >
-                                Read the install guide{' '}
+                                Installation guide
                                 <ArrowRightIcon className="size-4" />
                             </Link>
                         </div>
                         <div
-                            className="parallax-layer min-w-0"
-                            data-parallax="10"
+                            className="parallax-layer install-terminal-plane relative z-10 min-w-0"
+                            data-parallax="14"
                         >
                             <div
-                                className="overflow-hidden rounded-[22px] border border-white/[0.09] bg-[#070506] shadow-2xl"
+                                className="overflow-hidden rounded-[22px] border border-white/[0.12] bg-[#070506]"
                                 data-reveal="true"
                             >
-                                <div className="flex h-11 items-center border-b border-white/[0.065] px-4">
-                                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                                <div className="flex h-12 items-center border-b border-white/[0.075] px-4">
+                                    <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
+                                        <span className="size-1.5 rounded-full bg-emerald-300" />
                                         Install · Linux
                                     </span>
                                     <span className="ml-auto">
                                         <CopyCommand value={installCommand} />
                                     </span>
                                 </div>
-                                <pre className="overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[13px] leading-7 text-[#f3b0ba]">
+                                <pre className="overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[12px] leading-7 text-[#ffabb8] sm:p-6 sm:text-[13px]">
                                     <code>{installCommand}</code>
                                 </pre>
-                                <div className="grid gap-2 border-t border-white/[0.065] p-4 sm:grid-cols-3">
+                                <div className="grid gap-2 border-t border-white/[0.075] p-4 sm:grid-cols-3">
                                     <InstallCheck
                                         icon={ShieldCheckIcon}
                                         text="Checksum"
@@ -329,14 +444,15 @@ export default function Home() {
                         <div className="hero-glow absolute left-1/2 top-1/2 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
                     </div>
                     <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
-                        Open source · operator controlled
+                        Open source · fully yours
                     </p>
                     <h2 className="mx-auto mt-5 max-w-4xl text-balance text-[clamp(2.7rem,6vw,5.8rem)] font-semibold leading-[0.95] tracking-[-0.045em]">
-                        A panel experience built like a product.
+                        Give your panel the interface it deserves.
                     </h2>
                     <p className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
-                        Read the source, verify the release, configure the
-                        interface, and keep your rollback path.
+                        Shape it from Panel Settings, use it across every
+                        surface, and keep the whole experience unmistakably
+                        yours.
                     </p>
                     <div className="mt-9 flex flex-wrap justify-center gap-3">
                         <Link
@@ -373,7 +489,7 @@ export default function Home() {
 
 function Metric({ label, value }: { label: string; value: string }) {
     return (
-        <div>
+        <div className="bg-[#090708]/88 px-3.5 py-4 sm:px-4">
             <dt className="font-mono text-[9px] uppercase tracking-[0.17em] text-muted-foreground">
                 {label}
             </dt>
@@ -394,16 +510,23 @@ function Proof({ label, value }: { label: string; value: string }) {
 }
 
 function SectionIntro({
+    index,
     eyebrow,
     title,
     body,
 }: {
+    index?: string;
     eyebrow: string;
     title: string;
     body: string;
 }) {
     return (
-        <div className="max-w-3xl" data-reveal="true">
+        <div className="section-intro relative max-w-3xl" data-reveal="true">
+            {index ? (
+                <span className="section-index" aria-hidden="true">
+                    {index}
+                </span>
+            ) : null}
             <p className="flex items-center gap-3 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                 <span
                     className="h-px w-6 bg-gradient-to-r from-primary to-primary/10"
@@ -417,6 +540,37 @@ function SectionIntro({
             <p className="mt-5 max-w-[58ch] text-pretty text-base leading-7 text-muted-foreground">
                 {body}
             </p>
+        </div>
+    );
+}
+
+function SurfaceHeader({
+    icon: Icon,
+    index,
+    label,
+    title,
+}: {
+    icon: typeof ShieldCheckIcon;
+    index: string;
+    label: string;
+    title: string;
+}) {
+    return (
+        <div className="surface-header relative z-10 flex items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-primary/15 bg-primary/[0.065] text-primary">
+                <Icon className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+                <p className="font-mono text-[8px] font-medium uppercase tracking-[0.18em] text-primary/85">
+                    {label}
+                </p>
+                <h3 className="mt-1.5 text-xl font-semibold tracking-[-0.035em] sm:text-2xl">
+                    {title}
+                </h3>
+            </div>
+            <span className="ml-auto font-mono text-[9px] tracking-[0.16em] text-white/25">
+                / {index}
+            </span>
         </div>
     );
 }
