@@ -102,11 +102,6 @@ export default function Home() {
                                 Read the docs
                             </Link>
                         </div>
-                        <dl className="hero-proof-grid mt-12 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.06]">
-                            <Metric label="Control" value="Admin set" />
-                            <Metric label="Mobile" value="390 px ready" />
-                            <Metric label="Coverage" value="End to end" />
-                        </dl>
                     </div>
 
                     <div
@@ -114,7 +109,6 @@ export default function Home() {
                         data-parallax="22"
                     >
                         <div className="hero-product-stage relative mx-auto w-full max-w-[850px]">
-                            <div className="hero-orbit" aria-hidden="true" />
                             <div className="hero-screen-plane relative">
                                 <PanelScreenshot
                                     src="/screenshots/dashboard-crimson.webp"
@@ -144,34 +138,12 @@ export default function Home() {
                                 </div>
                             </div>
                             <div
-                                className="hero-hud hero-hud-top"
-                                aria-hidden="true"
-                            >
-                                <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,231,183,.75)]" />
-                                Live interface
-                            </div>
-                            <div
-                                className="hero-hud hero-hud-bottom"
-                                aria-hidden="true"
-                            >
-                                Desktop / Mobile / Status
-                            </div>
-                            <div
                                 className="absolute -bottom-12 left-[12%] right-[12%] -z-10 h-28 rounded-full bg-primary/20 blur-3xl"
                                 aria-hidden="true"
                             />
                         </div>
                     </div>
                 </section>
-
-                <div className="section-seam bg-black/15">
-                    <div className="mx-auto grid max-w-[1220px] grid-cols-2 divide-x divide-white/[0.065] px-5 sm:px-6 md:grid-cols-4 lg:px-8">
-                        <Proof label="Style" value="Admin configurable" />
-                        <Proof label="Layout" value="Responsive by design" />
-                        <Proof label="Coverage" value="Client + server" />
-                        <Proof label="Public" value="Status included" />
-                    </div>
-                </div>
 
                 <section
                     id="screens"
@@ -483,28 +455,6 @@ export default function Home() {
             </main>
 
             <SiteFooter />
-        </div>
-    );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-    return (
-        <div className="bg-[#090708]/88 px-3.5 py-4 sm:px-4">
-            <dt className="font-mono text-[9px] uppercase tracking-[0.17em] text-muted-foreground">
-                {label}
-            </dt>
-            <dd className="mt-2 text-sm font-semibold">{value}</dd>
-        </div>
-    );
-}
-
-function Proof({ label, value }: { label: string; value: string }) {
-    return (
-        <div className="px-4 py-6 text-center sm:px-5">
-            <p className="font-mono text-[9px] uppercase tracking-[0.17em] text-muted-foreground">
-                {label}
-            </p>
-            <p className="mt-2 text-sm font-semibold">{value}</p>
         </div>
     );
 }

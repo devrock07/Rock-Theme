@@ -289,71 +289,8 @@ html[data-motion-ready] [data-reveal][data-reveal-state='visible'] {
     pointer-events: none;
 }
 
-.hero-orbit {
-    position: absolute;
-    z-index: -1;
-    inset: -12% -7% -16% -11%;
-    border: 1px solid rgba(245, 75, 102, 0.095);
-    border-radius: 50%;
-    transform: rotate(-7deg);
-}
-
-.hero-orbit::before,
-.hero-orbit::after {
-    position: absolute;
-    border-radius: inherit;
-    content: '';
-}
-
-.hero-orbit::before {
-    inset: 8%;
-    border: 1px dashed rgba(255, 255, 255, 0.045);
-}
-
-.hero-orbit::after {
-    right: 12%;
-    bottom: 4%;
-    width: 7px;
-    height: 7px;
-    background: #ef526a;
-    box-shadow: 0 0 26px rgba(239, 82, 106, 0.8);
-}
-
-.hero-hud {
-    position: absolute;
-    z-index: 35;
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    border: 1px solid rgba(255, 255, 255, 0.095);
-    border-radius: 999px;
-    background: rgba(8, 6, 7, 0.92);
-    padding: 0.55rem 0.75rem;
-    font-family: var(--font-roboto-mono), ui-monospace, monospace;
-    font-size: 8px;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    color: rgba(255, 255, 255, 0.58);
-    text-transform: uppercase;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.34);
-}
-
-.hero-hud-top {
-    top: -17px;
-    right: 8%;
-}
-
-.hero-hud-bottom {
-    bottom: -16px;
-    left: 13%;
-}
-
 .hero-mobile-float > div {
     transform: rotate(2.4deg);
-}
-
-.hero-proof-grid > div {
-    min-width: 0;
 }
 
 .section-intro {
@@ -738,10 +675,6 @@ html[data-motion-ready] [data-reveal][data-reveal-state='visible'] {
         opacity: 0.55;
     }
 
-    .hero-orbit {
-        inset: -7% -12% -10%;
-    }
-
     .showcase-bento {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -789,24 +722,6 @@ html[data-motion-ready] [data-reveal][data-reveal-state='visible'] {
 @media (max-width: 640px) {
     .hero-copy {
         font-size: clamp(3rem, 16vw, 3.8rem);
-    }
-
-    .hero-proof-grid {
-        border-radius: 14px;
-    }
-
-    .hero-hud {
-        font-size: 7px;
-    }
-
-    .hero-hud-top {
-        top: -14px;
-        right: 4%;
-    }
-
-    .hero-hud-bottom {
-        bottom: -14px;
-        left: 5%;
     }
 
     .site-grid {
