@@ -70,7 +70,7 @@ export default function Home() {
                                 aria-label="View Rockdactyl 2.1.1 release notes"
                             >
                                 <span className="release-dot" />
-                                Rockdactyl 2.1.1
+                                ROCKDACTYL 2.1.1
                                 <span
                                     className="release-separator"
                                     aria-hidden="true"
