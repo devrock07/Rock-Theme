@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { CopyCommand } from '@/components/copy-command';
+import { NativeParallax } from '@/components/native-parallax';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { PanelScreenshot } from '@/components/panel-screenshot';
@@ -60,6 +61,7 @@ export default function Home() {
     return (
         <div className="site-shell relative isolate min-h-screen text-foreground">
             <SiteHeader />
+            <NativeParallax />
             <div
                 className="site-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]"
                 aria-hidden="true"
@@ -68,7 +70,8 @@ export default function Home() {
             <main id="main-content">
                 <section className="relative mx-auto grid min-h-[calc(100vh-64px)] max-w-[1220px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8 lg:py-24">
                     <div
-                        className="hero-glow pointer-events-none absolute -left-56 top-0 -z-10 h-[560px] w-[560px] rounded-full"
+                        className="hero-glow parallax-layer pointer-events-none absolute -left-56 top-0 -z-10 h-[560px] w-[560px] rounded-full"
+                        data-parallax="-12"
                         aria-hidden="true"
                     />
                     <div className="max-w-[600px]">
@@ -127,22 +130,24 @@ export default function Home() {
                         </dl>
                     </div>
 
-                    <div className="relative mx-auto w-full max-w-[760px] lg:translate-x-8">
-                        <PanelScreenshot
-                            src="/screenshots/dashboard-crimson.webp"
-                            alt="Rockdactyl dashboard running locally"
-                            label="Live dashboard"
-                            className="hero-screen"
-                            priority
-                        />
-                        <div
-                            className="absolute -bottom-9 left-[10%] right-[10%] -z-10 h-20 rounded-full bg-primary/22 blur-3xl"
-                            aria-hidden="true"
-                        />
+                    <div className="parallax-layer w-full" data-parallax="26">
+                        <div className="relative mx-auto w-full max-w-[760px] lg:translate-x-8">
+                            <PanelScreenshot
+                                src="/screenshots/dashboard-crimson.webp"
+                                alt="Rockdactyl dashboard running locally"
+                                label="Live dashboard"
+                                className="hero-screen"
+                                priority
+                            />
+                            <div
+                                className="absolute -bottom-9 left-[10%] right-[10%] -z-10 h-20 rounded-full bg-primary/22 blur-3xl"
+                                aria-hidden="true"
+                            />
+                        </div>
                     </div>
                 </section>
 
-                <section className="border-y border-white/[0.07] bg-black/15">
+                <section className="section-seam bg-black/15">
                     <div className="mx-auto grid max-w-[1220px] grid-cols-2 divide-x divide-white/[0.065] px-5 sm:px-6 md:grid-cols-4 lg:px-8">
                         <Proof label="Panel base" value="1.15.1" />
                         <Proof label="PHP" value="8.2 / 8.3" />
@@ -151,7 +156,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
+                <section className="section-seam mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
                     <SectionIntro
                         eyebrow="One system"
                         title="Designed past the dashboard."
@@ -161,6 +166,7 @@ export default function Home() {
                         {features.map((feature, index) => (
                             <article
                                 key={feature.title}
+                                data-reveal="true"
                                 className={cn(
                                     'feature-card group relative overflow-hidden rounded-[24px] border border-white/[0.085] bg-white/[0.025] p-7 sm:p-8',
                                     index === 0 && 'md:row-span-1',
@@ -188,7 +194,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="border-t border-white/[0.07] bg-[#0b0809]/45">
+                <section className="section-seam bg-[#0b0809]/45">
                     <div className="mx-auto max-w-[1220px] px-5 py-24 sm:px-6 lg:px-8 lg:py-32">
                         <SectionIntro
                             eyebrow="Real panel surfaces"
@@ -204,7 +210,10 @@ export default function Home() {
                             <span>Mobile · 390 px</span>
                         </div>
                         <div className="surface-gallery relative mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1.34fr)_minmax(280px,.54fr)] lg:gap-6">
-                            <div className="grid gap-5">
+                            <div
+                                className="parallax-layer grid gap-5"
+                                data-parallax="12"
+                            >
                                 <PanelScreenshot
                                     src="/screenshots/console.webp"
                                     alt="Rockdactyl server console with resource telemetry"
@@ -216,7 +225,10 @@ export default function Home() {
                                     label="Public status"
                                 />
                             </div>
-                            <div className="lg:pt-12 xl:pt-16">
+                            <div
+                                className="parallax-layer lg:pt-12 xl:pt-16"
+                                data-parallax="-18"
+                            >
                                 <p className="mb-4 flex items-center justify-between font-mono text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                                     <span>Adaptive interface</span>
                                     <span className="text-primary/80">
@@ -248,9 +260,9 @@ export default function Home() {
                     </div>
                 </section>
 
-                <section className="border-y border-white/[0.07] bg-black/20">
+                <section className="section-seam bg-black/20">
                     <div className="mx-auto grid max-w-[1220px] gap-12 px-5 py-24 sm:px-6 lg:grid-cols-[0.82fr_1.18fr] lg:px-8 lg:py-28">
-                        <div>
+                        <div data-reveal="true">
                             <div className="mb-6 grid size-12 place-items-center rounded-2xl border border-primary/18 bg-primary/[0.07] text-primary">
                                 <TerminalIcon className="size-5" />
                             </div>
@@ -267,38 +279,55 @@ export default function Home() {
                                 <ArrowRightIcon className="size-4" />
                             </Link>
                         </div>
-                        <div className="overflow-hidden rounded-[22px] border border-white/[0.09] bg-[#070506] shadow-2xl">
-                            <div className="flex h-11 items-center border-b border-white/[0.065] px-4">
-                                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                                    Install · Linux
-                                </span>
-                                <span className="ml-auto">
-                                    <CopyCommand value={installCommand} />
-                                </span>
-                            </div>
-                            <pre className="overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[13px] leading-7 text-[#f3b0ba]">
-                                <code>{installCommand}</code>
-                            </pre>
-                            <div className="grid gap-2 border-t border-white/[0.065] p-4 sm:grid-cols-3">
-                                <InstallCheck
-                                    icon={ShieldCheckIcon}
-                                    text="Checksum"
-                                />
-                                <InstallCheck icon={BoxesIcon} text="Archive" />
-                                <InstallCheck
-                                    icon={GaugeIcon}
-                                    text="Snapshot"
-                                />
+                        <div
+                            className="parallax-layer min-w-0"
+                            data-parallax="10"
+                        >
+                            <div
+                                className="overflow-hidden rounded-[22px] border border-white/[0.09] bg-[#070506] shadow-2xl"
+                                data-reveal="true"
+                            >
+                                <div className="flex h-11 items-center border-b border-white/[0.065] px-4">
+                                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                                        Install · Linux
+                                    </span>
+                                    <span className="ml-auto">
+                                        <CopyCommand value={installCommand} />
+                                    </span>
+                                </div>
+                                <pre className="overflow-x-auto whitespace-pre-wrap p-5 font-mono text-[13px] leading-7 text-[#f3b0ba]">
+                                    <code>{installCommand}</code>
+                                </pre>
+                                <div className="grid gap-2 border-t border-white/[0.065] p-4 sm:grid-cols-3">
+                                    <InstallCheck
+                                        icon={ShieldCheckIcon}
+                                        text="Checksum"
+                                    />
+                                    <InstallCheck
+                                        icon={BoxesIcon}
+                                        text="Archive"
+                                    />
+                                    <InstallCheck
+                                        icon={GaugeIcon}
+                                        text="Snapshot"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="relative mx-auto max-w-[1220px] overflow-hidden px-5 py-28 text-center sm:px-6 lg:px-8 lg:py-36">
+                <section
+                    className="section-seam relative mx-auto max-w-[1220px] overflow-hidden px-5 py-28 text-center sm:px-6 lg:px-8 lg:py-36"
+                    data-reveal="true"
+                >
                     <div
-                        className="hero-glow pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                        className="parallax-layer pointer-events-none absolute inset-0 -z-10"
+                        data-parallax="-10"
                         aria-hidden="true"
-                    />
+                    >
+                        <div className="hero-glow absolute left-1/2 top-1/2 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full" />
+                    </div>
                     <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                         Open source · operator controlled
                     </p>
@@ -374,14 +403,18 @@ function SectionIntro({
     body: string;
 }) {
     return (
-        <div className="max-w-3xl">
-            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+        <div className="max-w-3xl" data-reveal="true">
+            <p className="flex items-center gap-3 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
+                <span
+                    className="h-px w-6 bg-gradient-to-r from-primary to-primary/10"
+                    aria-hidden="true"
+                />
                 {eyebrow}
             </p>
             <h2 className="mt-4 text-balance text-[clamp(2.5rem,5vw,4.6rem)] font-semibold leading-[0.98] tracking-[-0.045em]">
                 {title}
             </h2>
-            <p className="mt-5 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
+            <p className="mt-5 max-w-[58ch] text-pretty text-base leading-7 text-muted-foreground">
                 {body}
             </p>
         </div>
