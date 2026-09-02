@@ -36,7 +36,9 @@ export default function Home() {
             <SiteHeader />
             <NativeParallax />
             <div
-                className="site-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]"
+                className="site-grid parallax-layer pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1100px]"
+                data-parallax="-28"
+                data-parallax-scale="0.018"
                 aria-hidden="true"
             />
 
@@ -44,7 +46,9 @@ export default function Home() {
                 <section className="hero-stage relative mx-auto grid min-h-[calc(100vh-64px)] max-w-[1280px] items-center gap-14 px-5 py-20 sm:px-6 lg:grid-cols-12 lg:px-8 lg:py-24">
                     <div
                         className="hero-glow parallax-layer pointer-events-none absolute -left-56 top-0 -z-10 h-[560px] w-[560px] rounded-full"
-                        data-parallax="-12"
+                        data-parallax="-22"
+                        data-parallax-x="12"
+                        data-parallax-scale="0.06"
                         aria-hidden="true"
                     />
                     <div
@@ -106,7 +110,9 @@ export default function Home() {
 
                     <div
                         className="parallax-layer relative z-10 w-full lg:col-span-8 lg:col-start-5 lg:row-start-1"
-                        data-parallax="22"
+                        data-parallax="38"
+                        data-parallax-x="-16"
+                        data-parallax-scale="0.035"
                     >
                         <div className="hero-product-stage relative mx-auto w-full max-w-[850px]">
                             <div className="hero-screen-plane relative">
@@ -120,7 +126,9 @@ export default function Home() {
                             </div>
                             <div
                                 className="hero-mobile-float parallax-layer absolute -bottom-20 -right-5 z-30 hidden w-[168px] xl:block"
-                                data-parallax="-14"
+                                data-parallax="-32"
+                                data-parallax-x="18"
+                                data-parallax-scale="-0.025"
                             >
                                 <div className="overflow-hidden rounded-[25px] border border-white/[0.14] bg-[#080607] p-1.5 shadow-[0_28px_80px_rgba(0,0,0,.62)]">
                                     <div className="mx-auto mb-1.5 h-3 w-14 rounded-full bg-white/[0.07]" />
@@ -180,7 +188,9 @@ export default function Home() {
                                 />
                                 <div
                                     className="parallax-layer showcase-media"
-                                    data-parallax="10"
+                                    data-parallax="20"
+                                    data-parallax-x="-5"
+                                    data-parallax-scale="0.018"
                                 >
                                     <PanelScreenshot
                                         src="/screenshots/dashboard-crimson.webp"
@@ -203,7 +213,9 @@ export default function Home() {
                                 />
                                 <div
                                     className="parallax-layer showcase-phone-wrap"
-                                    data-parallax="-14"
+                                    data-parallax="-24"
+                                    data-parallax-x="7"
+                                    data-parallax-scale="-0.02"
                                 >
                                     <figure className="mobile-shot mx-auto w-full max-w-[285px] overflow-hidden rounded-[30px] border border-white/[0.13] bg-[#080607] p-2">
                                         <div
@@ -297,7 +309,9 @@ export default function Home() {
                                 />
                                 <div
                                     className="parallax-layer showcase-media"
-                                    data-parallax="8"
+                                    data-parallax="18"
+                                    data-parallax-x="-5"
+                                    data-parallax-scale="0.015"
                                 >
                                     <PanelScreenshot
                                         src="/screenshots/console.webp"
@@ -320,7 +334,9 @@ export default function Home() {
                                 />
                                 <div
                                     className="parallax-layer showcase-media"
-                                    data-parallax="-8"
+                                    data-parallax="-16"
+                                    data-parallax-x="5"
+                                    data-parallax-scale="-0.012"
                                 >
                                     <PanelScreenshot
                                         src="/screenshots/status.webp"
@@ -367,7 +383,9 @@ export default function Home() {
                         </div>
                         <div
                             className="parallax-layer install-terminal-plane relative z-10 min-w-0"
-                            data-parallax="14"
+                            data-parallax="26"
+                            data-parallax-x="-8"
+                            data-parallax-scale="0.02"
                         >
                             <div
                                 className="overflow-hidden rounded-[22px] border border-white/[0.12] bg-[#070506]"

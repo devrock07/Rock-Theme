@@ -121,7 +121,8 @@ html[data-scrolled] .site-header {
 }
 
 .parallax-layer {
-    transform: translate3d(0, var(--parallax-y, 0), 0);
+    transform: translate3d(var(--parallax-x, 0), var(--parallax-y, 0), 0)
+        scale(var(--parallax-scale, 1));
     backface-visibility: hidden;
 }
 
@@ -235,6 +236,24 @@ html[data-motion-ready] [data-reveal][data-reveal-state='visible'] {
 .hero-stage {
     isolation: isolate;
     scroll-margin-top: 5rem;
+}
+
+.hero-stage::before {
+    position: absolute;
+    z-index: 6;
+    right: 50%;
+    bottom: -1px;
+    width: 100vw;
+    height: clamp(7rem, 13vw, 11rem);
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        color-mix(in oklch, #0b0809 72%, transparent) 68%,
+        #0b0809
+    );
+    content: '';
+    pointer-events: none;
+    transform: translateX(50%);
 }
 
 .hero-stage::after {

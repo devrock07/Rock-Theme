@@ -4,11 +4,17 @@ import { useEffect } from 'react';
 
 type MotionLayer = {
     element: HTMLElement;
-    depth: number;
+    depthY: number;
+    depthX: number;
+    depthScale: number;
     top: number;
     height: number;
-    current: number;
-    target: number;
+    currentY: number;
+    targetY: number;
+    currentX: number;
+    targetX: number;
+    currentScale: number;
+    targetScale: number;
     active: boolean;
 };
 
@@ -28,11 +34,17 @@ export function NativeParallax() {
             document.querySelectorAll<HTMLElement>('[data-parallax]'),
         ).map((element) => ({
             element,
-            depth: Number(element.dataset.parallax ?? 0),
+            depthY: Number(element.dataset.parallax ?? 0),
+            depthX: Number(element.dataset.parallaxX ?? 0),
+            depthScale: Number(element.dataset.parallaxScale ?? 0),
             top: 0,
             height: 0,
-            current: 0,
-            target: 0,
+            currentY: 0,
+            targetY: 0,
+            currentX: 0,
+            targetX: 0,
+            currentScale: 1,
+            targetScale: 1,
             active: false,
         }));
         const reveals = Array.from(
@@ -70,7 +82,9 @@ export function NativeParallax() {
                     -1,
                     1,
                 );
-                layer.target = position * layer.depth;
+                layer.targetY = position * layer.depthY;
+                layer.targetX = position * layer.depthX;
+                layer.targetScale = 1 + position * layer.depthScale;
             }
         };
 
@@ -94,16 +108,34 @@ export function NativeParallax() {
             if (parallaxEnabled()) {
                 for (const layer of layers) {
                     if (!layer.active) continue;
-                    const delta = layer.target - layer.current;
-                    if (Math.abs(delta) > 0.05) {
-                        layer.current += delta * 0.14;
+                    const deltaY = layer.targetY - layer.currentY;
+                    const deltaX = layer.targetX - layer.currentX;
+                    const deltaScale = layer.targetScale - layer.currentScale;
+                    if (
+                        Math.abs(deltaY) > 0.05 ||
+                        Math.abs(deltaX) > 0.05 ||
+                        Math.abs(deltaScale) > 0.0002
+                    ) {
+                        layer.currentY += deltaY * 0.14;
+                        layer.currentX += deltaX * 0.14;
+                        layer.currentScale += deltaScale * 0.14;
                         unsettled = true;
                     } else {
-                        layer.current = layer.target;
+                        layer.currentY = layer.targetY;
+                        layer.currentX = layer.targetX;
+                        layer.currentScale = layer.targetScale;
                     }
                     layer.element.style.setProperty(
                         '--parallax-y',
-                        `${layer.current.toFixed(2)}px`,
+                        `${layer.currentY.toFixed(2)}px`,
+                    );
+                    layer.element.style.setProperty(
+                        '--parallax-x',
+                        `${layer.currentX.toFixed(2)}px`,
+                    );
+                    layer.element.style.setProperty(
+                        '--parallax-scale',
+                        layer.currentScale.toFixed(5),
                     );
                 }
             }
@@ -121,7 +153,7 @@ export function NativeParallax() {
             measureFrame = 0;
             for (const layer of layers) {
                 const rect = layer.element.getBoundingClientRect();
-                layer.top = rect.top + window.scrollY - layer.current;
+                layer.top = rect.top + window.scrollY - layer.currentY;
                 layer.height = rect.height;
             }
             updateTargets();
@@ -141,9 +173,15 @@ export function NativeParallax() {
 
         const resetParallax = () => {
             for (const layer of layers) {
-                layer.current = 0;
-                layer.target = 0;
+                layer.currentY = 0;
+                layer.targetY = 0;
+                layer.currentX = 0;
+                layer.targetX = 0;
+                layer.currentScale = 1;
+                layer.targetScale = 1;
                 layer.element.style.removeProperty('--parallax-y');
+                layer.element.style.removeProperty('--parallax-x');
+                layer.element.style.removeProperty('--parallax-scale');
                 layer.element.removeAttribute('data-parallax-active');
             }
             scheduleMeasure();
@@ -272,6 +310,8 @@ export function NativeParallax() {
             root.style.removeProperty('--scroll-progress');
             for (const layer of layers) {
                 layer.element.style.removeProperty('--parallax-y');
+                layer.element.style.removeProperty('--parallax-x');
+                layer.element.style.removeProperty('--parallax-scale');
                 layer.element.removeAttribute('data-parallax-active');
             }
         };
