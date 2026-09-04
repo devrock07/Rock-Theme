@@ -71,7 +71,6 @@ export function SiteHeader() {
                     >
                         <BrandMark />
                         <span>Rockdactyl</span>
-                        <small>2.1.1</small>
                     </Link>
 
                     <nav className="header-nav" aria-label="Product navigation">

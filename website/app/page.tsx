@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     description: 'A responsive interface mod for Pterodactyl Panel.',
 };
 
+const releaseVersion = '2.1.1';
+
 const installCommand = `curl -fsSL https://raw.githubusercontent.com/devrock07/Rockdactyl/main/install.sh \\
   -o /tmp/rockdactyl-install.sh
 sudo bash /tmp/rockdactyl-install.sh install`;
@@ -78,7 +80,7 @@ export default function Home() {
                         <dl className="hero-facts">
                             <div>
                                 <dt>Current</dt>
-                                <dd>2.1.1</dd>
+                                <dd>{releaseVersion}</dd>
                             </div>
                             <div>
                                 <dt>Panel</dt>
@@ -103,7 +105,7 @@ export default function Home() {
                             />
                             <div className="product-caption" aria-hidden="true">
                                 <span>01 / Client dashboard</span>
-                                <span>Rockdactyl 2.1.1</span>
+                                <span>Rockdactyl {releaseVersion}</span>
                             </div>
                         </div>
                     </div>

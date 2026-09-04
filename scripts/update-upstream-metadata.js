@@ -150,7 +150,12 @@ const checkReleaseMetadata = (root) => {
             metadata.upstreamVersion,
             'autopilot documentation',
         ],
-        ['website/app/page.tsx', /ROCKDACTYL ([0-9]+\.[0-9]+\.[0-9]+)/, metadata.themeVersion, 'release badge'],
+        [
+            'website/app/page.tsx',
+            /const releaseVersion = '([^']+)'/,
+            metadata.themeVersion,
+            'release version',
+        ],
         ['website/lib/docs.ts', /releases\/tag\/v([^`';]+)[`';]/, metadata.themeVersion, 'release link'],
     ];
 

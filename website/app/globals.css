@@ -157,16 +157,6 @@ html[data-scrolled] .site-header {
     letter-spacing: -0.025em;
 }
 
-.brand-link small {
-    border-left: 1px solid rgba(255, 255, 255, 0.11);
-    padding-left: 0.65rem;
-    color: rgba(255, 255, 255, 0.34);
-    font-family: var(--font-roboto-mono), ui-monospace, monospace;
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-}
-
 .brand-mark {
     display: grid;
     width: 1.75rem;
@@ -806,7 +796,6 @@ html[data-scrolled] .site-header {
         width: min(calc(100% - 2rem), 74rem);
     }
 
-    .brand-link small,
     .header-github {
         display: none;
     }
