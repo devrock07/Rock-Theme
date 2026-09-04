@@ -11,7 +11,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { SearchIcon, CheckIcon } from 'lucide-react';
 
 function Command({
     className,
@@ -45,10 +44,6 @@ function CommandDialog({
 }) {
     return (
         <Dialog {...props}>
-            <DialogHeader className="sr-only">
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription>{description}</DialogDescription>
-            </DialogHeader>
             <DialogContent
                 className={cn(
                     'rounded-xl! top-1/3 translate-y-0 overflow-hidden p-0',
@@ -56,6 +51,10 @@ function CommandDialog({
                 )}
                 showCloseButton={showCloseButton}
             >
+                <DialogHeader className="sr-only">
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
                 {children}
             </DialogContent>
         </Dialog>
@@ -69,10 +68,12 @@ function CommandInput({
     return (
         <div data-slot="command-input-wrapper" className="p-1 pb-0">
             <div className="border-input/30 bg-input/30 flex h-8 items-center rounded-lg border px-2 shadow-none">
-                <SearchIcon
-                    className="mr-2 size-4 shrink-0 opacity-50"
+                <span
+                    className="mr-2 font-mono text-xs text-primary/70"
                     aria-hidden="true"
-                />
+                >
+                    /
+                </span>
                 <CommandPrimitive.Input
                     data-slot="command-input"
                     className={cn(
@@ -159,7 +160,6 @@ function CommandItem({
             {...props}
         >
             {children}
-            <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
         </CommandPrimitive.Item>
     );
 }

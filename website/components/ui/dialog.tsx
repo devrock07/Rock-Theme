@@ -5,7 +5,6 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { XIcon } from 'lucide-react';
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
     return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -65,12 +64,12 @@ function DialogContent({
                         render={
                             <Button
                                 variant="ghost"
-                                className="absolute top-2 right-2"
+                                className="absolute top-2 right-2 size-11 text-xl font-light"
                                 size="icon-sm"
                             />
                         }
                     >
-                        <XIcon />
+                        <span aria-hidden="true">×</span>
                         <span className="sr-only">Close</span>
                     </DialogPrimitive.Close>
                 )}

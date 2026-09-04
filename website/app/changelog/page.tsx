@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowUpRightIcon, CheckCircle2Icon } from 'lucide-react';
 
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
     title: 'Changelog — Rockdactyl',
@@ -60,7 +57,7 @@ export default function ChangelogPage() {
                             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                                 01 Sep 2026
                             </p>
-                            <span className="mt-3 inline-flex rounded-full border border-primary/20 bg-primary/[0.07] px-2.5 py-1 font-mono text-[10px] font-semibold text-primary">
+                            <span className="mt-3 inline-flex border-l border-primary pl-2 font-mono text-[10px] font-semibold text-primary">
                                 v2.1.1
                             </span>
                         </div>
@@ -82,12 +79,15 @@ export default function ChangelogPage() {
                                         key={item}
                                         className="flex gap-3 text-sm leading-6 text-muted-foreground"
                                     >
-                                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                                        <span
+                                            className="mt-2 h-px w-3 shrink-0 bg-primary"
+                                            aria-hidden="true"
+                                        />
                                         {item}
                                     </li>
                                 ))}
                             </ul>
-                            <div className="mt-8 grid gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 sm:grid-cols-4">
+                            <div className="mt-8 grid gap-4 border-y border-white/[0.08] py-5 sm:grid-cols-4">
                                 <ReleaseFact label="Panel" value="1.15.1" />
                                 <ReleaseFact label="PHP" value="8.2 / 8.3" />
                                 <ReleaseFact label="Node" value="22+" />
@@ -98,24 +98,16 @@ export default function ChangelogPage() {
                                     href="https://github.com/devrock07/Rockdactyl/releases/tag/v2.1.1"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={cn(
-                                        buttonVariants({ size: 'lg' }),
-                                        'h-10 rounded-xl px-4',
-                                    )}
+                                    className="primary-link"
                                 >
-                                    Release assets <ArrowUpRightIcon />
+                                    Release assets{' '}
+                                    <span aria-hidden="true">↗</span>
                                 </a>
                                 <a
                                     href="https://github.com/devrock07/Rockdactyl/compare/v2.1.0...v2.1.1"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={cn(
-                                        buttonVariants({
-                                            variant: 'outline',
-                                            size: 'lg',
-                                        }),
-                                        'h-10 rounded-xl border-white/10 bg-white/[0.025] px-4',
-                                    )}
+                                    className="text-link"
                                 >
                                     Full diff
                                 </a>
@@ -130,7 +122,7 @@ export default function ChangelogPage() {
                             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                                 01 Sep 2026
                             </p>
-                            <span className="mt-3 inline-flex rounded-full border border-primary/20 bg-primary/[0.07] px-2.5 py-1 font-mono text-[10px] font-semibold text-primary">
+                            <span className="mt-3 inline-flex border-l border-primary pl-2 font-mono text-[10px] font-semibold text-primary">
                                 v2.1.0
                             </span>
                         </div>
@@ -152,12 +144,15 @@ export default function ChangelogPage() {
                                         key={item}
                                         className="flex gap-3 text-sm leading-6 text-muted-foreground"
                                     >
-                                        <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                                        <span
+                                            className="mt-2 h-px w-3 shrink-0 bg-primary"
+                                            aria-hidden="true"
+                                        />
                                         {item}
                                     </li>
                                 ))}
                             </ul>
-                            <div className="mt-8 grid gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 sm:grid-cols-4">
+                            <div className="mt-8 grid gap-4 border-y border-white/[0.08] py-5 sm:grid-cols-4">
                                 <ReleaseFact label="Panel" value="1.15.1" />
                                 <ReleaseFact label="PHP" value="8.2 / 8.3" />
                                 <ReleaseFact label="Node" value="22+" />
@@ -168,24 +163,16 @@ export default function ChangelogPage() {
                                     href="https://github.com/devrock07/Rockdactyl/releases/tag/v2.1.0"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={cn(
-                                        buttonVariants({ size: 'lg' }),
-                                        'h-10 rounded-xl px-4',
-                                    )}
+                                    className="primary-link"
                                 >
-                                    Release assets <ArrowUpRightIcon />
+                                    Release assets{' '}
+                                    <span aria-hidden="true">↗</span>
                                 </a>
                                 <a
                                     href="https://github.com/devrock07/Rockdactyl/compare/v2.0.3...v2.1.0"
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={cn(
-                                        buttonVariants({
-                                            variant: 'outline',
-                                            size: 'lg',
-                                        }),
-                                        'h-10 rounded-xl border-white/10 bg-white/[0.025] px-4',
-                                    )}
+                                    className="text-link"
                                 >
                                     Full diff
                                 </a>

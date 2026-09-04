@@ -30,7 +30,7 @@ export function PanelScreenshot({
 
     return (
         <figure
-            className={`screen-shell relative overflow-hidden rounded-[20px] border border-white/[0.12] bg-[#080607] p-[3px] ${className}`}
+            className={`screen-shell relative overflow-hidden border bg-[#080607] ${className}`}
         >
             <Image
                 src={withBasePath(src)}
@@ -39,9 +39,9 @@ export function PanelScreenshot({
                 height={height}
                 sizes="(max-width: 1024px) 100vw, 760px"
                 priority={priority}
-                loading={priority ? undefined : 'lazy'}
+                loading={priority ? undefined : 'eager'}
                 decoding="async"
-                className="block h-auto w-full rounded-[17px] border border-white/[0.06] bg-[#080607]"
+                className="block h-auto w-full bg-[#080607]"
             />
             {label ? (
                 <figcaption className="sr-only">{label}</figcaption>

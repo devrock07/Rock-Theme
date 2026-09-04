@@ -1,11 +1,4 @@
 import Link from 'next/link';
-import {
-    ArrowLeftIcon,
-    ArrowRightIcon,
-    CheckCircle2Icon,
-    InfoIcon,
-    TriangleAlertIcon,
-} from 'lucide-react';
 
 import { CopyCommand } from '@/components/copy-command';
 import { DocsSidebar } from '@/components/docs-sidebar';
@@ -39,6 +32,50 @@ export function DocumentationPage({ doc }: { doc: DocPageType }) {
                 <DocsSidebar />
 
                 <article className="min-w-0 flex-1 lg:max-w-[720px]">
+                    <details className="mb-10 border-y border-white/[0.085] lg:hidden">
+                        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground marker:content-none">
+                            Browse documentation
+                            <span
+                                className="font-mono text-base font-light text-primary"
+                                aria-hidden="true"
+                            >
+                                +
+                            </span>
+                        </summary>
+                        <div className="grid gap-6 border-t border-white/[0.065] py-5 sm:grid-cols-2">
+                            {docsNavigation.map((group) => (
+                                <div key={group.label}>
+                                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                                        {group.label}
+                                    </p>
+                                    <ul className="space-y-1">
+                                        {group.items.map((item) => (
+                                            <li key={item.href}>
+                                                <Link
+                                                    href={item.href}
+                                                    aria-current={
+                                                        item.href ===
+                                                        currentHref
+                                                            ? 'page'
+                                                            : undefined
+                                                    }
+                                                    className={cn(
+                                                        'flex min-h-11 items-center text-sm transition-colors',
+                                                        item.href ===
+                                                            currentHref
+                                                            ? 'text-primary'
+                                                            : 'text-muted-foreground hover:text-foreground',
+                                                    )}
+                                                >
+                                                    {item.title}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </details>
                     <div className="mb-12 border-b border-white/[0.075] pb-10">
                         <p className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                             {doc.eyebrow}
@@ -149,8 +186,7 @@ export function DocumentationPage({ doc }: { doc: DocPageType }) {
                                 className="group rounded-2xl border border-white/[0.085] bg-white/[0.025] p-5 transition hover:border-primary/25 hover:bg-primary/[0.035]"
                             >
                                 <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <ArrowLeftIcon className="size-3.5" />{' '}
-                                    Previous
+                                    <span aria-hidden="true">←</span> Previous
                                 </span>
                                 <span className="mt-2 block font-semibold group-hover:text-primary">
                                     {previous.title}
@@ -165,7 +201,7 @@ export function DocumentationPage({ doc }: { doc: DocPageType }) {
                                 className="group rounded-2xl border border-white/[0.085] bg-white/[0.025] p-5 text-right transition hover:border-primary/25 hover:bg-primary/[0.035]"
                             >
                                 <span className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                                    Next <ArrowRightIcon className="size-3.5" />
+                                    Next <span aria-hidden="true">→</span>
                                 </span>
                                 <span className="mt-2 block font-semibold group-hover:text-primary">
                                     {next.title}
@@ -250,17 +286,13 @@ function Callout({
     };
 }) {
     const tone = callout.tone ?? 'info';
-    const Icon =
-        tone === 'warning'
-            ? TriangleAlertIcon
-            : tone === 'success'
-              ? CheckCircle2Icon
-              : InfoIcon;
+    const label =
+        tone === 'warning' ? 'Warning' : tone === 'success' ? 'Ready' : 'Note';
 
     return (
         <div
             className={cn(
-                'mt-7 grid grid-cols-[20px_1fr] gap-3 rounded-2xl border p-4',
+                'mt-7 grid grid-cols-[4.5rem_1fr] gap-3 rounded-lg border p-4',
                 tone === 'warning' &&
                     'border-amber-300/15 bg-amber-300/[0.045]',
                 tone === 'success' &&
@@ -268,17 +300,18 @@ function Callout({
                 tone === 'info' && 'border-primary/15 bg-primary/[0.045]',
             )}
         >
-            <Icon
+            <span
                 className={cn(
-                    'mt-0.5 size-4',
+                    'pt-0.5 font-mono text-[10px] uppercase tracking-[0.12em]',
                     tone === 'warning'
                         ? 'text-amber-300'
                         : tone === 'success'
                           ? 'text-emerald-300'
                           : 'text-primary',
                 )}
-                aria-hidden="true"
-            />
+            >
+                {label}
+            </span>
             <div>
                 <h3 className="text-sm font-semibold">{callout.title}</h3>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">

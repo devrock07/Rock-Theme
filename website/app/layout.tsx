@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Pixelify_Sans, Roboto_Mono } from 'next/font/google';
+import { Inter, Roboto_Mono } from 'next/font/google';
 
 import { siteUrl } from '@/lib/site';
 
@@ -15,15 +15,9 @@ const robotoMono = Roboto_Mono({
     subsets: ['latin'],
     display: 'swap',
 });
-const pixelify = Pixelify_Sans({
-    variable: '--font-pixelify',
-    subsets: ['latin'],
-    display: 'swap',
-});
-
 export const metadata: Metadata = {
     metadataBase: new URL(`${siteUrl}/`),
-    title: 'Rockdactyl — Pterodactyl, refined.',
+    title: 'Rockdactyl — UI mod for Pterodactyl',
     description: 'A polished, responsive UI mod for Pterodactyl Panel.',
     keywords: [
         'Pterodactyl',
@@ -39,7 +33,7 @@ export const metadata: Metadata = {
     openGraph: {
         url: `${siteUrl}/`,
         type: 'website',
-        title: 'Rockdactyl — Pterodactyl, refined.',
+        title: 'Rockdactyl — UI mod for Pterodactyl',
         description: 'A polished, responsive UI mod for Pterodactyl Panel.',
         images: [
             {
@@ -52,7 +46,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Rockdactyl — Pterodactyl, refined.',
+        title: 'Rockdactyl — UI mod for Pterodactyl',
         description: 'A polished, responsive UI mod for Pterodactyl Panel.',
         images: [`${siteUrl}/screenshots/dashboard-crimson.webp`],
     },
@@ -64,7 +58,7 @@ export default function RootLayout({
     return (
         <html
             lang="en"
-            className={`dark ${inter.variable} ${robotoMono.variable} ${pixelify.variable}`}
+            className={`dark ${inter.variable} ${robotoMono.variable}`}
         >
             <body className="antialiased">{children}</body>
         </html>

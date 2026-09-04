@@ -3,9 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowUpRightIcon, MenuIcon, SearchIcon } from 'lucide-react';
 
-import { Button, buttonVariants } from '@/components/ui/button';
 import {
     Command,
     CommandDialog,
@@ -19,13 +17,12 @@ import {
     Sheet,
     SheetClose,
     SheetContent,
-    SheetDescription,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
 import { searchablePages } from '@/lib/docs';
+import { cn } from '@/lib/utils';
 
 const productLinks = [
     { href: '/#screens', label: 'Screens' },
@@ -62,191 +59,150 @@ export function SiteHeader() {
 
     return (
         <>
-            <a
-                href="#main-content"
-                className="fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-xl transition-transform focus:translate-y-0"
-            >
+            <a href="#main-content" className="skip-link">
                 Skip to content
             </a>
-            <header className="site-header sticky top-0 z-50 border-b border-white/[0.06]">
-                <div className="mx-auto flex h-16 max-w-[1220px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+            <header className="site-header">
+                <div className="header-inner">
                     <Link
                         href="/"
-                        className="mr-auto flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        className="brand-link"
                         aria-label="Rockdactyl home"
                     >
                         <BrandMark />
-                        <span className="text-sm font-semibold tracking-[-0.035em]">
-                            Rockdactyl
-                        </span>
+                        <span>Rockdactyl</span>
+                        <small>2.1.1</small>
                     </Link>
 
-                    <nav
-                        className="hidden items-center gap-0.5 rounded-xl border border-white/[0.065] bg-white/[0.025] p-1 md:flex"
-                        aria-label="Product navigation"
-                    >
+                    <nav className="header-nav" aria-label="Product navigation">
                         {productLinks.map((item) => (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-muted-foreground outline-none transition-colors hover:bg-white/[0.05] hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50"
-                            >
+                            <Link key={item.href} href={item.href}>
                                 {item.label}
                             </Link>
                         ))}
+                        <Link
+                            href="/docs"
+                            aria-current={
+                                pathname.startsWith('/docs')
+                                    ? 'page'
+                                    : undefined
+                            }
+                        >
+                            Docs
+                        </Link>
                     </nav>
 
-                    <div
-                        className="hidden h-5 w-px bg-white/[0.09] md:block"
-                        aria-hidden="true"
-                    />
+                    <div className="header-actions">
+                        <button
+                            type="button"
+                            className="header-search"
+                            onClick={() => setSearchOpen(true)}
+                        >
+                            <span>Search docs</span>
+                            <kbd>Ctrl K</kbd>
+                        </button>
+                        <a
+                            href={githubUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="header-github"
+                        >
+                            GitHub <span aria-hidden="true">↗</span>
+                            <span className="sr-only">
+                                {' '}
+                                (opens in a new tab)
+                            </span>
+                        </a>
 
-                    <Link
-                        href="/docs"
-                        aria-current={
-                            pathname.startsWith('/docs') ? 'page' : undefined
-                        }
-                        className={cn(
-                            'hidden h-9 items-center rounded-lg px-2.5 text-[13px] font-medium outline-none transition-colors md:inline-flex',
-                            pathname.startsWith('/docs')
-                                ? 'bg-white/[0.055] text-foreground'
-                                : 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground',
-                            'focus-visible:ring-2 focus-visible:ring-primary/50',
-                        )}
-                    >
-                        Docs
-                    </Link>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="h-9 w-9 border-white/10 bg-white/[0.035] px-0 xl:w-[172px] xl:justify-start xl:px-3"
-                        onClick={() => setSearchOpen(true)}
-                        aria-label="Search documentation"
-                    >
-                        <SearchIcon aria-hidden="true" />
-                        <span className="hidden text-muted-foreground xl:inline">
-                            Search docs
-                        </span>
-                        <kbd className="ml-auto hidden rounded-md border border-white/8 bg-white/[0.045] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground 2xl:inline">
-                            Ctrl K
-                        </kbd>
-                    </Button>
-
-                    <a
-                        href={githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={cn(
-                            buttonVariants({ variant: 'outline', size: 'sm' }),
-                            'hidden h-9 border-white/10 bg-white/[0.035] px-3 md:inline-flex',
-                        )}
-                    >
-                        GitHub
-                        <ArrowUpRightIcon aria-hidden="true" />
-                        <span className="sr-only"> (opens in a new tab)</span>
-                    </a>
-
-                    <div className="md:hidden">
-                        <Sheet>
-                            <SheetTrigger
-                                render={
-                                    <Button
-                                        variant="outline"
-                                        size="icon-lg"
-                                        aria-label="Open navigation"
-                                        className="border-white/10 bg-white/[0.035]"
-                                    />
-                                }
-                            >
-                                <MenuIcon aria-hidden="true" />
-                            </SheetTrigger>
-                            <SheetContent
-                                side="right"
-                                className="w-[min(88vw,340px)] border-white/10 bg-[#0d0a0b]/98 p-0"
-                            >
-                                <SheetHeader className="border-b border-white/8 px-5 py-5 text-left">
-                                    <SheetTitle className="flex items-center gap-3">
-                                        <BrandMark />
-                                        Rockdactyl
-                                    </SheetTitle>
-                                    <SheetDescription>
-                                        Explore the product, install it, or open
-                                        the project resources.
-                                    </SheetDescription>
-                                </SheetHeader>
-                                <nav
-                                    className="flex flex-col p-3"
-                                    aria-label="Mobile navigation"
+                        <div className="mobile-nav">
+                            <Sheet>
+                                <SheetTrigger
+                                    render={
+                                        <button
+                                            type="button"
+                                            className="menu-button"
+                                            aria-label="Open navigation"
+                                        />
+                                    }
                                 >
-                                    <p className="px-4 pb-2 pt-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
-                                        Product
-                                    </p>
-                                    {productLinks.map((item) => (
+                                    <span
+                                        className="menu-glyph"
+                                        aria-hidden="true"
+                                    >
+                                        <span />
+                                        <span />
+                                    </span>
+                                </SheetTrigger>
+                                <SheetContent
+                                    side="right"
+                                    className="w-[min(92vw,360px)] border-white/10 bg-[#0b0909] p-0"
+                                >
+                                    <SheetHeader className="border-b border-white/8 px-5 py-5 text-left">
+                                        <SheetTitle className="flex items-center gap-3">
+                                            <BrandMark />
+                                            Rockdactyl
+                                        </SheetTitle>
+                                    </SheetHeader>
+                                    <nav
+                                        className="mobile-menu"
+                                        aria-label="Mobile navigation"
+                                    >
                                         <SheetClose
-                                            key={item.href}
-                                            nativeButton={false}
                                             render={
-                                                <Link
-                                                    href={item.href}
-                                                    className="rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground outline-none transition hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50"
+                                                <button
+                                                    type="button"
+                                                    aria-label="Search documentation"
+                                                    onClick={() =>
+                                                        setSearchOpen(true)
+                                                    }
                                                 />
                                             }
                                         >
-                                            {item.label}
+                                            <span>00</span>
+                                            Search documentation
                                         </SheetClose>
-                                    ))}
-
-                                    <div className="my-3 h-px bg-white/[0.07]" />
-                                    <p className="px-4 pb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
-                                        Resources
-                                    </p>
-                                    <SheetClose
-                                        nativeButton={false}
-                                        render={
-                                            <Link
-                                                href="/docs"
-                                                aria-current={
-                                                    pathname.startsWith('/docs')
-                                                        ? 'page'
-                                                        : undefined
+                                        {productLinks.map((item, index) => (
+                                            <SheetClose
+                                                key={item.href}
+                                                nativeButton={false}
+                                                render={
+                                                    <Link href={item.href} />
                                                 }
-                                                className={cn(
-                                                    'rounded-xl px-4 py-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-primary/50',
-                                                    pathname.startsWith('/docs')
-                                                        ? 'bg-white/[0.055] text-foreground'
-                                                        : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
-                                                )}
-                                            />
-                                        }
-                                    >
-                                        Docs
-                                    </SheetClose>
-                                    <SheetClose
-                                        nativeButton={false}
-                                        render={
-                                            <a
-                                                href={githubUrl}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                aria-label="Open Rockdactyl on GitHub (opens in a new tab)"
-                                                className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground outline-none transition hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50"
-                                            />
-                                        }
-                                    >
-                                        GitHub
-                                        <ArrowUpRightIcon
-                                            className="ml-auto size-4"
-                                            aria-hidden="true"
-                                        />
-                                        <span className="sr-only">
-                                            {' '}
-                                            (opens in a new tab)
-                                        </span>
-                                    </SheetClose>
-                                </nav>
-                            </SheetContent>
-                        </Sheet>
+                                            >
+                                                <span>
+                                                    {String(index + 1).padStart(
+                                                        2,
+                                                        '0',
+                                                    )}
+                                                </span>
+                                                {item.label}
+                                            </SheetClose>
+                                        ))}
+                                        <SheetClose
+                                            nativeButton={false}
+                                            render={<Link href="/docs" />}
+                                        >
+                                            <span>04</span>
+                                            Documentation
+                                        </SheetClose>
+                                        <SheetClose
+                                            nativeButton={false}
+                                            render={
+                                                <a
+                                                    href={githubUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    aria-label="Open Rockdactyl on GitHub"
+                                                />
+                                            }
+                                        >
+                                            <span>05</span>
+                                            GitHub ↗
+                                        </SheetClose>
+                                    </nav>
+                                </SheetContent>
+                            </Sheet>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -256,11 +212,11 @@ export function SiteHeader() {
                 onOpenChange={setSearchOpen}
                 title="Search Rockdactyl documentation"
                 description="Find installation, configuration, operations, and project pages."
-                className="top-[22%] max-w-xl border border-white/10 bg-[#100c0e]/98 shadow-2xl"
+                className="top-[18%] w-[calc(100%-2rem)] max-w-xl border border-white/10 bg-[#100c0e]/98 shadow-2xl"
             >
                 <Command className="bg-transparent">
                     <CommandInput placeholder="Search documentation…" />
-                    <CommandList className="max-h-[380px] p-1">
+                    <CommandList className="max-h-[min(380px,55vh)] p-1">
                         <CommandEmpty>No page found.</CommandEmpty>
                         <CommandGroup heading="Documentation">
                             {searchablePages.map((item) => (
@@ -278,7 +234,7 @@ export function SiteHeader() {
                                             {item.description}
                                         </span>
                                     </span>
-                                    <span className="ml-auto text-[10px] uppercase tracking-[0.13em] text-muted-foreground">
+                                    <span className="ml-auto hidden text-[10px] uppercase tracking-[0.13em] text-muted-foreground sm:block">
                                         {item.group}
                                     </span>
                                 </CommandItem>
@@ -293,13 +249,7 @@ export function SiteHeader() {
 
 export function BrandMark({ className }: { className?: string }) {
     return (
-        <span
-            aria-hidden="true"
-            className={cn(
-                'font-pixel grid size-8 shrink-0 place-items-center rounded-[10px] border border-primary/35 bg-primary/10 text-[15px] font-bold text-primary shadow-[0_0_24px_color-mix(in_oklch,var(--primary)_18%,transparent)]',
-                className,
-            )}
-        >
+        <span aria-hidden="true" className={cn('brand-mark', className)}>
             R
         </span>
     );

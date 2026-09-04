@@ -26,7 +26,7 @@ export function SiteFooter() {
                         aria-label="Rockdactyl home"
                         className="inline-flex w-fit items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     >
-                        <BrandMark className="size-7 rounded-lg text-[13px]" />
+                        <BrandMark className="size-7 text-[11px]" />
                         <span className="text-sm font-semibold tracking-[-0.025em]">
                             Rockdactyl
                         </span>
@@ -46,7 +46,7 @@ export function SiteFooter() {
                                                 ? 'noreferrer'
                                                 : undefined
                                         }
-                                        className="rounded-sm outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50"
+                                        className="inline-flex min-h-11 items-center rounded-sm outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50"
                                     >
                                         {item.label}
                                         {item.external ? (
